@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ab7f35dc6c55fe4b986f294be0460a8, type: 3}
+  m_Name: Skin Colors
+  m_EditorClassIdentifier: 
+  selected: {r: 0.48940903, g: 0.8867924, b: 0.54456455, a: 1}
+  unselected: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
+  colors:
+  - {r: 0.156, g: 0.089508206, b: 0.043475416, a: 1}
+  - {r: 0.2392157, g: 0.13725491, b: 0.06666667, a: 1}
+  - {r: 0.33333334, g: 0.19215687, b: 0.09019608, a: 1}
+  - {r: 0.5294118, g: 0.29803923, b: 0.16862746, a: 1}
+  - {r: 0.8, g: 0.49019608, b: 0.21176471, a: 1}
+  - {r: 0.8, g: 0.5568628, b: 0.2901961, a: 1}
+  - {r: 0.9764706, g: 0.6784314, b: 0.4509804, a: 1}
+  - {r: 1, g: 0.81960785, b: 0.6509804, a: 1}
+  sprites: []
+  borderSize: 0.1
+  defaultIndex: 6

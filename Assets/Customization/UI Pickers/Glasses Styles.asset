@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ab7f35dc6c55fe4b986f294be0460a8, type: 3}
+  m_Name: Glasses Styles
+  m_EditorClassIdentifier: 
+  selected: {r: 0.48940903, g: 0.8867924, b: 0.54456455, a: 1}
+  unselected: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
+  colors: []
+  sprites:
+  - {fileID: 21300000, guid: 3066af2f420e4314fb4a1cc352535141, type: 3}
+  - {fileID: 21300000, guid: 07f6dcd9523ff1841ae961ca67430f72, type: 3}
+  - {fileID: 21300000, guid: 3dd71f67f3580c04b95b5607ab427a4e, type: 3}
+  - {fileID: 21300000, guid: d4dffae2f4dee514cb1fc5df37590c15, type: 3}
+  - {fileID: 21300000, guid: e774e6dce47c7024badbfcf8135f3d71, type: 3}
+  - {fileID: 21300000, guid: 8ceec4fdbdf77634587fc1781e5a2400, type: 3}
+  - {fileID: 21300000, guid: b0e3be7a665853842b558c115e6d4b3b, type: 3}
+  - {fileID: 21300000, guid: ad9dcdd3c556d294eb30617ea0595beb, type: 3}
+  - {fileID: 21300000, guid: 3d90286d435b00446834b90fb749acd9, type: 3}
+  - {fileID: 21300000, guid: 40dfe66f28ef2d64e939747cc48e9d59, type: 3}
+  - {fileID: 21300000, guid: 9f014e551bea9164891214011ea909f5, type: 3}
+  borderSize: 0.05
+  defaultIndex: 0

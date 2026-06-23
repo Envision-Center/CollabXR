@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 205b00bc587100a49b909f1406097fe8, type: 3}
+  m_Name: default lighting config
+  m_EditorClassIdentifier: 
+  skyboxMat: {fileID: 0}
+  lightingHarmonics:
+    sh[ 0]: 0.5185424
+    sh[ 1]: 0.17357032
+    sh[ 2]: 0.12857126
+    sh[ 3]: -0.003646813
+    sh[ 4]: -0.00787059
+    sh[ 5]: 0.04500415
+    sh[ 6]: -0.0036556218
+    sh[ 7]: 0.01061625
+    sh[ 8]: -0.02410718
+    sh[ 9]: 0.50764585
+    sh[10]: 0.19235632
+    sh[11]: 0.13188805
+    sh[12]: 0.00032228453
+    sh[13]: -0.010744934
+    sh[14]: 0.050190795
+    sh[15]: -0.010392005
+    sh[16]: 0.029791974
+    sh[17]: -0.027399419
+    sh[18]: 0.48705864
+    sh[19]: 0.20398916
+    sh[20]: 0.13119318
+    sh[21]: 0.008124594
+    sh[22]: -0.0101205595
+    sh[23]: 0.054647997
+    sh[24]: -0.011708699
+    sh[25]: 0.045712847
+    sh[26]: -0.027979337
+  reflectionTexture: {fileID: 8900000, guid: 9017fee9247fca744b2b5060e05a6d85, type: 3}

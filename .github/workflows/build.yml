@@ -1,0 +1,99 @@
+name: Build CollabXR
+run-name: Build CollabXR for all platforms
+on: [push, workflow_dispatch]
+
+jobs:
+  build-collabxr:
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          #   - name: "windows"
+          #     platform: [self-hosted, Windows, X64]
+          #     unity-hub-path: "C:/Program\\ Files/Unity\\ Hub/Unity\\ Hub.exe"
+          #     unity-build-profile: "Assets/Settings/Build Profiles/WindowsDesktop.asset"
+          #     output-binary: Collab.exe
+          #     upload-path:
+          - name: "windows"
+            platform: [self-hosted, macOS, ARM64]
+            unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
+            unity-build-profile: "Assets/Settings/BuildProfiles/WindowsDesktop.asset"
+            output-binary: CollabXR.exe
+            upload-path:
+          - name: "quest3"
+            platform: [self-hosted, macOS, ARM64]
+            unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
+            unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
+            output-binary: CollabXR.apk
+            upload-path: CollabXR.apk
+          - name: "macos"
+            platform: [self-hosted, macOS, ARM64]
+            unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
+            unity-build-profile: "Assets/Settings/BuildProfiles/MacOSDesktop.asset"
+            output-binary: CollabXR.App
+            upload-path: CollabXR.App
+
+    runs-on: ${{ matrix.platform }}
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout CollabXR Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.ACCESS_TOKEN }}
+          set-safe-directory: false
+
+      - name: Get Collab Keystore
+        run: echo "${{ secrets.COLLAB_KEYSTORE }}" | base64 -d -o collab.keystore
+
+      - name: Install Unity Editor
+        continue-on-error: true
+        run: ${{ matrix.unity-hub-path }} -- --headless install --version ${{ vars.UNITY_VERSION }}
+
+      - name: Install Unity Editor Modules
+        continue-on-error: true
+        run: ${{ matrix.unity-hub-path }} -- --headless install-modules --version ${{ vars.UNITY_VERSION }} --module windows-mono mac-mono android --childModules
+
+      - name: Get Unity Editor Executable Paths for Windows
+        if: matrix.platform[1] == 'Windows'
+        shell: pwsh
+        run: |
+          echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ vars.UNITY_VERSION }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ vars.UNITY_VERSION }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Get Unity Editor Executable Paths for MacOS
+        if: matrix.platform[1] == 'macOS'
+        run: |
+          export UNITY_PATH="$(${{ matrix.unity-hub-path }} -- --headless install-path)/${{ vars.UNITY_VERSION }}/Unity.app/Contents/MacOS/Unity"
+          echo "UNITY_PATH=${UNITY_PATH}" >> "$GITHUB_ENV"
+          export ANDROID_SDKMANAGER_PATH="$(${{ matrix.unity-hub-path }} -- --headless install-path)/${{ vars.UNITY_VERSION }}/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager"
+          echo "ANDROID_SDKMANAGER_PATH=${ANDROID_SDKMANAGER_PATH}" >> "$GITHUB_ENV"
+
+      - name: Accept Android SDK Licenses
+        continue-on-error: true
+        run: |
+          yes | "${{ env.ANDROID_SDKMANAGER_PATH }}" --licenses
+
+      - name: Build CollabXR Executable
+        run: |
+          COLLAB_KEYSTORE_PASSWORD=${{ secrets.COLLAB_KEYSTORE_PASSWORD }} "${{ env.UNITY_PATH }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ matrix.unity-build-profile }}" -build "${{ github.workspace }}/Build/${{ matrix.output-binary }}"
+
+      - name: List Build Outputs
+        run: |
+          ls ${{ github.workspace }}/Build/
+
+      - name: Strip Debug Info
+        continue-on-error: true
+        run: |
+          rm -rf ${{ github.workspace }}/Build/CollabXR_BurstDebugInformation_DoNotShip
+
+      - name: Upload CollabXR Executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.name }}-build
+          path: ${{ github.workspace }}/Build/${{ matrix.upload-path }}

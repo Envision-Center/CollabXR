@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938db14ed8f28a24b8c27927297cc982, type: 3}
+  m_Name: Mouth Options
+  m_EditorClassIdentifier: 
+  textures:
+  - {fileID: 2800000, guid: 5b500ded668e9b0408f48bf3a9bf1b97, type: 3}
+  - {fileID: 2800000, guid: 94dc9812d4402a14886e9673277b6601, type: 3}
+  - {fileID: 2800000, guid: 29568dfa609553845b18c40b267cc07d, type: 3}
+  - {fileID: 2800000, guid: 843dd4fb8ee931e478dcdbbfba36e06f, type: 3}
+  - {fileID: 2800000, guid: 13fe9891c0d94b04aa20e414f66b98c6, type: 3}
+  - {fileID: 2800000, guid: 320f929563a41464dac644e9bd6d8c50, type: 3}
+  - {fileID: 2800000, guid: c9a14fcca9c237b4393c2cb1940fdad9, type: 3}
+  - {fileID: 2800000, guid: ec303ac8cc59d48489c6ab3a33f8fb05, type: 3}
+  - {fileID: 2800000, guid: c20cf6c9c30c6a745922bfed73d5bed4, type: 3}

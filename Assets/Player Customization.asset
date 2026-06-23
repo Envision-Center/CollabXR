@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06460f7ab3f8116498d074d7749a18f2, type: 3}
+  m_Name: Player Customization
+  m_EditorClassIdentifier: 
+  builtAvatar:
+    _playerName:
+      Data: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    shirtColor: {r: 0, g: 0, b: 0, a: 0}
+    skinColor: {r: 0, g: 0, b: 0, a: 0}
+    hairColor: {r: 0, g: 0, b: 0, a: 0}
+    headStyle: 0
+    hairStyle: 0
+    eyeStyle: 0
+    eyebrowStyle: 0
+    glassesStyle: 0
+    mouthStyle: 0
+    noseStyle: 0

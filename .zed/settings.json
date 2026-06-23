@@ -1,0 +1,39 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
+{
+	"hard_tabs": true,
+	"show_whitespaces": "all",
+	"languages": {
+		"CSharp": {
+			"hard_tabs": true,
+			"preferred_line_length": 200,
+			"format_on_save": "on",
+			"formatter": {
+				"external": {
+					"command": "dotnet",
+					// Use CSharpier
+					"arguments": [
+						"csharpier",
+						"format",
+						"--write-stdout",
+						"--config-path",
+						".editorconfig",
+					],
+					// DotNet formatting does not accept stdin, so it fails
+					// "arguments": [
+					// 	"format",
+					// 	"CollabXR-NEO.sln",
+					// 	"style",
+					// 	"CollabXR-NEO.sln",
+					// 	"--no-restore",
+					// 	// "--stdin",
+					// 	"--include",
+					// 	"{buffer_path}",
+					// ],
+				},
+			},
+		},
+	},
+}
