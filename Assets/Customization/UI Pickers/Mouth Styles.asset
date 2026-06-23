@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ab7f35dc6c55fe4b986f294be0460a8, type: 3}
+  m_Name: Mouth Styles
+  m_EditorClassIdentifier: 
+  selected: {r: 0.48940903, g: 0.8867924, b: 0.54456455, a: 1}
+  unselected: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
+  colors: []
+  sprites:
+  - {fileID: 21300000, guid: f29fca95d5f50c848ab30b8ad3aebb25, type: 3}
+  - {fileID: 21300000, guid: b9e105dd1babe6d48be6a8675ca6e709, type: 3}
+  - {fileID: 21300000, guid: 208c98c6b7214684393db25a62336ea8, type: 3}
+  - {fileID: 21300000, guid: a379a1dc7e1dfea48a7913f612739f0c, type: 3}
+  - {fileID: 21300000, guid: b4ba5373c6788c34792517cccc7f5484, type: 3}
+  - {fileID: 21300000, guid: 13471988df0d5504c89467bc075f148b, type: 3}
+  - {fileID: 21300000, guid: 3b6a75dce060e2d48b2cccea9fe65bae, type: 3}
+  - {fileID: 21300000, guid: ca6f9a95a34e03c499d3e73939aebb7b, type: 3}
+  - {fileID: 21300000, guid: a5d4ae3f2975ebb449a3ea4ff81fb8e1, type: 3}
+  borderSize: 0.05
+  defaultIndex: 0

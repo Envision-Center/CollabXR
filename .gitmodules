@@ -1,0 +1,12 @@
+[submodule "Packages/edu.envision.guidreporter"]
+	path = Packages/edu.envision.guidreporter
+	url = https://github.com/Envision-Center/Unity-Guid-Reporter
+[submodule "Assets/Keys"]
+	path = Assets/Keys
+	url = https://github.com/Envision-Center/CollabXR-Keys
+[submodule "Packages/edu.envision.collabmodpackager"]
+	path = Packages/edu.envision.collabmodpackager
+	url = https://github.com/Envision-Center/CollabXR-Mod-Packager
+[submodule "Packages/edu.envision.collabmodextras"]
+	path = Packages/edu.envision.collabmodextras
+	url = https://github.com/Envision-Center/CollabXR-Mod-Extras

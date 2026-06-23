@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ab7f35dc6c55fe4b986f294be0460a8, type: 3}
+  m_Name: Hair Styles
+  m_EditorClassIdentifier: 
+  selected: {r: 0.48940903, g: 0.8867924, b: 0.54456455, a: 1}
+  unselected: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
+  colors: []
+  sprites:
+  - {fileID: 21300000, guid: f79d30c2442daeb45aaa14792c5751f8, type: 3}
+  - {fileID: 21300000, guid: 44a18ef40102b6f478dce5dc10e6607f, type: 3}
+  - {fileID: 21300000, guid: 38f7a991d701d1a4d9318075996a25c7, type: 3}
+  - {fileID: 21300000, guid: edfdd1b4c0d95ec42acf3d5cad0a6f2e, type: 3}
+  - {fileID: 21300000, guid: 16ae8a1a04a188f41b46245ecb22fa52, type: 3}
+  - {fileID: 21300000, guid: b92ef3aab408bd2479bf2972142a621a, type: 3}
+  - {fileID: 21300000, guid: 927710e9cf837164eaea7ac00173c76b, type: 3}
+  - {fileID: 21300000, guid: 7ede33979e5c0314faaccbd0f2edef45, type: 3}
+  - {fileID: 21300000, guid: 8e0c55f29861045408cd69df757e9c7b, type: 3}
+  - {fileID: 21300000, guid: fc67d487eb32f9b48b1dba7df00df2ab, type: 3}
+  - {fileID: 21300000, guid: 348a2a2410178de4d8eee7f5e011ce81, type: 3}
+  - {fileID: 21300000, guid: 9c23079772a69ce4d97fbc545a1c6404, type: 3}
+  - {fileID: 21300000, guid: afe99786631363340a5273a0a426c86d, type: 3}
+  - {fileID: 21300000, guid: e3dba97d7158e5943ae69cb7e56f6fe0, type: 3}
+  - {fileID: 21300000, guid: c946a283089fbe04e989df89bb46fed9, type: 3}
+  - {fileID: 21300000, guid: e66ffb16f877694428de3e96a599d405, type: 3}
+  - {fileID: 21300000, guid: 4228cbea7ed576e45a79dac95e2c1f42, type: 3}
+  - {fileID: 21300000, guid: 5cf862498b8e83b438ed5f804a643a1d, type: 3}
+  borderSize: 0.05
+  defaultIndex: 8

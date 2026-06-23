@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a48a1a8c220ed3b4b8e3c3477aad36c4, type: 3}
+  m_Name: Cesium Mariana Trench
+  m_EditorClassIdentifier: 
+  startingScale: {x: 1, y: 1, z: 1}
+  minScale: {x: 1, y: 1, z: 1}
+  maxScale: {x: 1, y: 1, z: 1}
+  startingOffset: {x: 0, y: 1, z: 0}
+  prefab: {fileID: 907074605723270293, guid: 7dc1416afb94b8746a216e02729f1937, type: 3}
+  attribution: 
+  contextPrefab: {fileID: 1721727141212373178, guid: a4dc6aba8573c2c469a9a4af4205a291, type: 3}
+  isSimpleModel: 0
+  formattedName: Cesium Mariana Trench
+  category: Cesium
+  assetName: Cesium Mariana Trench.asset
+  thumbnail: {fileID: 21300000, guid: d3f246b185891f545a3dfe9bc8e58f39, type: 3}
+  availableOnThisPlatform: 1

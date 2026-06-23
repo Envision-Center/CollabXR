@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: bedefdaaeea4a714d9799e56e93cac10
+  - enabled: 0
+    path: Assets/Scenes/Game.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Environments/Corinth/Corinth.unity
+    guid: e02ba90b748f9684c9b78037dd86ad88
+  - enabled: 1
+    path: Assets/Environments/Bagan Khayiminga Temple/Bagan.unity
+    guid: ad95f9e5346e6ff419015d907d901c05
+  - enabled: 1
+    path: Assets/Environments/Collab Default/CollabDefault.unity
+    guid: 2960b7de4564aea4a8f144120f156a15
+  - enabled: 1
+    path: Assets/Environments/Starfield/Starfield.unity
+    guid: 9f48fa956deca6246b3c51870ee23bc6
+  - enabled: 0
+    path: Assets/Environments/OSHA/OSHA.unity
+    guid: 3edea28cc96dcc948bd422a49298d6e2
+  - enabled: 1
+    path: Assets/Environments/HYG/HYG.unity
+    guid: bff9cbe8fdb0c1842859f944ed45a4b5
+  m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 72ec0ee4c86653843a723196079e1d0c, type: 2}
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: b6ec8ffb4f5564e4283561866496eb8f, type: 2}
+    UnityEditor.XR.VisionOS.VisionOSSettings: {fileID: 11400000, guid: 071a04a390aeb094794ab9c332a69dc2, type: 2}
+    com.unity.input.settings: {fileID: 11400000, guid: 4088e5a55e21e6a449b49ebfb489636e, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 660d0bc49ad5feb4e83f78a97d15b9fc, type: 3}
+    com.unity.polyspatial.xr.xr_settings: {fileID: 11400000, guid: 4fef309088e294b9da161186648c36a9, type: 2}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: af4f2dc76a906174bb21379a740cb1a4, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 8fcc2d8761763304dad22c2d2eeff7ba, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 9c552e0e6f4a32d4bb784589aba1fda4, type: 2}
+  m_UseUCBPForAssetBundles: 0

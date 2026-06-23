@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938db14ed8f28a24b8c27927297cc982, type: 3}
+  m_Name: Eye Options
+  m_EditorClassIdentifier: 
+  textures:
+  - {fileID: 2800000, guid: 5ff11486e81a5ae468518f3558fa15d6, type: 3}
+  - {fileID: 2800000, guid: 5fb7fb4753c8a7e49ab9b34227e09599, type: 3}
+  - {fileID: 2800000, guid: bdd4c446f33e9bf419bc4f98c9161c72, type: 3}
+  - {fileID: 2800000, guid: 4103074a8c371654f9dae9845ab4bbff, type: 3}
+  - {fileID: 2800000, guid: 5f71733f540aacb4c80c5e90bfd0c5dc, type: 3}
+  - {fileID: 2800000, guid: fb4164f223b81184da156bff3f0b4738, type: 3}
+  - {fileID: 2800000, guid: ea7a693a8b7b47f479b193695b86d3d7, type: 3}
+  - {fileID: 2800000, guid: 45828935b10af484c9fef25fed23a7ca, type: 3}
+  - {fileID: 2800000, guid: 976e015aaec3a9c4d9fbab803180f76b, type: 3}

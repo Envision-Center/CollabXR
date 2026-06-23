@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a48a1a8c220ed3b4b8e3c3477aad36c4, type: 3}
+  m_Name: Survey Meter 1
+  m_EditorClassIdentifier: 
+  startingScale: {x: 1, y: 1, z: 1}
+  minScale: {x: 1, y: 1, z: 1}
+  maxScale: {x: 1, y: 1, z: 1}
+  startingOffset: {x: 0, y: 1, z: 0}
+  prefab: {fileID: 2466490110401067034, guid: 65aa4ca85bcb0114b9809ce11d364985, type: 3}
+  attribution: 
+  contextPrefab: {fileID: 0}
+  isSimpleModel: 0
+  formattedName: Survey Meter
+  category: Nuclear Pharmacy
+  assetName: Survey Meter 1.asset
+  thumbnail: {fileID: 21300000, guid: 992e223d6e0be9a4a9b0b330505656fd, type: 3}
+  availableOnThisPlatform: 1

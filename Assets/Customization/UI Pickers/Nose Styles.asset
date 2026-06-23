@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ab7f35dc6c55fe4b986f294be0460a8, type: 3}
+  m_Name: Nose Styles
+  m_EditorClassIdentifier: 
+  selected: {r: 0.48940903, g: 0.8867924, b: 0.54456455, a: 1}
+  unselected: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
+  colors: []
+  sprites:
+  - {fileID: 21300000, guid: 2e2382383a8d2d04ab933d7a0bc47d0c, type: 3}
+  - {fileID: 21300000, guid: 2136b04c0ff30074990a1af22d4e76c8, type: 3}
+  - {fileID: 21300000, guid: e51bcb6ba59c1064d9440e58974149bd, type: 3}
+  - {fileID: 21300000, guid: f578f1fdc3edfff4eaf90b54d8ff52f9, type: 3}
+  - {fileID: 21300000, guid: b9425bfbd6a1c204399ac2e6af88b2dd, type: 3}
+  - {fileID: 21300000, guid: 3d297a77a4401e845b1d97c7d197b348, type: 3}
+  - {fileID: 21300000, guid: 1f1cd67d0a0bed743b54aa66bdffa8ee, type: 3}
+  - {fileID: 21300000, guid: d845839fb53e91143879c2f1c7742f38, type: 3}
+  - {fileID: 21300000, guid: d00593cc8bd328549ad92f160e0a51c1, type: 3}
+  borderSize: 0.05
+  defaultIndex: 0

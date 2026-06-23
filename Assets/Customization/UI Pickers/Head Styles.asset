@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ab7f35dc6c55fe4b986f294be0460a8, type: 3}
+  m_Name: Head Styles
+  m_EditorClassIdentifier: 
+  selected: {r: 0.48940903, g: 0.8867924, b: 0.54456455, a: 1}
+  unselected: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
+  colors: []
+  sprites:
+  - {fileID: 21300000, guid: e56d0c1801ed3c248aaf2e605ddcfd2a, type: 3}
+  - {fileID: 21300000, guid: 735d81001f56b8e489e614925b99450d, type: 3}
+  - {fileID: 21300000, guid: 40cfa46fe36ca9c4c913bc3932500c1d, type: 3}
+  - {fileID: 21300000, guid: 58d2f18884086ff4c97a3b7091e44ef4, type: 3}
+  - {fileID: 21300000, guid: 0ad7d6859341f9744991dc56a5555d40, type: 3}
+  - {fileID: 21300000, guid: 1677f7958cf674546b830c0de7f90e57, type: 3}
+  borderSize: 0.05
+  defaultIndex: 3

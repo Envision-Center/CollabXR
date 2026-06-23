@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f4a78ca3aa6a854eb08cb70aab5e124, type: 3}
+  m_Name: Collab Library
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  dictionary:
+    categories:
+    - name: Astrometry
+      objectData:
+      - {fileID: 11400000, guid: 7caf2722d017d09468703f290cebf1d6, type: 2}
+      - {fileID: 11400000, guid: 6b1c91ae2df82b045a772cba8d3259b1, type: 2}
+    - name: Cesium
+      objectData:
+      - {fileID: 11400000, guid: f9ff8e1075d5aa94a973c65bbe322c69, type: 2}
+      - {fileID: 11400000, guid: 551ab10ea7ca70940924d5357a6426c0, type: 2}
+      - {fileID: 11400000, guid: d28dbfd51b337d34ba84553e1bae9eea, type: 2}
+      - {fileID: 11400000, guid: cb41d2fc4bd1cba4e83c34668b8f2e2b, type: 2}
+    - name: Experimental
+      objectData:
+      - {fileID: 11400000, guid: ffd737f9b8c4b154090c7a910f6ea5c0, type: 2}
+      - {fileID: 11400000, guid: b0ac512d5a3c67344a3cfedc1e2ff3a4, type: 2}
+      - {fileID: 11400000, guid: a687b0ad44dd10e4b8ba00e7ffd4dfcf, type: 2}
+    - name: Nuclear Pharmacy
+      objectData:
+      - {fileID: 11400000, guid: 0bed972511fc3314787e2ce87085a438, type: 2}
+      - {fileID: 11400000, guid: 4070bba0238b5c545ab08a7994cef427, type: 2}
+      - {fileID: 11400000, guid: e8babac65414ee048a9d0e18972ccd34, type: 2}
+    - name: Primitives
+      objectData:
+      - {fileID: 11400000, guid: de954db99c0916a49a853a7b97d7598b, type: 2}
+      - {fileID: 11400000, guid: b0ffe646a659ede4ea1706baed31d805, type: 2}
+      - {fileID: 11400000, guid: aaf6c1bc02197154bb9c8c132a74597c, type: 2}
+      - {fileID: 11400000, guid: 7fb5be6a60ae77042bcddd0f11093527, type: 2}
+      - {fileID: 11400000, guid: 554af3b2ac7dade4b901ca5fed34ca17, type: 2}
+    - name: Utility
+      objectData:
+      - {fileID: 11400000, guid: 67bda9c68fd59b845963fa81832d0519, type: 2}

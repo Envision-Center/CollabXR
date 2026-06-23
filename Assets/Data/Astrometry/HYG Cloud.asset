@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a48a1a8c220ed3b4b8e3c3477aad36c4, type: 3}
+  m_Name: HYG Cloud
+  m_EditorClassIdentifier: 
+  startingScale: {x: 1, y: 1, z: 1}
+  minScale: {x: 1, y: 1, z: 1}
+  maxScale: {x: 1, y: 1, z: 1}
+  startingOffset: {x: 0, y: 1, z: 0}
+  prefab: {fileID: 9172754350176127329, guid: 9fc4d1b99970d8f498c59ccfb8c33b92, type: 3}
+  attribution: 
+  contextPrefab: {fileID: 0}
+  isSimpleModel: 1
+  formattedName: HYG Cloud
+  category: Astrometry
+  assetName: HYG Cloud.asset
+  thumbnail: {fileID: 21300000, guid: 07f245c4d6fed35429632d91ec70eb39, type: 3}
+  availableOnThisPlatform: 1
