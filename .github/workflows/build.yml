@@ -57,7 +57,8 @@ jobs:
         with:
           lfs: "true"
           submodules: "true"
-          token: ${{ steps.app-token.outputs.token }}
+          # token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.head_ref }}
           # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
           persist-credentials: false
