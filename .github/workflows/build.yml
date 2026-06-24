@@ -67,6 +67,9 @@ jobs:
       - name: Get Collab Keystore
         run: echo "${{ secrets.COLLAB_KEYSTORE }}" | base64 -d -o collab.keystore
 
+      - name: Copy Photon SDK
+        run: cp -r ~/Photon $GITHUB_WORKSPACE/Assets
+
       - name: Install Unity Editor
         continue-on-error: true
         run: ${{ matrix.unity-hub-path }} -- --headless install --version ${{ vars.UNITY_VERSION }}
