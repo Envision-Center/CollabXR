@@ -51,7 +51,7 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
       - name: Install Git LFS
-        run: brew install git-lfs && git install lfs
+        run: brew install git-lfs && git lfs install
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
         with:
