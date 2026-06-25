@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using CollabXR.ModLoader;
@@ -80,6 +81,7 @@ namespace CollabXR.Objects
 			{
 				if (ModManager.Instance.indexedMods.ContainsKey(data.modGUID))
 				{
+					
 					UnityWebRequest request = ModManager.Instance.TryGetUnityWebRequest(data.modGUID);
 					if (request != null)
 					{
@@ -90,13 +92,19 @@ namespace CollabXR.Objects
 						}
 						else
 						{
+							//EnableLoadingAnimation(true, true);
 							loadingBar.fillAmount = request.downloadProgress;
 						}
+					}
+					else
+					{
+						ModLoadTask task = new(data.modGUID);
+						ModManager.Instance.LoadMod(task);
 					}
 				}
 				else
 				{
-					EnableLoadingAnimation(true, false);
+					EnableLoadingAnimation(true, true);
 				}
 			}
 		}
