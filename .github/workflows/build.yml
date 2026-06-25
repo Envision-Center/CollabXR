@@ -119,6 +119,7 @@ jobs:
           aws-region: us-east-1
       - name: Upload artifact to S3
         run: |
+          brew install awscli
           aws s3 cp ${{ github.workspace }}/Build/ s3://${{ vars.S3_BUCKET }}/test-folder --recursive
 
       # - name: Upload CollabXR Executable
