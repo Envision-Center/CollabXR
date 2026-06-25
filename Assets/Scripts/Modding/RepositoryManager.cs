@@ -122,10 +122,12 @@ namespace CollabXR.ModLoader
 				await UniTask.WhenAll(indexModsTasks);
 
 				//await UniTask.SwitchToMainThread();
+
+				Debug.Log($"{DEBUG_LOG_HEADER} All mods loaded from repo: {metadataUrl}");
 			}
 			catch (Exception e)
 			{
-				Debug.Log($"{DEBUG_LOG_HEADER} Failed to load Metadata for \"{metadataUrl}\": {e.Message}");
+				Debug.Log($"{DEBUG_LOG_HEADER} Failed to load Metadata for \"{metadataUrl}\"]: {e.Message}");
 			}
 		}
 
