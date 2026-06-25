@@ -120,7 +120,7 @@ jobs:
       - name: Upload artifact to S3
         run: |
           brew install awscli
-          aws s3 cp ${{ github.workspace }}/Build/ "s3://${{ vars.S3_BUCKET }}/$GITHUB_REF_NAME $(TZ='America/New_York' date)/${{ matrix.name }}" --recursive
+          aws s3 cp ${{ github.workspace }}/Build/ "s3://${{ vars.S3_BUCKET }}/$GITHUB_REF_NAME ${{github.run_id}} $GITHUB_RUN_ATTEMPT/${{ matrix.name }}" --recursive
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7
