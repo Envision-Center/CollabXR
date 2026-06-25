@@ -6,14 +6,10 @@ namespace CollabXR.Development
 {
 	public class ClearCache : MonoBehaviour
 	{
-		public bool shouldClear; // just for debugging
-
-		void Awake()
+		public void DebugClearCache()
 		{
-			if (shouldClear)
-			{
-				Debug.Log("Cache clear success = " + Caching.ClearCache());
-			}
+			Caching.ClearCache();
+			Debug.Log("Clearing cache");
 		}
 	}
 }
