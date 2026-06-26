@@ -126,7 +126,7 @@ jobs:
       - name: Construct Upload Path
         run: |
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}" >> GITHUB_ENV
+          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}" >> $GITHUB_ENV
       - name: Compress and Upload Desktop Artifact
         if: matrix.name != 'quest3'
         run: |
