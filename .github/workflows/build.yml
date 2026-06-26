@@ -124,16 +124,15 @@ jobs:
           brew install yq
           echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ${{ github.workspace }}/ProjectSettings/ProjectSettings.asset)" >> $GITHUB_ENV
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/${FOLDER_NAME}/" >> $GITHUB_ENV
       - name: Compress and Upload Desktop Artifact
         if: matrix.name != 'quest3'
         run: |
           zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
-          aws s3 cp ${{matrix.name}}.zip $S3_PATH
+          aws s3 cp ${{matrix.name}}.zip s3://${{ vars.S3_BUCKET }}/${FOLDER_NAME}/
       - name: Upload Quest Artifact to S3
         if: matrix.name == 'quest3'
         run: |
-          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH
+          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} s3://${{ vars.S3_BUCKET }}/${FOLDER_NAME}/
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
