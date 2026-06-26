@@ -124,7 +124,9 @@ jobs:
           brew install yq
           echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ProjectSettings/ProjectSettings.asset)" > $GITHUB_ENV
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" > $GITHUB_ENV
-          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/$FOLDER_NAME" > $GITHUB_ENV
+          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/$FOLDER_NAME/" > $GITHUB_ENV
+          echo $BUNDLE_VERSION
+          echo $FOLDER_NAME
       - name: Compress and Upload Desktop Artifact
         if: matrix.name != 'quest3'
         run: |
