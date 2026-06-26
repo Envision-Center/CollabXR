@@ -52,30 +52,24 @@ namespace CollabXR.Objects
 		private async UniTaskVoid SetupPreviewAsync()
 		{
 			EnableLoadingAnimation(true, true);
-
-			Debug.Log($"CollabObjectPreview: Waiting for mod {data.modGUID} to be indexed...");
+			loadingBar.fillAmount = 0;
 
 			await UniTask.WaitUntil(() => ModManager.Instance.indexedMods.ContainsKey(data.modGUID));
-
-			Debug.Log($"CollabObjectPreview: Mod {data.modGUID} indexed, waiting for download to start...");
-			loadingBar.fillAmount = 0;
+			
 			while (state == PreviewState.Loading)
 			{
 				if (!RequestExists(out UnityWebRequest request))
 				{
-					Debug.Log($"CollabObjectPreview: Mod {data.modGUID} download request not found, waiting for download to start...");
 					await UniTask.Yield();
 					continue;
 				}
 
 				if (request.result == UnityWebRequest.Result.Success || request.result == UnityWebRequest.Result.InProgress)
 				{
-					Debug.Log($"CollabObjectPreview: Mod {data.modGUID} download in progress, progress: {request.downloadProgress}");
 					loadingBar.fillAmount = request.downloadProgress;
 				}
 				else
 				{
-					Debug.Log($"CollabObjectPreview: Mod {data.modGUID} download failed");
 					EnableLoadingAnimation(true, false);
 					break;
 				}
