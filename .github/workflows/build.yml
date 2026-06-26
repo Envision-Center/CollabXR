@@ -79,15 +79,17 @@ jobs:
         run: ${{ matrix.unity-hub-path }} -- --headless install-modules --version ${{ vars.UNITY_VERSION }} --module windows-mono mac-mono android --childModules
 
       - name: Get Unity Editor Executable Paths for Windows
-        if: matrix.platform[1] == 'Windows'
+        if: matrix.platform[1] == 'windows'
         shell: pwsh
         run: |
+          echo matrix.platform[1]
           echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ vars.UNITY_VERSION }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ vars.UNITY_VERSION }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Get Unity Editor Executable Paths for MacOS
-        if: matrix.platform[1] == 'macOS'
+        if: matrix.platform[1] == 'macos'
         run: |
+          echo matrix.platform[1]
           export UNITY_PATH="$(${{ matrix.unity-hub-path }} -- --headless install-path)/${{ vars.UNITY_VERSION }}/Unity.app/Contents/MacOS/Unity"
           echo "UNITY_PATH=${UNITY_PATH}" >> "$GITHUB_ENV"
           export ANDROID_SDKMANAGER_PATH="$(${{ matrix.unity-hub-path }} -- --headless install-path)/${{ vars.UNITY_VERSION }}/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager"
@@ -116,11 +118,21 @@ jobs:
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ vars.S3_REGION }}
+      - name: Get Build Information
+        run: |
+          brew install yq
+          echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ProjectSettings/ProjectSettings.asset)" > $GITHUB_ENV
+          echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT} > $GITHUB_ENV
+          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/$FOLDER_NAME/${{ matrix.name }}" > $GITHUB_ENV
       - name: Upload artifact to S3
         run: |
           brew install awscli
-          aws s3 cp ${{ github.workspace }}/Build/ "s3://${{ vars.S3_BUCKET }}/$GITHUB_REF_NAME ${{github.run_id}} $GITHUB_RUN_ATTEMPT/${{ matrix.name }}" --recursive
+          aws s3 cp ${{ github.workspace }}/Build/ $S3_PATH --recursive
+      - name: Output Build Summary
+        if: matrix.platform[1] == 'quest3'
+        run: |
+          echo "${{matrix.platform[1]}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.platform[1]}}/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7
