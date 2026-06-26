@@ -117,20 +117,31 @@ jobs:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.S3_REGION }}
+      - name: Configure AWS CLI
+        run: brew install awscli
       - name: Get Build Information
         run: |
           brew install yq
           echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ProjectSettings/ProjectSettings.asset)" > $GITHUB_ENV
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" > $GITHUB_ENV
-          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/$FOLDER_NAME/${{ matrix.name }}" > $GITHUB_ENV
-      - name: Upload Artifact to S3
+          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/$FOLDER_NAME" > $GITHUB_ENV
+      - name: Compress and Upload Desktop Artifact
+        if: matrix.name != "quest3"
         run: |
-          brew install awscli
-          aws s3 cp ${{ github.workspace }}/Build/ $S3_PATH --recursive
-      - name: Output Build Summary
+          zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
+          aws s3 cp ${{matrix.name}}.zip $S3_PATH
+      - name: Upload Quest Artifact to S3
+        if: matrix.name == "quest3"
+        run: |
+          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH --recursive
+      - name: Output Desktop Build
+        if: matrix.name != 'quest3'
+        run: |
+          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip" > $GITHUB_STEP_SUMMARY
+      - name: Output Quest Build
         if: matrix.name == 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
+          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7
