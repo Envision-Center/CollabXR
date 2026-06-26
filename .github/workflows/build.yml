@@ -131,11 +131,11 @@ jobs:
         if: matrix.name != 'quest3'
         run: |
           zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
-          aws s3 cp ${{matrix.name}}.zip ${S3_PATH}/${FOLDER_NAME}/
+          aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
       - name: Upload Quest Artifact to S3
         if: matrix.name == 'quest3'
         run: |
-          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} ${S3_PATH}/${FOLDER_NAME}/
+          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH/$FOLDER_NAME/
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
