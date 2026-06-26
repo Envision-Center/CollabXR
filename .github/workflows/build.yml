@@ -121,14 +121,14 @@ jobs:
         run: |
           brew install yq
           echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ProjectSettings/ProjectSettings.asset)" > $GITHUB_ENV
-          echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT} > $GITHUB_ENV
+          echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" > $GITHUB_ENV
           echo "S3_PATH=s3://${{ vars.S3_BUCKET }}/$FOLDER_NAME/${{ matrix.name }}" > $GITHUB_ENV
-      - name: Upload artifact to S3
+      - name: Upload Artifact to S3
         run: |
           brew install awscli
           aws s3 cp ${{ github.workspace }}/Build/ $S3_PATH --recursive
       - name: Output Build Summary
-        if: matrix.platform[1] == 'quest3'
+        if: matrix.name == 'quest3'
         run: |
           echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
 
