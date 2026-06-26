@@ -79,17 +79,15 @@ jobs:
         run: ${{ matrix.unity-hub-path }} -- --headless install-modules --version ${{ vars.UNITY_VERSION }} --module windows-mono mac-mono android --childModules
 
       - name: Get Unity Editor Executable Paths for Windows
-        if: matrix.platform == 'windows'
+        if: matrix.platform[1] == 'Windows'
         shell: pwsh
         run: |
-          echo ${{ matrix.platform }}
           echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ vars.UNITY_VERSION }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ vars.UNITY_VERSION }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Get Unity Editor Executable Paths for MacOS
-        if: matrix.platform == 'macos'
+        if: matrix.platform[1] == 'macOS'
         run: |
-          echo ${{ matrix.platform }}
           export UNITY_PATH="$(${{ matrix.unity-hub-path }} -- --headless install-path)/${{ vars.UNITY_VERSION }}/Unity.app/Contents/MacOS/Unity"
           echo "UNITY_PATH=${UNITY_PATH}" >> "$GITHUB_ENV"
           export ANDROID_SDKMANAGER_PATH="$(${{ matrix.unity-hub-path }} -- --headless install-path)/${{ vars.UNITY_VERSION }}/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager"
@@ -130,9 +128,9 @@ jobs:
           brew install awscli
           aws s3 cp ${{ github.workspace }}/Build/ $S3_PATH --recursive
       - name: Output Build Summary
-        if: matrix.platform == 'quest3'
+        if: matrix.platform[1] == 'quest3'
         run: |
-          echo "${{matrix.platform}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.platform}}/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
+          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7
