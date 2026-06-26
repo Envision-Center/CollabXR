@@ -124,8 +124,6 @@ namespace CollabXR.ModLoader
 		public UnityWebRequest TryGetUnityWebRequest(Guid modUuid)
 		{
 			Uri uri = GetAssetBundleURI(RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2], modUuid);
-			// TODO remove debug statement below
-			Debug.Log($"Debug Asset Loading: attempting to load web request for {indexedMods[modUuid].Item1.Name}, uri: {uri}, current request in queue for {string.Join(",", modLoadingRequests.Keys)}");
 			if (modLoadingRequests.ContainsKey(uri))
 			{
 				return modLoadingRequests[uri];
@@ -133,18 +131,11 @@ namespace CollabXR.ModLoader
 			return null;
 		}
 
-		public async UniTask IndexMod(string repository, Guid modUuid)
+		internal async UniTask IndexMod(string repository, Guid modUuid)
 		{
 			await UniTask.SwitchToMainThread();
-			RepositoryMetadata repoData = new();
-			try // TODO remove try catch
-			{
-				repoData = RepositoryManager.Instance.loadedRepositories[repository];
-			}
-			catch (Exception ex)
-			{
-				Debug.Log($"{ex}: Trying to load repo: {repository} but Current loaded repo keys: {string.Join(",", RepositoryManager.Instance.loadedRepositories.Keys)}");
-			}
+
+			RepositoryMetadata repoData = RepositoryManager.Instance.loadedRepositories[repository];
 			UnityWebRequest repositoryRequest = GenerateAWSWebRequest(GetAssetBundleMetaURI(repoData, modUuid), repoData);
 
 			try
@@ -169,12 +160,8 @@ namespace CollabXR.ModLoader
 					$"{DEBUG_LOG_HEADER} Loaded Metadata for Mod {modUuid}: {metadata.Name} V{metadata.BuildNumberMap[GetPlatformString()]} made by: {string.Join(", ", metadata.Creators)} (has {metadata.AssetMap.Count} assets, {metadata.PrefabMap.Count} prefabs)"
 				);
 
-				List<UniTask> reloadModsTasks = new();
-
-/*				if (Instance.loadedMods.ContainsKey(modUuid))
-				{*/
-					reloadModsTasks.Add(ReloadMod(modUuid));
-/*				}*/
+				List<UniTask> reloadModsTasks = new List<UniTask>();
+				reloadModsTasks.Add(ReloadMod(modUuid));
 
 				//await UniTask.SwitchToThreadPool();
 
@@ -182,16 +169,10 @@ namespace CollabXR.ModLoader
 
 				//await UniTask.SwitchToMainThread();
 			}
-/*			catch (Exception e)
+			catch (Exception e)
 			{
 				Uri uri = GetAssetBundleURI(RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2], modUuid);
 				Debug.Log($"{DEBUG_LOG_HEADER} Failed to load Metadata for Mod {modUuid}, uri: {uri}: {e}.");
-			}*/
-			finally
-			{
-				Uri uri = GetAssetBundleURI(RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2], modUuid);
-
-				Debug.Log($"{DEBUG_LOG_HEADER} Finished execution of IndexMod for Mod {modUuid}, uri: {uri}");
 			}
 		}
 
