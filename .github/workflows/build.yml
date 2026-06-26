@@ -133,7 +133,7 @@ jobs:
       - name: Upload Quest Artifact to S3
         if: matrix.name == 'quest3'
         run: |
-          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH --recursive
+          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
