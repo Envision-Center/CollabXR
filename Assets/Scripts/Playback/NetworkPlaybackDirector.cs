@@ -17,7 +17,9 @@ namespace CollabXR.Cycles
 		public NetworkDictionary<int, int> ComponentIndices { get; }
 
 		private PlaybackViewModel _viewModel;
+		private PlaybackDirector _director;
 		private CollabContextMenu _menu;
+		private bool _prevScrubbing;
 
 		protected override void CheckForScripts()
 		{
@@ -38,13 +40,16 @@ namespace CollabXR.Cycles
 				return;
 			}
 
-			SubscribeToViewModel();
-
-			var director = GetComponentInChildren<PlaybackDirector>();
-			if (director != null && director.PlayOnAwake && HasStateAuthority)
+			_director = GetComponentInChildren<PlaybackDirector>();
+			if (_director != null)
 			{
-				_viewModel.RequestPlay();
+				_director.SetNetworkDriven(!HasStateAuthority);
+
+				if (_director.PlayOnAwake && HasStateAuthority)
+					_viewModel.RequestPlay();
 			}
+
+			SubscribeToViewModel();
 		}
 
 		private void SubscribeToViewModel()
@@ -55,6 +60,7 @@ namespace CollabXR.Cycles
 			_viewModel.OnSeekRequested += NetworkRequestSeek;
 			_viewModel.OnComponentChangeRequested += NetworkRequestSetComponentSet;
 			_viewModel.OnSpeedChangeRequested += NetworkRequestSetSpeed;
+			_viewModel.OnScrubbingChangeRequested += NetworkRequestSetScrubbing;
 		}
 
 		private void UnsubscribeFromViewModel()
@@ -65,6 +71,7 @@ namespace CollabXR.Cycles
 			_viewModel.OnSeekRequested -= NetworkRequestSeek;
 			_viewModel.OnComponentChangeRequested -= NetworkRequestSetComponentSet;
 			_viewModel.OnSpeedChangeRequested -= NetworkRequestSetSpeed;
+			_viewModel.OnScrubbingChangeRequested -= NetworkRequestSetScrubbing;
 		}
 
 		private void PushToViewModel()
@@ -77,6 +84,12 @@ namespace CollabXR.Cycles
 			if (!Mathf.Approximately(Anchor.AnchorPercent, _viewModel.Percent.Value))
 				_viewModel.RequestSeek(Anchor.AnchorPercent);
 
+			if (Anchor.IsPlaying != _viewModel.IsPlaying.Value)
+			{
+				if (Anchor.IsPlaying) _viewModel.RequestPlay();
+				else _viewModel.RequestPause();
+			}
+
 			float anchorSpeed = Anchor.Speed > 0f ? Anchor.Speed : 1f;
 			if (!Mathf.Approximately(anchorSpeed, _viewModel.Speed.Value))
 				_viewModel.RequestSetSpeed(anchorSpeed);
@@ -85,6 +98,16 @@ namespace CollabXR.Cycles
 			{
 				if (!_viewModel.ActiveSetByComponent.Value.TryGetValue(kvp.Key, out var activeIndex) || activeIndex != kvp.Value)
 					_viewModel.RequestSetComponentSet(kvp.Key, kvp.Value);
+			}
+
+			// Propagate scrubbing state directly to the director (no ViewModel round-trip needed)
+			if (_director != null && Anchor.IsScrubbing != _prevScrubbing)
+			{
+				_prevScrubbing = Anchor.IsScrubbing;
+				if (Anchor.IsScrubbing)
+					_director.StartScrubbing();
+				else
+					_director.StopScrubbing(Anchor.IsPlaying);
 			}
 
 			SubscribeToViewModel();
@@ -148,6 +171,13 @@ namespace CollabXR.Cycles
 			UpdateAnchor(newAnchor);
 		}
 
+		private void NetworkRequestSetScrubbing(bool isScrubbing)
+		{
+			PlaybackClockAnchor newAnchor = Anchor;
+			newAnchor.IsScrubbing = isScrubbing;
+			UpdateAnchor(newAnchor);
+		}
+
 		private void NetworkRequestSetComponentSet(int componentId, int index)
 		{
 			if (HasStateAuthority)
@@ -181,21 +211,23 @@ namespace CollabXR.Cycles
 		{
 			_menu?.StateAuthorityChangedAll();
 
-			var director = GetComponentInChildren<PlaybackDirector>();
-			if (director == null)
+			if (_director != null)
+				_director.SetNetworkDriven(!HasStateAuthority);
+
+			if (_director == null)
 				return;
 
 			if (HasStateAuthority)
 			{
 				float anchorSpeed = Anchor.Speed > 0f ? Anchor.Speed : 1f;
-				director.SetSpeed(anchorSpeed);
-				director.Seek(Anchor.AnchorPercent);
+				_director.SetSpeed(anchorSpeed);
+				_director.Seek(Anchor.AnchorPercent);
 				if (Anchor.IsPlaying)
-					director.Play();
+					_director.Play();
 			}
 			else
 			{
-				director.Pause();
+				_director.Pause();
 			}
 		}
 	}
