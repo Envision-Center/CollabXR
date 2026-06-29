@@ -35,7 +35,7 @@ namespace CollabXR.ModLoader
 					ModMetadata metadata = mod.Value.Item1;
 					string platform = ModManager.GetPlatformString();
 					int availableVersion = metadata.BuildNumberMap.ContainsKey(platform) ? metadata.BuildNumberMap[platform] : 0;
-					Debug.Log($"{DEBUG_LOG_HEADER} Checking mod {mod.Key} @v{availableVersion}");
+					Debug.Log($"{DEBUG_LOG_HEADER} Checking mod {string.Join(",", mod.Value.Item1.PrefabMap.Values.Select(v => $"Name: {v.FormattedName}, Category: {v.Category}"))} @v{availableVersion}");
 					bool bundleExists = availableVersion > 0;
 					foreach (KeyValuePair<Guid, ModPrefab> prefab in metadata.PrefabMap)
 					{
