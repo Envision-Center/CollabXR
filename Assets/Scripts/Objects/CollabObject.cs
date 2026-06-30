@@ -1,5 +1,7 @@
 using CollabXR.ModExtras;
+using CollabXR.ModExtras.Annotation;
 using CollabXR.ModLoader;
+using CollabXR.Objects.Linker.Sockets;
 using CollabXR.VR;
 using Cysharp.Threading.Tasks;
 using Fusion;
@@ -41,7 +43,9 @@ namespace CollabXR.Objects
 			DataName = asset;
 			HasData = true;
 			if (folder != Category || asset != DataName)
+			{
 				Debug.LogWarning("String folder/name are too long! Truncated to " + Category + "/" + DataName);
+			}
 		}
 
 		private void Awake()
@@ -55,7 +59,9 @@ namespace CollabXR.Objects
 			InitializePrefab();
 			DepthMask mask = GetComponentInChildren<DepthMask>();
 			if (mask != null)
+			{
 				PassthroughManager.Instance.AddDepthMask(mask);
+			}
 		}
 
 		private CollabObjectData LoadDataset()
@@ -89,13 +95,35 @@ namespace CollabXR.Objects
 			}
 
 			if (!Data.isSimpleModel)
+			{
 				return;
+			}
 
 			if (Data.prefab != null)
 			{
 				dataRoot = Instantiate(Data.prefab, transform);
 				dataRoot.name = Data.prefab.name;
 				FinishedLoading.Invoke();
+			}
+		}
+
+		/// <summary>
+		/// Creates a corresponding Socket Output for every Socket Annotation on the given object.
+		/// </summary>
+		/// <param name="root">Collab Object to build sockets for.</param>
+		private void BuildSockets(GameObject root)
+		{
+			SocketAnnotation[] annotations = root.GetComponentsInChildren<SocketAnnotation>(true);
+			foreach (SocketAnnotation annotation in annotations)
+			{
+				if (!annotation.enabled)
+				{
+					continue; // Skip instancing annotations that are disabled
+				}
+
+				GameObject annotationObject = annotation.gameObject;
+				SocketOutput socket = annotationObject.AddComponent<SocketOutput>();
+				socket.Initialize(annotation);
 			}
 		}
 
@@ -108,6 +136,7 @@ namespace CollabXR.Objects
 				GameObject.Destroy(dataRoot);
 				dataRoot = Instantiate(prefabReference.Value, transform);
 				dataRoot.name = prefabReference.Value.name;
+				BuildSockets(dataRoot);
 				FinishedLoading.Invoke();
 			}
 		}
