@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using CollabXR.ModLoader;
@@ -44,6 +45,51 @@ namespace CollabXR.Objects
 			this.data = data;
 			EnableLoadingAnimation(true, data.availableOnThisPlatform);
 			LoadPrefab(data).Forget();
+
+			SetupPreviewAsync().Forget();
+		}
+
+		private async UniTaskVoid SetupPreviewAsync()
+		{
+			EnableLoadingAnimation(true, true);
+			loadingBar.fillAmount = 0;
+
+			await UniTask.WaitUntil(() => ModManager.Instance.indexedMods.ContainsKey(data.modGUID));
+			
+			while (state == PreviewState.Loading)
+			{
+				if (!RequestExists(out UnityWebRequest request))
+				{
+					await UniTask.Yield();
+					continue;
+				}
+
+				if (request.result == UnityWebRequest.Result.Success || request.result == UnityWebRequest.Result.InProgress)
+				{
+					loadingBar.fillAmount = request.downloadProgress;
+				}
+				else
+				{
+					EnableLoadingAnimation(true, false);
+					break;
+				}
+
+				await UniTask.Yield();
+			}
+		}
+
+		private bool RequestExists(out UnityWebRequest request)
+		{
+			request = ModManager.Instance.TryGetUnityWebRequest(data.modGUID);
+			if (request == null)
+			{
+				ModLoadTask task = new(data.modGUID);
+				ModManager.Instance.LoadMod(task);
+
+				return false;
+			}
+
+			return true;
 		}
 
 		public async UniTaskVoid LoadPrefab(CollabObjectData data)
@@ -76,29 +122,7 @@ namespace CollabXR.Objects
 
 		private void Update()
 		{
-			if (state == PreviewState.Loading && data != null)
-			{
-				if (ModManager.Instance.indexedMods.ContainsKey(data.modGUID))
-				{
-					UnityWebRequest request = ModManager.Instance.TryGetUnityWebRequest(data.modGUID);
-					if (request != null)
-					{
-						bool successful_progress = request.result == UnityWebRequest.Result.Success || request.result == UnityWebRequest.Result.InProgress;
-						if (!successful_progress)
-						{
-							EnableLoadingAnimation(true, false);
-						}
-						else
-						{
-							loadingBar.fillAmount = request.downloadProgress;
-						}
-					}
-				}
-				else
-				{
-					EnableLoadingAnimation(true, false);
-				}
-			}
+			
 		}
 
 		private void OnDestroy()

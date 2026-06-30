@@ -5,6 +5,7 @@ using CollabXR.Objects;
 using CollabXR.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace CollabXR
@@ -62,6 +63,7 @@ namespace CollabXR
 		private Dictionary<int, Transform> _dropdownMenus = new();
 		private bool _isScrubbingSeek,
 			_isScrubbingSpeed;
+		private bool _wasPlayingBeforeSeekScrub;
 
 		public override void GiveContext(CollabObject context, CollabContextMenu menu)
 		{
@@ -148,7 +150,20 @@ namespace CollabXR
 
 			// Wire up slider listeners
 			if (seekSlider != null)
+			{
 				seekSlider.onValueChanged.AddListener(OnSeekSliderChanged);
+
+				var trigger = seekSlider.gameObject.GetComponent<EventTrigger>()
+				              ?? seekSlider.gameObject.AddComponent<EventTrigger>();
+
+				var pointerDown = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
+				pointerDown.callback.AddListener(_ => OnSeekSliderPointerDown());
+				trigger.triggers.Add(pointerDown);
+
+				var pointerUp = new EventTrigger.Entry { eventID = EventTriggerType.PointerUp };
+				pointerUp.callback.AddListener(_ => OnSeekSliderPointerUp());
+				trigger.triggers.Add(pointerUp);
+			}
 
 			if (speedSlider != null)
 			{
@@ -286,6 +301,20 @@ namespace CollabXR
 		#endregion
 
 		#region UI Event Handlers
+
+		private void OnSeekSliderPointerDown()
+		{
+			if (!dataObj.HasStateAuthority) return;
+			_wasPlayingBeforeSeekScrub = _viewModel.IsPlaying.Value;
+			_viewModel.RequestSetScrubbing(true);
+		}
+
+		private void OnSeekSliderPointerUp()
+		{
+			if (!dataObj.HasStateAuthority) return;
+			_viewModel.RequestSetScrubbing(false);
+			_wasPlayingBeforeSeekScrub = false;
+		}
 
 		private void OnSeekSliderChanged(float value)
 		{
@@ -453,6 +482,7 @@ namespace CollabXR
 
 			_isScrubbingSeek = false;
 			_isScrubbingSpeed = false;
+			_wasPlayingBeforeSeekScrub = false;
 
 			if (playButton != null)
 				playButton.interactable = false;
@@ -490,6 +520,7 @@ namespace CollabXR
 
 			_isScrubbingSeek = false;
 			_isScrubbingSpeed = false;
+			_wasPlayingBeforeSeekScrub = false;
 
 			if (playButton != null)
 				playButton.interactable = true;
