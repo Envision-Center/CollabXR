@@ -1,0 +1,124 @@
+using CollabXR.Objects;
+using CollabXR.Objects.Linker.Sockets;
+using UnityEngine;
+
+namespace CollabXR.Tools
+{
+	public class Linker : MonoBehaviour
+	{
+		private LineRenderer line;
+		public GameObject grabber;
+
+		// Start is called once before the first execution of Update after the MonoBehaviour is created
+		void Start()
+		{
+			line = GetComponent<LineRenderer>();
+			line.useWorldSpace = true;
+		}
+
+		// Update is called once per frame
+		void Update()
+		{
+			line.enabled = linking;
+			if (linking)
+			{
+				if (selectedStart != null)
+				{
+					line.SetPosition(0, selectedStart.transform.position);
+				}
+				if (selectedEnd != null)
+				{
+					line.SetPosition(1, selectedEnd.transform.position);
+				}
+				else
+				{
+					line.SetPosition(1, transform.position);
+				}
+			}
+		}
+
+		private void OnEnable()
+		{
+			Debug.Log("Linker Tool: OnEnable!!");
+			//grabber?.SetActive(false);
+		}
+
+		private void OnDisable()
+		{
+			Debug.Log("Linker Tool: OnDisable!!");
+			//grabber?.SetActive(true);
+		}
+
+		bool linking = false;
+		SocketBase hovered;
+		SocketBase selectedStart;
+		SocketBase selectedEnd;
+
+		public void StartConnection()
+		{
+			if (hovered != null)
+			{
+				selectedStart = hovered;
+				linking = true;
+				Debug.Log(string.Format("Linker Tool: StartConnection called with {0}", hovered));
+			}
+		}
+
+		public void EndConnection()
+		{
+			if (!linking)
+			{
+				return;
+			}
+
+			if (hovered != null)
+			{
+				selectedEnd = hovered;
+			}
+
+			if (selectedStart != null && selectedEnd != null)
+			{
+				// Ensure flow is always going from pipe out > pipe in
+				if (selectedEnd.flow == SocketFlowDirection.Output)
+				{
+					var swap = selectedEnd;
+					selectedEnd = selectedStart;
+					selectedStart = swap;
+				}
+				if (selectedStart.CanConnect(selectedEnd))
+				{
+					if (selectedEnd.CanConnect(selectedStart))
+					{
+						Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
+						selectedEnd.Connect(selectedStart);
+					}
+				}
+			}
+			else
+			{
+				Debug.Log(string.Format("Linker Tool: Invalid link targets {0} -> {1} !", selectedStart, selectedEnd));
+			}
+
+			linking = false;
+			selectedStart = null;
+			selectedEnd = null;
+		}
+
+		public void SetTarget(GameObject g)
+		{
+			if (g != null)
+			{
+				hovered = g.GetComponent<SocketBase>();
+				if (hovered != null)
+				{
+					Debug.Log("Hovered is " + hovered.ToString());
+				}
+			}
+			else
+			{
+				hovered = null;
+				Debug.Log("Hovered is null");
+			}
+		}
+	}
+}
