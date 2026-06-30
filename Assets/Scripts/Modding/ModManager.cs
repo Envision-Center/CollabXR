@@ -33,7 +33,7 @@ namespace CollabXR.ModLoader
 	{
 		private const string DEBUG_LOG_HEADER = "<color=#a557ff>[Mod Loader]</color>";
 
-		public Dictionary<Guid, Tuple<ModMetadata, string>> indexedMods { get; private set; } = new();
+		public Dictionary<Guid, Tuple<ModMetadata, string>> indexedMods { get; private set; } = new(); // guid - <metadata, url>
 
 		private Dictionary<Guid, LoadedModsTableEntry> loadedMods = new();
 
@@ -138,7 +138,15 @@ namespace CollabXR.ModLoader
 			RepositoryMetadata repoData = RepositoryManager.Instance.loadedRepositories[repository];
 			UnityWebRequest repositoryRequest = GenerateAWSWebRequest(GetAssetBundleMetaURI(repoData, modUuid), repoData);
 
-			await repositoryRequest.SendWebRequest();
+			try
+			{
+				await repositoryRequest.SendWebRequest();
+			}
+			catch (Exception ex)
+			{
+				Debug.Log($"Broken web request on requesting uuid: {modUuid}");
+				return;
+			}
 
 			try
 			{
@@ -152,12 +160,8 @@ namespace CollabXR.ModLoader
 					$"{DEBUG_LOG_HEADER} Loaded Metadata for Mod {modUuid}: {metadata.Name} V{metadata.BuildNumberMap[GetPlatformString()]} made by: {string.Join(", ", metadata.Creators)} (has {metadata.AssetMap.Count} assets, {metadata.PrefabMap.Count} prefabs)"
 				);
 
-				List<UniTask> reloadModsTasks = new();
-
-				if (Instance.loadedMods.ContainsKey(modUuid))
-				{
-					reloadModsTasks.Add(ReloadMod(modUuid));
-				}
+				List<UniTask> reloadModsTasks = new List<UniTask>();
+				reloadModsTasks.Add(ReloadMod(modUuid));
 
 				//await UniTask.SwitchToThreadPool();
 
@@ -167,7 +171,8 @@ namespace CollabXR.ModLoader
 			}
 			catch (Exception e)
 			{
-				Debug.Log($"{DEBUG_LOG_HEADER} Failed to load Metadata for Mod {modUuid}: {e}");
+				Uri uri = GetAssetBundleURI(RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2], modUuid);
+				Debug.Log($"{DEBUG_LOG_HEADER} Failed to load Metadata for Mod {modUuid}, uri: {uri}: {e}.");
 			}
 		}
 

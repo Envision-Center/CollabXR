@@ -12,5 +12,6 @@ namespace CollabXR.Cycles
 		public float AnchorPercent;
 		public bool IsPlaying;
 		public float Speed;
+		public bool IsScrubbing;
 	}
 }
