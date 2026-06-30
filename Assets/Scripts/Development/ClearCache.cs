@@ -8,8 +8,8 @@ namespace CollabXR.Development
 	{
 		public void DebugClearCache()
 		{
-			Caching.ClearCache();
-			Debug.Log("Clearing cache");
+			AssetBundle.UnloadAllAssetBundles(true);
+			Debug.Log($"Attempting to clear cache, result: {Caching.ClearCache()}");
 		}
 	}
 }
