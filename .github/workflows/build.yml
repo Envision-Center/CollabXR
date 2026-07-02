@@ -1,6 +1,13 @@
 name: Build CollabXR
 run-name: Build CollabXR for all platforms
-on: [push, workflow_dispatch]
+
+# Only trigger when validation succeeds
+on:
+  workflow_run:
+    workflows: ["Validate Code"]
+    types:
+      - completed
+  workflow_dispatch:
 
 jobs:
   build-collabxr:
