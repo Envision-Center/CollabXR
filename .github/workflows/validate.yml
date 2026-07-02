@@ -1,0 +1,56 @@
+name: Validate Code
+run-name: Performs simple code analysis for CollabXR
+on: [push, workflow_dispatch]
+
+jobs:
+  validate-code:
+    defaults:
+      run:
+        shell: bash
+    runs-on: [self-hosted, macOS, ARM64]
+    environment: ${{ github.event.inputs.environment }}
+
+    permissions:
+      id-token: write
+      contents: read
+      actions: write
+      statuses: write
+
+    steps:
+      - name: Authenticate Envision Actions
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+      - name: Install Git LFS
+        shell: bash
+        run: brew install git-lfs && git lfs install
+      - name: Install DotNet
+        shell: bash
+        run: brew install dotnet
+
+      - name: Checkout CollabXR Repository
+        uses: actions/checkout@v7
+        with:
+          lfs: "true"
+          submodules: "true"
+          # token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          ref: ${{ github.head_ref }}
+          # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
+          persist-credentials: false
+          set-safe-directory: false
+
+      - name: Setup CollabXR
+        uses: ./.github/composite/collabxr
+        with:
+          unity-hub: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
+          unity-version: ${{ vars.UNITY_VERSION }}
+          keystore: ${{ secrets.COLLAB_KEYSTORE }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          photon-install-path: $GITHUB_WORKSPACE/Assets

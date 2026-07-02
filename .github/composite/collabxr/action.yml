@@ -1,0 +1,41 @@
+name: "CollabXR Setup"
+description: "Performs initial CollabXR setup for use in other pipelines"
+
+inputs:
+  unity-hub:
+    description: "The path to the Unity Hub executable"
+    required: true
+  unity-version:
+    description: "What version of Unity Engine to install."
+    required: true
+  keystore:
+    description: "Encoded keystore for code signing. Set to null for no keystore"
+    required: true
+  token:
+    description: "Access token for installing CollabXR"
+  photon-install-path:
+    description: "Where to install the Photon SDK"
+    default: Assets
+
+runs:
+  using: composite
+
+  steps:
+    - name: Get Collab Keystore
+      if: ${{ inputs.keystore != null }}
+      shell: bash
+      run: echo "${{ inputs.keystore }}" | base64 -d -o collab.keystore
+
+    - name: Copy Photon SDK
+      shell: bash
+      run: cp -r ~/Photon ${{ inputs.photon-install-path }}
+
+    - name: Install Unity Editor
+      shell: bash
+      continue-on-error: true
+      run: ${{ matrix.unity-hub-path }} -- --headless install --version ${{ input.unity-version }}
+
+    - name: Install Unity Editor Modules
+      shell: bash
+      continue-on-error: true
+      run: ${{ matrix.unity-hub-path }} -- --headless install-modules --version ${{ input.unity-version }} --module windows-mono mac-mono android --childModules
