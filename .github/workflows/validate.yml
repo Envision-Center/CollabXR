@@ -58,10 +58,10 @@ jobs:
 
       - name: Run Unity Tests
         shell: bash
-        run: (${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -testPlatform PS4 && cat results.xml) || echo "Tests failed to run, attempting DotNet build"
+        run: ${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -testPlatform PS4 || cat results.xml || echo "Tests failed to run"
 
       - name: Dotnet Build
         shell: bash
-        run: ls -lash && dotnet build CollabXR.sln
+        run: ls && dotnet build CollabXR.sln
 
       # TODO: upload test artifact if we even want it, or report test results somehow
