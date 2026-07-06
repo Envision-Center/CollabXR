@@ -16,6 +16,9 @@ jobs:
       actions: write
       statuses: write
 
+    env:
+      unity-hub: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
+
     steps:
       - name: Authenticate Envision Actions
         uses: actions/create-github-app-token@v3
@@ -27,12 +30,9 @@ jobs:
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
-      - name: Install Git LFS
+      - name: Install Packages
         shell: bash
-        run: brew install git-lfs && git lfs install
-      - name: Install DotNet
-        shell: bash
-        run: brew install dotnet
+        run: brew install git-lfs dotnet && git lfs install
 
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
@@ -47,6 +47,7 @@ jobs:
           set-safe-directory: false
 
       - name: Setup CollabXR
+        id: setup
         uses: ./.github/composite/collabxr
         with:
           unity-hub: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
@@ -54,3 +55,13 @@ jobs:
           keystore: ${{ secrets.COLLAB_KEYSTORE }}
           token: ${{ secrets.ACCESS_TOKEN }}
           photon-install-path: $GITHUB_WORKSPACE/Assets
+
+      - name: Run Unity Tests
+        shell: bash
+        run: ${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -testPlatform PS4
+
+      - name: Dotnet Build
+        shell: bash
+        run: dotnet build CollabXR.sln
+
+      # TODO: upload test artifact if we even want it, or report test results somehow
