@@ -33,9 +33,9 @@ runs:
     - name: Install Unity Editor
       shell: bash
       continue-on-error: true
-      run: ${{ matrix.unity-hub-path }} -- --headless install --version ${{ input.unity-version }}
+      run: ${{ matrix.unity-hub-path }} -- --headless install --version ${{ inputs.unity-version }}
 
     - name: Install Unity Editor Modules
       shell: bash
       continue-on-error: true
-      run: ${{ matrix.unity-hub-path }} -- --headless install-modules --version ${{ input.unity-version }} --module windows-mono mac-mono android --childModules
+      run: ${{ matrix.unity-hub-path }} -- --headless install-modules --version ${{ inputs.unity-version }} --module windows-mono mac-mono android --childModules
