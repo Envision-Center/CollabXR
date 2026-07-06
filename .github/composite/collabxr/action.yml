@@ -57,16 +57,16 @@ runs:
       shell: bash
       run: ${{ inputs.unity-hub }} -- --headless install-modules --version ${{ inputs.unity-version }} --module windows-mono mac-mono android --childModules || echo "Unity modules already installed"
 
-    - name: Get Unity Editor Executable Paths for Windows
-      if: ${{ steps.sys-info.outputs.os-name == 'Windows' }}
-      id: get-unity-path
-      shell: pwsh
-      run: |
-        echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-        echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+    # - name: Get Unity Editor Executable Paths for Windows
+    #   if: ${{ steps.sys-info.outputs.os-name == 'Windows' }}
+    #   id: get-unity-path
+    #   shell: pwsh
+    #   run: |
+    #     echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+    #     echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
     - name: Get Unity Editor Executable Paths for MacOS
-      if: ${{ steps.sys-info.outputs.os-name == 'macOS' }}
+      # if: ${{ steps.sys-info.outputs.os-name == 'macOS' }}
       id: get-unity-path
       shell: bash
       run: |
@@ -75,12 +75,12 @@ runs:
         export ANDROID_SDKMANAGER_PATH="$(${{ inputs.unity-hub }} -- --headless install-path)/${{ inputs.unity-version }}/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager"
         echo "ANDROID_SDKMANAGER_PATH=${ANDROID_SDKMANAGER_PATH}" >> "$GITHUB_OUTPUT"
 
-    - name: Get Unity Editor Executable Paths for Linux
-      if: ${{ steps.sys-info.outputs.os-name == 'Linux' }}
-      id: get-unity-path
-      shell: bash
-      run: |
-        echo "Platform not supported."
+    # - name: Get Unity Editor Executable Paths for Linux
+    #   if: ${{ steps.sys-info.outputs.os-name == 'Linux' }}
+    #   id: get-unity-path
+    #   shell: bash
+    #   run: |
+    #     echo "Platform not supported."
 
     - name: Accept Android SDK Licenses
       continue-on-error: true
