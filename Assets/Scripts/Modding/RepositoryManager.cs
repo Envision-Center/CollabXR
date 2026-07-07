@@ -194,6 +194,29 @@ namespace CollabXR.ModLoader
 		}
 
 		/// <summary>
+		/// Clears the asset/prefab cache for all mods in the specified repository.
+		/// Ensures that all future loads of these mods will re-download the asset bundles from the repository.
+		/// </summary>
+		/// <param name="url"></param>
+		public static void ClearModCacheForRepository(string url)
+		{
+			if (!Instance.activeRepositories.Contains(url))
+			{
+				return;
+			}
+
+			if (Instance.loadedRepositories.ContainsKey(url))
+			{
+				Debug.Log($"{DEBUG_LOG_HEADER} Clearing mod cache for repository \"{url}\"...");
+				RepositoryMetadata metadata = Instance.loadedRepositories[url];
+				foreach (Guid modUuid in metadata.Mods)
+				{
+					ModManager.ClearModAssetCache(modUuid);
+				}
+			}
+		}
+
+		/// <summary>
 		/// TODO: Add Summary
 		/// </summary>
 		public static bool RemoveRepository(string url)
