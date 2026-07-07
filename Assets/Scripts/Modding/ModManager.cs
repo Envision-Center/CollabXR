@@ -529,7 +529,7 @@ namespace CollabXR.ModLoader
 		{
 			if (Instance.assetPointerTable.ContainsKey(assetUuid))
 			{
-				Instance.assetPointerTable[assetUuid].Value = null;
+				Instance.assetPointerTable.Remove(assetUuid);
 			}
 		}
 	}

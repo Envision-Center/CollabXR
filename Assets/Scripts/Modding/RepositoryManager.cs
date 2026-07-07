@@ -255,6 +255,10 @@ namespace CollabXR.ModLoader
 
 		public static void RefreshAllMods()
 		{
+			foreach (string repositoryUrl in Instance.activeRepositories)
+			{
+				ClearModCacheForRepository(repositoryUrl);
+			}
 			ModManager.Instance?.DeIndexAllMods();
 			Instance.RefreshRepositories().Forget();
 		}
