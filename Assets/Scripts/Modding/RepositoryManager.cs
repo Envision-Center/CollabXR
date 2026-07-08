@@ -86,6 +86,11 @@ namespace CollabXR.ModLoader
 			NotifyLoadingDone();
 		}
 
+		/// <summary>
+		/// Retrieves the metadata for a given repository URL.
+		/// Builds the entire index of mods, and subsequently all assets in those mods, for the given repository.
+		/// </summary>
+		/// <param name="metadataUrl">The URL of the repository metadata.</param>
 		private async UniTask RetrieveRepositoryInfo(string metadataUrl)
 		{
 			// unitywebrequests must be created on the main thread :(
