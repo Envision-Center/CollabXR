@@ -49,8 +49,17 @@ namespace CollabXR.ModLoader
 	{
 		private const string DEBUG_LOG_HEADER = "<color=#a557ff>[Mod Loader]</color>";
 
+		/// <summary>
+		/// Maintains a list of all indexed mods/asset bundles, mapping their GUIDs to their metadata and URL.
+		/// Is cleared and rebuilt on RepositoryManager.RefreshAllMods().
+		/// </summary>
 		public Dictionary<Guid, Tuple<ModMetadata, string>> indexedMods { get; private set; } = new(); // guid - <metadata, url>
 
+		/// <summary>
+		/// Similar kind of structure to assetPointerTable below, but for mods instead of assets.
+		/// Maps mod UUIDs to the loaded asset bundle and a list of tasks that are waiting for it to be loaded.
+		/// Created directly in ModManager.LoadMod() and destroyed in ModManager.TryUnloadMod().
+		/// </summary>
 		private Dictionary<Guid, LoadedModsTableEntry> loadedMods = new();
 
 		/// <summary>
@@ -60,8 +69,17 @@ namespace CollabXR.ModLoader
 		/// </summary>
 		private Dictionary<Guid, AssetPointerTableEntry> assetPointerTable = new();
 
+		/// <summary>
+		/// Maintains a list of all instances of an asset present in the current room.
+		/// Is added to by LoadAsset, and removed from by ReleaseAsset and TryUnloadMod (but this one's only ever called under ReleaseAsset AFAIK).
+		/// Often used to check if any instances of an asset are still present in the room.
+		/// </summary>
 		private Dictionary<Guid, IAssetReference> assetReferences = new();
 
+		/// <summary>
+		/// Maintains a list of all UnityWebRequests that are currently loading asset bundles from remote repositories.
+		/// Doesn't seem like they get removed from the list even when finished, could this cause bugs?
+		/// </summary>
 		private Dictionary<Uri, UnityWebRequest> modLoadingRequests = new();
 
 		protected override void Awake()
@@ -204,6 +222,13 @@ namespace CollabXR.ModLoader
 
 		// Layer 1 of Abstraction
 
+		/// <summary>
+		/// Same kind of design/purpose/structure as LoadAssetFromMod, 
+		/// but for mods instead of assets, and instead of querying the loaded asset bundle for an asset,
+		/// queries AWS S3 for the mod asset bundle itself.
+		/// </summary>
+		/// <param name="modLoadTask"></param>
+		/// <exception cref="Exception"></exception>
 		internal void LoadMod(ModLoadTask modLoadTask)
 		{
 			Guid modUuid = modLoadTask.modUuid;
@@ -570,6 +595,7 @@ namespace CollabXR.ModLoader
 			{
 				ClearAssetPointerTableEntryData(assetUuid);
 			}
+
 			Caching.ClearAllCachedVersions(modUuid.ToString());
 		}
 
