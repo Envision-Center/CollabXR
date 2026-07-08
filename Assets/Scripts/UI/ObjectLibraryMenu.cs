@@ -137,7 +137,6 @@ namespace CollabXR.UI
 				return;
 			}
 
-			ObjectButton objBtn = objectButtons[dataIndex];
 			if (entered)
 			{
 				CollabObjectData objData = activeCategory.objectData[dataIndex];
