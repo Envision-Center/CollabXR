@@ -116,7 +116,7 @@ jobs:
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.S3_REGION }}
+          aws-region: ${{ secrets.S3_REGION }}
       - name: Configure AWS CLI
         run: brew install awscli
       - name: Get Build Version
@@ -126,7 +126,7 @@ jobs:
       - name: Construct Upload Path
         run: |
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}" >> $GITHUB_ENV
+          echo "S3_PATH=s3://${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
       - name: Compress and Upload Desktop Artifact
         if: matrix.name != 'quest3'
         run: |
@@ -139,11 +139,11 @@ jobs:
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip" > $GITHUB_STEP_SUMMARY
+          echo "${{matrix.name}} build: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip" > $GITHUB_STEP_SUMMARY
       - name: Output Quest Build
         if: matrix.name == 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
+          echo "${{matrix.name}} build: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7
