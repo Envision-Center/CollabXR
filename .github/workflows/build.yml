@@ -139,11 +139,11 @@ jobs:
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip" > $GITHUB_STEP_SUMMARY
+          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"${{matrix.name}} build: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip\"}" ${{ secrets.EC_WEBHOOK }}
       - name: Output Quest Build
         if: matrix.name == 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
+          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"${{matrix.name}} build: https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}\"}" ${{ secrets.EC_WEBHOOK }}
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7
