@@ -23,8 +23,24 @@ namespace CollabXR.ModLoader
 		internal Dictionary<Guid, Dictionary<string, Type>> ScriptRehydrationMap = new();
 	}
 
+	/// <summary>
+	/// Stores the loaded asset in memory and a list of tasks that are waiting for it to be loaded.
+	/// </summary>
+	/// <remarks>
+	/// Asset Pointer Table Entry -> APTE
+	/// Asset Pointer Load Tasks -> APLT
+	/// 
+	/// When a new request for an asset is made, if an APTE already exists the APLT is added to the list.
+	/// Once any of the APLT's finish, the value is passed to APTE.Value and all APLT's are notified that the asset is ready.
+	/// 
+	/// The whole pipeline for how APTEs are used can be found in ModManager.LoadAssetFromMod().
+	/// </remarks>
 	internal class AssetPointerTableEntry
 	{
+		/// <summary>
+		/// The loaded asset in memory. Is null if asset still loading, otherwise contains the loaded asset.
+		/// Once Value is set, it is never changed.
+		/// </summary>
 		internal object Value = null;
 		internal List<IAssetPointerLoadTask> AssetPointerLoadTasks = new();
 	}
@@ -37,6 +53,11 @@ namespace CollabXR.ModLoader
 
 		private Dictionary<Guid, LoadedModsTableEntry> loadedMods = new();
 
+		/// <summary>
+		/// Maps asset UUIDs to the APTE for that specific asset.
+		/// Main purpose is to manage pulling assets from the loaded mod asset bundle.
+		/// Created during ModManager.LoadAssetFromMod() and destroyed during ModManager.TryUnloadAssetFromMod().
+		/// </summary>
 		private Dictionary<Guid, AssetPointerTableEntry> assetPointerTable = new();
 
 		private Dictionary<Guid, IAssetReference> assetReferences = new();
@@ -342,6 +363,26 @@ namespace CollabXR.ModLoader
 		}
 
 		// Layer 2 of Abstraction
+
+		/// <summary>
+		/// Loads the asset from the mod for the given asset pointer load task.
+		/// If the mod is already loaded, the asset will be loaded immediately.
+		/// </summary>
+		/// <param name="assetPointerLoadTask">The task representing a new asset load request.</param>
+		/// <remarks>
+		/// Basically there are 3 cases being handled here:
+		/// 
+		/// 1. An AssetPointerTableEntry (APTE) already exists, and the asset is NOT loaded. 
+		/// The task is added to the list of tasks waiting for the asset to be loaded.
+		/// 
+		/// 2. An APTE already exists, and the asset IS loaded. 
+		/// The task is immediately notified that the asset is ready.
+		/// 
+		/// 3. An APTE does NOT exist. Here, a new APTE is created and the mod is loaded directly. 
+		/// Once the mod is loaded, the asset is loaded and all tasks waiting for it are notified.
+		/// NOTE that in the 3rd case, a ModLoadTask is created, which calls ModManager.LoadMod. 
+		/// That handles the remote repository -> Asset Bundle stage.
+		/// </remarks>
 		internal void LoadAssetFromMod(IAssetPointerLoadTask assetPointerLoadTask)
 		{
 			Guid modUuid = assetPointerLoadTask.assetReference.modUuid;
@@ -466,6 +507,19 @@ namespace CollabXR.ModLoader
 		/// Remember: be sure to call <c>ReleaseAsset()</c> with the <c>AssetReference</c> created by this method or the game will leak memory.
 		/// Note: Be sure to specify the correct type otherwise some silly errors can occur.
 		/// </summary>
+		/// 
+		/// <typeparam name="T">The type of the asset to load. Must match the type of the asset in the mod.</typeparam>
+		/// <param name="modUuid">The UUID of the mod/asset bundle to load the asset from.</param>
+		/// <param name="assetUuid">The UUID of the asset to load.</param>
+		/// 
+		/// <remarks>
+		/// This is the uppermost layer of abstraction for loading assets from mods, AKA the first function to be called.
+		/// Expects the newly created asset reference to return the correct type of asset when loaded.
+		/// 
+		/// newAssetReference.LoadSelf() creates an AssetPointerLoadTask which is passed to ModManager.LoadAssetFromMod.
+		/// So the immediate next lower layer of abstraction is at ModManager.LoadAssetFromMod, which should eventually pass
+		/// the actual asset back to this method through the AssetReference.
+		/// </remarks>
 		public static async UniTask<AssetReference<T>> LoadAsset<T>(Guid modUuid, Guid assetUuid)
 		{
 			AssetReference<T> newAssetReference = new AssetReference<T>
