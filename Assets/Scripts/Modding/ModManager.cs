@@ -283,6 +283,23 @@ namespace CollabXR.ModLoader
 			}
 		}
 
+		/// <summary>
+		/// Completely reloads the given mod for the project from the remote repository.
+		/// </summary>
+		/// <param name="modUuid">The UUID of the mod to reload.</param>
+		/// <returns></returns>
+		/// <remarks>
+		/// The pipeline:
+		/// 1. Completely clear the mod/asset bundle from memory.
+		/// 2. Request a new load of the mod/asset bundle from the remote repository.
+		/// 3. Once the mod is loaded, update the assetPointerTable with the new asset references from the mod.
+		/// 
+		/// It does update the mod for every active instance of that mod in memory,
+		/// so existing instances of the mod will be updated to the new asset bundle (client side only).
+		/// 
+		/// So it is possible for the same mod instance to be different between clients 
+		/// if one client updates the mod and the other doesn't.
+		/// </remarks>
 		internal async UniTask ReloadMod(Guid modUuid)
 		{
 			if (!Instance.loadedMods.ContainsKey(modUuid))
@@ -292,28 +309,18 @@ namespace CollabXR.ModLoader
 
 			Instance.loadedMods[modUuid].AssetBundle.Unload(false);
 			Instance.loadedMods.Remove(modUuid);
+			Caching.ClearAllCachedVersions(modUuid.ToString());
 
 			ModLoadTask modLoadTask = new ModLoadTask(modUuid);
-
 			Guid loadedModGuid = await modLoadTask;
+			Debug.Assert(loadedModGuid == modUuid, $"Loaded mod guid {loadedModGuid} does not match requested mod guid {modUuid}");
 
 			foreach (Guid updatingAssetPointer in Instance.assetPointerTable.Keys)
 			{
 				if (Instance.indexedMods[modUuid].Item1.AssetMap.ContainsKey(updatingAssetPointer))
 				{
 					object newAsset = await Instance.loadedMods[modUuid].AssetBundle.LoadAssetWithSubAssetsAsync(Instance.indexedMods[modUuid].Item1.AssetMap[updatingAssetPointer]);
-				}
-			}
-
-			foreach (Guid updatingAssetReferenceUuid in Instance.assetReferences.Keys)
-			{
-				Guid targetAssetGuid = Instance.assetReferences[updatingAssetReferenceUuid].assetUuid;
-
-				if (Instance.indexedMods[modUuid].Item1.AssetMap.ContainsKey(targetAssetGuid))
-				{
-					Instance.assetReferences[updatingAssetReferenceUuid].value = Instance.assetPointerTable[targetAssetGuid];
-
-					Instance.assetReferences[updatingAssetReferenceUuid].InvokeOnReloadedEvent();
+					Instance.assetPointerTable[updatingAssetPointer].Value = newAsset;
 				}
 			}
 
