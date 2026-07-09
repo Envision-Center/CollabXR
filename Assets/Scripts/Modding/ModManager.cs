@@ -583,41 +583,5 @@ namespace CollabXR.ModLoader
 
 			Instance.TryUnloadAssetFromMod(modUuid, assetUuid);
 		}
-
-		/// <summary>
-		/// Clears all prefab references in the assetPointerTable and the assetBundle for a given modUuid. 
-		/// If a mod is updated in the source repository, this should ensure that
-		/// the next spawn pulls the new asset bundle instead of the cached one.
-		/// </summary>
-		/// <param name="modUuid"></param>
-		/// <exception cref="Exception"></exception>
-		public static void ClearModAssetCache(Guid modUuid)
-		{
-			if (!Instance.indexedMods.ContainsKey(modUuid))
-			{
-				throw new Exception($"Mod with UUID ${modUuid} not found");
-			}
-
-			foreach (Guid assetUuid in Instance.indexedMods[modUuid].Item1.AssetMap.Keys)
-			{
-				ClearAssetPointerTableEntryData(assetUuid);
-			}
-
-			Caching.ClearAllCachedVersions(modUuid.ToString());
-		}
-
-		/// <summary>
-		/// Cleares the "cached" asset prefab in the assetPointerTable for a given assetUuid.
-		/// Use case: if a mod is updated in the source repository, we can clear the cached prefab
-		/// so that the next time it is requested, it will be reloaded from the new asset bundle.
-		/// </summary>
-		/// <param name="assetUuid"></param>
-		public static void ClearAssetPointerTableEntryData(Guid assetUuid)
-		{
-			if (Instance.assetPointerTable.ContainsKey(assetUuid))
-			{
-				Instance.assetPointerTable.Remove(assetUuid);
-			}
-		}
 	}
 }
