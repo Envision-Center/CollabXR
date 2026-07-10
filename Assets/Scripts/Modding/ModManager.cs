@@ -309,11 +309,9 @@ namespace CollabXR.ModLoader
 
 			Instance.loadedMods[modUuid].AssetBundle.Unload(false);
 			Instance.loadedMods.Remove(modUuid);
-			Caching.ClearAllCachedVersions(modUuid.ToString());
 
 			ModLoadTask modLoadTask = new ModLoadTask(modUuid);
 			Guid loadedModGuid = await modLoadTask;
-			Debug.Assert(loadedModGuid == modUuid, $"Loaded mod guid {loadedModGuid} does not match requested mod guid {modUuid}");
 
 			foreach (Guid updatingAssetPointer in Instance.assetPointerTable.Keys)
 			{
@@ -321,6 +319,18 @@ namespace CollabXR.ModLoader
 				{
 					object newAsset = await Instance.loadedMods[modUuid].AssetBundle.LoadAssetWithSubAssetsAsync(Instance.indexedMods[modUuid].Item1.AssetMap[updatingAssetPointer]);
 					Instance.assetPointerTable[updatingAssetPointer].Value = newAsset;
+				}
+			}
+
+			foreach (Guid updatingAssetReferenceUuid in Instance.assetReferences.Keys)
+			{
+				Guid targetAssetGuid = Instance.assetReferences[updatingAssetReferenceUuid].assetUuid;
+
+				if (Instance.indexedMods[modUuid].Item1.AssetMap.ContainsKey(targetAssetGuid))
+				{
+					Instance.assetReferences[updatingAssetReferenceUuid].value = Instance.assetPointerTable[targetAssetGuid];
+
+					Instance.assetReferences[updatingAssetReferenceUuid].InvokeOnReloadedEvent();
 				}
 			}
 
@@ -447,6 +457,9 @@ namespace CollabXR.ModLoader
 			}
 			else
 			{
+				// clear existing cache (APTE + asset bundle)
+				ClearModAssetCache(modUuid);
+
 				// Create new request
 				Instance.assetPointerTable.Add(assetUuid, new AssetPointerTableEntry());
 				Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Add(assetPointerLoadTask);
@@ -561,7 +574,10 @@ namespace CollabXR.ModLoader
 				assetReferenceUuid = Guid.NewGuid(),
 			};
 
+			Debug.Log($"{DEBUG_LOG_HEADER} Requesting load of asset {assetUuid} from mod {modUuid}.");
+			// wait for the index to be rebuilt
 			await RepositoryManager.Instance;
+			Debug.Log($"{DEBUG_LOG_HEADER} RepositoryManager.Instance is ready, proceeding to load asset {assetUuid} from mod {modUuid}.");
 
 			Instance.assetReferences.Add(newAssetReference.assetReferenceUuid, newAssetReference);
 
@@ -582,6 +598,41 @@ namespace CollabXR.ModLoader
 			}
 
 			Instance.TryUnloadAssetFromMod(modUuid, assetUuid);
+		}
+
+		/// <summary>
+		/// Clears all prefab references in the assetPointerTable and the assetBundle for a given modUuid. 
+		/// If a mod is updated in the source repository, this should ensure that
+		/// the next spawn pulls the new asset bundle instead of the cached one.
+		/// </summary>
+		/// <param name="modUuid"></param>
+		/// <exception cref="Exception"></exception>
+		public static void ClearModAssetCache(Guid modUuid)
+		{
+			if (!Instance.indexedMods.ContainsKey(modUuid))
+			{
+				throw new Exception($"Mod with UUID ${modUuid} not found");
+			}
+
+			foreach (Guid assetUuid in Instance.indexedMods[modUuid].Item1.AssetMap.Keys)
+			{
+				ClearAssetPointerTableEntryData(assetUuid);
+			}
+			Caching.ClearAllCachedVersions(modUuid.ToString());
+		}
+
+		/// <summary>
+		/// Cleares the "cached" asset prefab in the assetPointerTable for a given assetUuid.
+		/// Use case: if a mod is updated in the source repository, we can clear the cached prefab
+		/// so that the next time it is requested, it will be reloaded from the new asset bundle.
+		/// </summary>
+		/// <param name="assetUuid"></param>
+		public static void ClearAssetPointerTableEntryData(Guid assetUuid)
+		{
+			if (Instance.assetPointerTable.ContainsKey(assetUuid))
+			{
+				Instance.assetPointerTable.Remove(assetUuid);
+			}
 		}
 	}
 }
