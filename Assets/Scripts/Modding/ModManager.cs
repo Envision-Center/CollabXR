@@ -54,6 +54,7 @@ namespace CollabXR.ModLoader
 		/// Is cleared and rebuilt on RepositoryManager.RefreshAllMods().
 		/// </summary>
 		public Dictionary<Guid, Tuple<ModMetadata, string>> indexedMods { get; private set; } = new(); // guid - <metadata, url>
+		private Dictionary<Guid, Tuple<ModMetadata, string>> prevIndexedMods; // used to compare against indexedMods to determine if a mod is dirty and needs to be reloaded
 
 		/// <summary>
 		/// Similar kind of structure to assetPointerTable below, but for mods instead of assets.
@@ -217,7 +218,28 @@ namespace CollabXR.ModLoader
 
 		internal void DeIndexAllMods()
 		{
+			prevIndexedMods = new Dictionary<Guid, Tuple<ModMetadata, string>>(indexedMods);
 			Instance.indexedMods.Clear();
+		}
+
+		/// <summary>
+		/// Determines if a mod should have its cache cleared and assets reloaded.
+		/// Should happen in 2 scenarios.
+		/// </summary>
+		/// <param name="modUuid"></param>
+		/// <returns></returns>
+		public static bool IsModDirty(Guid modUuid)
+		{
+			Debug.Assert(Instance.indexedMods.ContainsKey(modUuid), $"Mod with UUID {modUuid} not found in indexedMods");
+			
+			// is the mod not in the previous index? (new mod)
+			if (!Instance.prevIndexedMods.ContainsKey(modUuid))
+			{
+				return true;
+			}
+
+			// is the relevant build number different?
+			return Instance.prevIndexedMods[modUuid].Item1.BuildNumberMap[GetPlatformString()] != Instance.indexedMods[modUuid].Item1.BuildNumberMap[GetPlatformString()];
 		}
 
 		// Layer 1 of Abstraction
@@ -414,13 +436,13 @@ namespace CollabXR.ModLoader
 		/// <remarks>
 		/// Basically there are 3 cases being handled here:
 		/// 
-		/// 1. An AssetPointerTableEntry (APTE) already exists, and the asset is NOT loaded. 
+		/// 1. IN PROGRESS: An AssetPointerTableEntry (APTE) already exists, and the asset is NOT loaded. 
 		/// The task is added to the list of tasks waiting for the asset to be loaded.
 		/// 
-		/// 2. An APTE already exists, and the asset IS loaded. 
+		/// 2. DONE LOADING: An APTE already exists, and the asset IS loaded. 
 		/// The task is immediately notified that the asset is ready.
 		/// 
-		/// 3. An APTE does NOT exist. Here, a new APTE is created and the mod is loaded directly. 
+		/// 3. NOT STARTED: An APTE does NOT exist. Here, a new APTE is created and the mod is loaded directly. 
 		/// Once the mod is loaded, the asset is loaded and all tasks waiting for it are notified.
 		/// NOTE that in the 3rd case, a ModLoadTask is created, which calls ModManager.LoadMod. 
 		/// That handles the remote repository -> Asset Bundle stage.
@@ -458,7 +480,11 @@ namespace CollabXR.ModLoader
 			else
 			{
 				// clear existing cache (APTE + asset bundle)
-				ClearModAssetCache(modUuid);
+				if (IsModDirty(modUuid))
+				{
+					Debug.Log($"{DEBUG_LOG_HEADER} Mod {modUuid} is dirty, clearing cache and reloading.");
+					ClearModAssetCache(modUuid);
+				}
 
 				// Create new request
 				Instance.assetPointerTable.Add(assetUuid, new AssetPointerTableEntry());
