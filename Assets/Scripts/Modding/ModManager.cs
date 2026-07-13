@@ -171,6 +171,12 @@ namespace CollabXR.ModLoader
 			return null;
 		}
 
+		public bool TryUnlistUnityWebRequest(Guid modUuid)
+		{
+			Uri uri = GetAssetBundleURI(RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2], modUuid);
+			return modLoadingRequests.Remove(uri);
+		}
+
 		internal async UniTask IndexMod(string repository, Guid modUuid)
 		{
 			await UniTask.SwitchToMainThread();
@@ -329,7 +335,7 @@ namespace CollabXR.ModLoader
 				return;
 			}
 
-			Instance.loadedMods[modUuid].AssetBundle.Unload(false);
+			Instance.loadedMods[modUuid].AssetBundle?.Unload(false);
 			Instance.loadedMods.Remove(modUuid);
 
 			ModLoadTask modLoadTask = new ModLoadTask(modUuid);
