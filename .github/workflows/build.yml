@@ -55,7 +55,7 @@ jobs:
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
         with:
-          lfs: "true"
+          lfs: 'true'
           submodules: "true"
           # token: ${{ steps.app-token.outputs.token }}
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -63,6 +63,9 @@ jobs:
           # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
           persist-credentials: false
           set-safe-directory: false
+
+      - name: Pull Git LFS
+        run: git lfs pull
 
       - name: Get Collab Keystore
         run: echo "${{ secrets.COLLAB_KEYSTORE }}" | base64 -d -o collab.keystore
