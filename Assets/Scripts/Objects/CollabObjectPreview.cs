@@ -109,7 +109,6 @@ namespace CollabXR.Objects
 			}
 			else
 			{
-				ModManager.Instance.TryUnlistUnityWebRequest(data.modGUID);
 				state = PreviewState.Disabled;
 			}
 			previewCube.SetActive(availableOnThisPlatform);
