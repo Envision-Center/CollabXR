@@ -199,15 +199,6 @@ namespace CollabXR.ModLoader
 				Debug.Log(
 					$"{DEBUG_LOG_HEADER} Loaded Metadata for Mod {modUuid}: {metadata.Name} V{metadata.BuildNumberMap[GetPlatformString()]} made by: {string.Join(", ", metadata.Creators)} (has {metadata.AssetMap.Count} assets, {metadata.PrefabMap.Count} prefabs)"
 				);
-
-				List<UniTask> reloadModsTasks = new List<UniTask>();
-				reloadModsTasks.Add(ReloadMod(modUuid));
-
-				//await UniTask.SwitchToThreadPool();
-
-				await UniTask.WhenAll(reloadModsTasks);
-
-				//await UniTask.SwitchToMainThread();
 			}
 			catch (Exception e)
 			{
