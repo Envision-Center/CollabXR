@@ -135,19 +135,19 @@ jobs:
         run: |
           zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
           aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
+          echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
       - name: Upload Quest Artifact to S3
         if: matrix.name == 'quest3'
         run: |
           aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH/$FOLDER_NAME/
+          echo "FILE_SIZE=$(du -k ${{matrix.name}}.apk | cut -f1)" >> $GITHUB_ENV
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
-          echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
           curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip\"}" ${{ secrets.EC_WEBHOOK }}
       - name: Output Quest Build
         if: matrix.name == 'quest3'
         run: |
-          echo "FILE_SIZE=$(du -k ${{matrix.name}}.apk | cut -f1)" >> $GITHUB_ENV
           curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}\"}" ${{ secrets.EC_WEBHOOK }}
 
       # - name: Upload CollabXR Executable
