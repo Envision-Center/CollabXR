@@ -140,7 +140,7 @@ jobs:
         if: matrix.name == 'quest3'
         run: |
           aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH/$FOLDER_NAME/
-          echo "FILE_SIZE=$(du -k ${{matrix.name}}.apk | cut -f1)" >> $GITHUB_ENV
+          echo "FILE_SIZE=$(du -k ${{ matrix.output-binary }}.apk | cut -f1)" >> $GITHUB_ENV
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
