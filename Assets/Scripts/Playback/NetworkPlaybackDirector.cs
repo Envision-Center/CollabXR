@@ -40,16 +40,18 @@ namespace CollabXR.Cycles
 				return;
 			}
 
+			SubscribeToViewModel();
+
 			_director = GetComponentInChildren<PlaybackDirector>();
 			if (_director != null)
 			{
 				_director.SetNetworkDriven(!HasStateAuthority);
 
 				if (_director.PlayOnAwake && HasStateAuthority)
+				{
 					_viewModel.RequestPlay();
+				}
 			}
-
-			SubscribeToViewModel();
 		}
 
 		private void SubscribeToViewModel()
