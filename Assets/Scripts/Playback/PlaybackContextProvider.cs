@@ -48,5 +48,7 @@ namespace CollabXR
 		}
 
 		public GameObject GetContextPrefab() => contextPrefab;
+
+		public GameObject SelfObject => gameObject;
 	}
 }

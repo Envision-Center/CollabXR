@@ -5,6 +5,7 @@ using CollabXR.Cycles;
 using CollabXR.ModExtras;
 using CollabXR.Networking;
 using CollabXR.Objects;
+using CollabXR.Tools.Drawing;
 using CollabXR.Tools.Palette;
 using CollabXR.UI;
 using Fusion;
@@ -174,7 +175,7 @@ namespace CollabXR.UI
 
 			foreach (var provider in providers)
 			{
-				if (provider == null)
+				if (provider == null || provider.SelfObject.GetComponentInChildren<BrushSubStroke>() != null)
 				{
 					continue;
 				}

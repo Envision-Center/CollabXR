@@ -17,5 +17,7 @@ namespace CollabXR
 		CollabContext AddTab(GameObject obj, CollabContextMenu menu);
 
 		GameObject GetContextPrefab() => null;
+
+		GameObject SelfObject => null;
 	}
 }
