@@ -171,11 +171,16 @@ namespace CollabXR.UI
 
 		private void DiscoverAndAddRegisteredContexts(CollabObject obj)
 		{
-			var providers = obj.GetComponentsInChildren<IContextProvider>(true);
+			var providers = obj.GetComponents<IContextProvider>();
 
 			foreach (var provider in providers)
 			{
-				if (provider == null || provider.SelfObject.GetComponentInChildren<BrushSubStroke>() != null)
+				if (provider == null)
+				{
+					continue;
+				}
+
+				if (provider.SelfObject.TryGetComponent(out BrushSubStroke b))
 				{
 					continue;
 				}
