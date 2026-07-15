@@ -7,6 +7,7 @@ namespace CollabXR.Tools
 	[DefaultExecutionOrder(20)]
 	public class Raycaster : MonoBehaviour
 	{
+		public float upwardRayOffset = 0.03f;
 		public float forwardRayOffset = 0.05f;
 		public bool shouldHitTriggers;
 		public bool shouldTestIfStartsInsideCollider = true;
@@ -47,7 +48,7 @@ namespace CollabXR.Tools
 
 			RigHand hand = handRef.Hand.Value;
 
-			Vector3 origin = hand.usingCustomRaycast ? hand.raycastOrigin.position : transform.position + transform.forward * forwardRayOffset;
+			Vector3 origin = hand.usingCustomRaycast ? hand.raycastOrigin.position : transform.position + transform.forward * forwardRayOffset + transform.up * upwardRayOffset;
 			Vector3 direction = hand.usingCustomRaycast ? hand.raycastDirection : transform.forward;
 
 			// test origin overlap

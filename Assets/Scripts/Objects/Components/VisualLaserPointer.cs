@@ -12,7 +12,7 @@ namespace CollabXR.Objects.Components
 	[DefaultExecutionOrder(1000)]
 	public class LineRendererLaser : MonoBehaviour
 	{
-		public Vector3 startOffset = new Vector3(0, 0, 0.05f);
+		public Vector3 startOffset = new Vector3(0, 0.03f, 0.05f);
 		private LineRenderer lineRenderer;
 
 		private Vector3 localStartPos,
