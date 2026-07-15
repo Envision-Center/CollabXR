@@ -30,6 +30,8 @@ namespace CollabXR.UI
 
 		public Action OnRequestAuthority = delegate { };
 
+		private CollabObject currentObject;
+
 		PlayerRef lastAuthority = PlayerRef.None;
 
 		private void SafeGiveContext(CollabContext context, CollabObject obj)
@@ -47,6 +49,8 @@ namespace CollabXR.UI
 
 		public void OpenContext(CollabObject obj)
 		{
+			currentObject = obj;
+
 			// Clean up existing tabs and deactivate them
 			foreach (var context in contextTabs.Values)
 			{
@@ -230,6 +234,11 @@ namespace CollabXR.UI
 			if (activeTab != null)
 			{
 				activeTab.OnStateAuthorityChanged();
+			}
+
+			if (currentObject != null)
+			{
+				OpenContext(currentObject);
 			}
 		}
 
