@@ -171,7 +171,7 @@ namespace CollabXR.UI
 
 		private void DiscoverAndAddRegisteredContexts(CollabObject obj)
 		{
-			var providers = obj.GetComponents<IContextProvider>();
+			var providers = obj.GetComponentsInChildren<IContextProvider>(true);
 
 			foreach (var provider in providers)
 			{
@@ -180,7 +180,7 @@ namespace CollabXR.UI
 					continue;
 				}
 
-				if (provider.SelfObject.TryGetComponent(out BrushSubStroke b))
+				if (provider.SelfObject.transform.Cast<Transform>().Any(c => c.TryGetComponent(out BrushSubStroke b)))
 				{
 					continue;
 				}
