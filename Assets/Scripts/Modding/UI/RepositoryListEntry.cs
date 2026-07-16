@@ -52,5 +52,11 @@ namespace CollabXR.ModLoader
 				repositoryName.text = repositoryMetadata.RepoName;
 			}
 		}
+
+		public void HideAllButtons()
+		{
+			deleteButton.gameObject.SetActive(false);
+			refreshButton.gameObject.SetActive(false);
+		}
 	}
 }
