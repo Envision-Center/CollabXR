@@ -202,7 +202,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 82063f7febe914549b414ae81359fa93, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 96eeacbea543cfe4598a94228b89a6e1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -295,10 +295,10 @@ MonoBehaviour:
   grey: {r: 1, g: 1, b: 1, a: 0.19607843}
   white: {r: 1, g: 1, b: 1, a: 1}
   speaker: {fileID: 6124063124574960531}
-  micOn: {fileID: 21300000, guid: 9412ed813a483dd40b5e2f2d235b86a9, type: 3}
-  micMuted: {fileID: 21300000, guid: 6745a3c359c4a8e47a63c0d238442ec7, type: 3}
-  headphonesOn: {fileID: 21300000, guid: eb81c20a3966c044cab8600ea7c4a586, type: 3}
-  headphonesDeafened: {fileID: 21300000, guid: 82063f7febe914549b414ae81359fa93, type: 3}
+  micOn: {fileID: 21300000, guid: d091d0637d2240948b4bedbe7860154f, type: 3}
+  micMuted: {fileID: 21300000, guid: 82d137d7015abef45b5cf9dd7ed36d39, type: 3}
+  headphonesOn: {fileID: 21300000, guid: 8b528064c4dc5b042b5011d6d012751b, type: 3}
+  headphonesDeafened: {fileID: 21300000, guid: 96eeacbea543cfe4598a94228b89a6e1, type: 3}
 --- !u!114 &3395860572321505016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -418,7 +418,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9412ed813a483dd40b5e2f2d235b86a9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d091d0637d2240948b4bedbe7860154f, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
