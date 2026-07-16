@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace CollabXR.Networking
 {
-	public class NetworkToggleController : ModNetworkBehaviour
+	public class NetworkToggleController : ModNetworkBehaviour, IStateAuthorityChanged
 	{
 		public ToggleController[] toggles;
 
@@ -22,12 +22,25 @@ namespace CollabXR.Networking
 		public event Action<ToggleVariable[]> OnVisibilityUpdate = delegate { };
 		public event Action<float> OnCycleValueChange = delegate { };
 
+		/// <summary>
+		/// Only set to true once the object has been completely initialized and default toggles are set.
+		/// This can happen a number of ways:
+		/// 
+		/// 1. The client that spawned the object maintains state authority throughout the loading process (normal behavior).
+		/// 
+		/// 2. The client that spawned the object loses state authority midway through the loading process (ie. they leave the room).
+		///    When this happens, StateAuthorityChanged() will be called and all objects will attempt to claim state authority.
+		///    The first client to claim state authority will set the default toggles and initialize the object.
+		/// </summary>
+		bool initialized = false;
+
 		protected override void CheckForScripts()
 		{
 			toggles = GetComponentsInChildren<ToggleController>();
-			if (Object.HasStateAuthority)
+			Debug.Log($"SCRIPT CHECK STATE AUTH: {Object.StateAuthority}");
+			if (Object.HasStateAuthority && !initialized)
 			{
-				SetDefaultToggles();
+				InitializeToggleControllers();
 			}
 			UpdateVisibility();
 		}
@@ -36,9 +49,10 @@ namespace CollabXR.Networking
 		{
 			Debug.Log("spawned!");
 			base.Spawned();
+			Debug.Log($"SPAWN STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority)
 			{
-				SetDefaultToggles();
+				InitializeToggleControllers();
 			}
 			UpdateVisibility();
 		}
@@ -84,6 +98,12 @@ namespace CollabXR.Networking
 			toggleVisibility.Set(index, toggled);
 		}
 
+		public void InitializeToggleControllers()
+		{
+			SetDefaultToggles();
+			initialized = true;
+		}
+
 		public void SetDefaultToggles()
 		{
 			int index = 0;
@@ -97,6 +117,19 @@ namespace CollabXR.Networking
 					}
 					index++;
 				}
+			}
+		}
+
+		public void StateAuthorityChanged()
+		{
+			Debug.Log($"ON CHANGE STATE AUTH: {Object.StateAuthority}");
+			if (Object.HasStateAuthority && !initialized)
+			{
+				InitializeToggleControllers();
+			}
+			else if (Object.StateAuthority == PlayerRef.None)
+			{
+				Object.RequestStateAuthority();
 			}
 		}
 	}
