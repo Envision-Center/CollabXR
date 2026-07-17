@@ -33,16 +33,17 @@ namespace CollabXR.Networking
 		///    The first client to claim state authority will set the default toggles and initialize the object.
 		/// </summary>
 		bool initialized = false;
-
+		bool fullyLoaded = false;
 		protected override void CheckForScripts()
 		{
 			toggles = GetComponentsInChildren<ToggleController>();
 			Debug.Log($"SCRIPT CHECK STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
+				// will only run if object recieves state authority before fully loading in
 				InitializeToggleControllers();
 			}
-			UpdateVisibility();
+			fullyLoaded = true;
 		}
 
 		public override void Spawned()
@@ -50,10 +51,6 @@ namespace CollabXR.Networking
 			Debug.Log("spawned!");
 			base.Spawned();
 			Debug.Log($"SPAWN STATE AUTH: {Object.StateAuthority}");
-			if (Object.HasStateAuthority)
-			{
-				InitializeToggleControllers();
-			}
 			UpdateVisibility();
 		}
 
@@ -101,6 +98,7 @@ namespace CollabXR.Networking
 		public void InitializeToggleControllers()
 		{
 			SetDefaultToggles();
+			UpdateVisibility();
 			initialized = true;
 		}
 
@@ -123,8 +121,9 @@ namespace CollabXR.Networking
 		public void StateAuthorityChanged()
 		{
 			Debug.Log($"ON CHANGE STATE AUTH: {Object.StateAuthority}");
-			if (Object.HasStateAuthority && !initialized)
+			if (Object.HasStateAuthority && !initialized && fullyLoaded)
 			{
+				// will only run if object not yet initialized and recieves state authority after fully loading in
 				InitializeToggleControllers();
 			}
 			else if (Object.StateAuthority == PlayerRef.None)
