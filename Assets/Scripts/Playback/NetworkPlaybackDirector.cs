@@ -20,6 +20,7 @@ namespace CollabXR.Cycles
 		private PlaybackDirector _director;
 		private CollabContextMenu _menu;
 		private bool _prevScrubbing;
+		private bool _initialized = false;
 
 		protected override void CheckForScripts()
 		{
@@ -47,9 +48,10 @@ namespace CollabXR.Cycles
 			{
 				_director.SetNetworkDriven(!HasStateAuthority);
 
-				if (_director.PlayOnAwake && HasStateAuthority)
+				if (_director.PlayOnAwake && HasStateAuthority && !_initialized)
 				{
 					_viewModel.RequestPlay();
+					_initialized = true;
 				}
 			}
 		}
@@ -211,6 +213,18 @@ namespace CollabXR.Cycles
 
 		public void StateAuthorityChanged()
 		{
+			if (Object.HasStateAuthority && !_initialized)
+			{
+				// will only run if object not yet initialized and recieves state authority after fully loading in
+				_viewModel.RequestPlay();
+				_initialized = true;
+			}
+			else if (Object.StateAuthority == PlayerRef.None)
+			{
+				Object.RequestStateAuthority();
+			}
+			
+			
 			_menu?.StateAuthorityChangedAll();
 
 			if (_director != null)
