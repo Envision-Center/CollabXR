@@ -20,7 +20,8 @@ namespace CollabXR.Cycles
 		private PlaybackDirector _director;
 		private CollabContextMenu _menu;
 		private bool _prevScrubbing;
-		private bool _initialized = false;
+		[Networked]
+		private bool _initialized { get; set; }= false;
 
 		protected override void CheckForScripts()
 		{
