@@ -488,14 +488,14 @@ LineRenderer:
       ctime7: 0
       atime0: 0
       atime1: 65535
-      atime2: 0
-      atime3: 0
+      atime2: 65535
+      atime3: 65535
       atime4: 0
       atime5: 0
       atime6: 0
       atime7: 0
       m_Mode: 2
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -1017,7 +1017,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 531bf38014791cb47a6ded2509fe3a0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upwardRayOffset: 0.05
+  upwardRayOffset: 0.03
   forwardRayOffset: 0.05
   shouldHitTriggers: 0
   shouldTestIfStartsInsideCollider: 1
@@ -2644,7 +2644,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   upwardRayOffset: 0.03
-  forwardRayOffset: 0.05
+  forwardRayOffset: 0.145
   shouldHitTriggers: 0
   shouldTestIfStartsInsideCollider: 1
   shouldHitLayers:
@@ -2768,8 +2768,8 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 0, y: 0.03, z: 0.145}
+  - {x: 0, y: 0.03, z: 1}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.002
@@ -2817,8 +2817,8 @@ LineRenderer:
       ctime7: 0
       atime0: 0
       atime1: 65535
-      atime2: 0
-      atime3: 0
+      atime2: 65535
+      atime3: 65535
       atime4: 0
       atime5: 0
       atime6: 0
@@ -3401,14 +3401,14 @@ LineRenderer:
       ctime7: 0
       atime0: 0
       atime1: 65535
-      atime2: 0
-      atime3: 0
+      atime2: 65535
+      atime3: 65535
       atime4: 0
       atime5: 0
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -3608,7 +3608,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 531bf38014791cb47a6ded2509fe3a0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upwardRayOffset: 0.03
+  upwardRayOffset: 0
   forwardRayOffset: 0.05
   shouldHitTriggers: 0
   shouldTestIfStartsInsideCollider: 1
@@ -3792,14 +3792,14 @@ LineRenderer:
       ctime7: 0
       atime0: 0
       atime1: 65535
-      atime2: 0
+      atime2: 65535
       atime3: 0
       atime4: 0
       atime5: 0
       atime6: 0
       atime7: 0
       m_Mode: 2
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -3837,7 +3837,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc6c38ae4f79d1843879e88dac4f8c44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startOffset: {x: 0, y: 0.03, z: 0.05}
+  startOffset: {x: 0, y: 0, z: 0.05}
   subscribeToRaycasterOnStart: 1
 --- !u!114 &160341753947789528
 MonoBehaviour:

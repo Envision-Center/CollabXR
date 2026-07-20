@@ -13,6 +13,9 @@ namespace CollabXR.Tools.Palette
 		[SerializeField]
 		private bool shouldSetInitialActiveChild = true;
 
+		// Keeps track of the currently active child
+		private int currentActiveIndex = -1;
+
 		private void Awake()
 		{
 			int childCount = transform.childCount;
@@ -43,13 +46,29 @@ namespace CollabXR.Tools.Palette
 
 		public void DeactivateAllChildren()
 		{
+			currentActiveIndex = -1;
 			for (int i = 0; i < transform.childCount; i++)
 				transform.GetChild(i).gameObject.SetActive(false);
 		}
 
-		public void SetActiveChild(int index)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		public (Transform, Transform) SetActiveChild(int index)
 		{
-			transform.GetChild(index).gameObject.SetActive(true);
+			Transform newActive = transform.GetChild(index);
+			Transform prevActive = null;
+			if (currentActiveIndex > 0)
+			{
+				prevActive = transform.GetChild(currentActiveIndex);
+			}
+
+			currentActiveIndex = index;
+			newActive.gameObject.SetActive(true);
+
+			return (prevActive, newActive);
 		}
 	}
 }

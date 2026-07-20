@@ -1,7 +1,8 @@
+using System.Runtime.CompilerServices;
 using CollabXR.Objects.Components;
-using CollabXR.VR;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace CollabXR.Tools
 {
@@ -11,11 +12,18 @@ namespace CollabXR.Tools
 		private LineRendererLaser laser;
 		private LineRenderer lineRenderer;
 
+		private Vector3 defaultRayCastOrig;
+
 		private void Awake()
 		{
 			interactor = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor>();
 			laser = GetComponent<LineRendererLaser>();
 			lineRenderer = GetComponent<LineRenderer>();
+		}
+
+		private void Start()
+		{
+			defaultRayCastOrig = interactor.rayOriginTransform.position;
 		}
 
 		private void LateUpdate()
@@ -26,6 +34,15 @@ namespace CollabXR.Tools
 
 			lineRenderer.enabled = isOverUI;
 			laser.SetEndPositionForFrame(result.worldPosition);
+		}
+
+		public void SetRayCastOrigin(Vector3 origin = default)
+		{
+			if (origin == default && defaultRayCastOrig != null)
+			{
+				origin = defaultRayCastOrig;
+			}
+			laser.startOffset = interactor.rayOriginTransform.localPosition = origin;
 		}
 	}
 }

@@ -1,7 +1,7 @@
-using System;
 using CollabXR.Tools.Palette;
 using CollabXR.VR;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace CollabXR.Tools
 {
@@ -14,6 +14,11 @@ namespace CollabXR.Tools
 		{
 			return isRight ? Right : Left;
 		}
+
+		/// <summary>
+		/// On user selects new tool, passes if is using Right Hand, the previous tool, and the new tool.
+		/// </summary>
+		public UnityEvent<Transform, Transform> onToolChange;
 
 		public RigHand Hand { get; private set; }
 
@@ -43,6 +48,10 @@ namespace CollabXR.Tools
 		//    ActivateTool(0);
 		//}
 
-		public void ActivateTool(int index) => toolActivator.SetActiveChild(index);
+		public void ActivateTool(int index)
+		{
+			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
+			onToolChange?.Invoke(prevTool, curTool);
+		}
 	}
 }
