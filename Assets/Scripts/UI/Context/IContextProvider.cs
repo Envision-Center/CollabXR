@@ -8,6 +8,7 @@ namespace CollabXR
 	/**
 	 * <summary>
 	 * Interface for spawning custom context menus when interacting with an object.
+	 * Should primarily be placed on the network object itself.
 	 * </summary>
 	 */
 	public interface IContextProvider
@@ -17,5 +18,7 @@ namespace CollabXR
 		CollabContext AddTab(GameObject obj, CollabContextMenu menu);
 
 		GameObject GetContextPrefab() => null;
+
+		GameObject SelfObject => null;
 	}
 }
