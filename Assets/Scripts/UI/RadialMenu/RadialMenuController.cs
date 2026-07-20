@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CollabXR.UI
@@ -5,6 +6,6 @@ namespace CollabXR.UI
 	public class RadialMenuController : MonoBehaviour
 	{
 		[SerializeField]
-		private List<RadialMenuButton> buttons = new List<RadialMenuButton>();
+		private List<RadialMenuButton> buttons = new();
 	}
 }
