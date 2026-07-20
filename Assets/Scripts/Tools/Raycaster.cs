@@ -155,11 +155,6 @@ namespace CollabXR.Tools
 				onDidHitChange.Invoke(DidHit);
 		}
 
-		//private void Update()
-		//{
-		//	Raycast();
-		//}
-
 		private void LateUpdate()
 		{
 			Raycast();

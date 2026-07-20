@@ -16,7 +16,7 @@ namespace CollabXR.Tools
 		}
 
 		/// <summary>
-		/// On user selects new tool, passes if is using Right Hand, the previous tool, and the new tool.
+		/// On user selects new tool, passes the previous tool and the new tool.
 		/// </summary>
 		public UnityEvent<Transform, Transform> onToolChange;
 
@@ -42,11 +42,6 @@ namespace CollabXR.Tools
 			else
 				Left = this;
 		}
-
-		//private void Start()
-		//{
-		//    ActivateTool(0);
-		//}
 
 		public void ActivateTool(int index)
 		{

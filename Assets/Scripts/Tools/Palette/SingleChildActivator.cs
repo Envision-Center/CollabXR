@@ -52,10 +52,10 @@ namespace CollabXR.Tools.Palette
 		}
 
 		/// <summary>
-		/// 
+		/// Activate the child at the given index. Disabling the others.
 		/// </summary>
-		/// <param name="index"></param>
-		/// <returns></returns>
+		/// <param name="index">Index of child in hiearchy to activate</param>
+		/// <returns>(Transform of previously active index if any, Transform of currently active index)</returns>
 		public (Transform, Transform) SetActiveChild(int index)
 		{
 			Transform newActive = transform.GetChild(index);

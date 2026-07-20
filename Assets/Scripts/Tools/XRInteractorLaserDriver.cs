@@ -1,8 +1,6 @@
-using System.Runtime.CompilerServices;
 using CollabXR.Objects.Components;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace CollabXR.Tools
 {
@@ -36,6 +34,11 @@ namespace CollabXR.Tools
 			laser.SetEndPositionForFrame(result.worldPosition);
 		}
 
+		/// <summary>
+		/// Updates where the UI interaction ray is projected from the controller.
+		/// Used for when the controller tool updates.
+		/// </summary>
+		/// <param name="origin">New local pos for ray's origin. Resets to default position by default</param>
 		public void SetRayCastOrigin(Vector3 origin = default)
 		{
 			if (origin == default && defaultRayCastOrig != null)

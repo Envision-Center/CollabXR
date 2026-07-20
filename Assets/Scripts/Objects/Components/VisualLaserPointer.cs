@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using CollabXR.Tools;
 using CollabXR.VR;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace CollabXR.Objects.Components
 {
@@ -18,11 +14,12 @@ namespace CollabXR.Objects.Components
 		private Vector3 localStartPos,
 			localEndPos;
 		private RigHand hand;
+		private XRInteractorLaserDriver uiLaserDriver;
 
-		[SerializeField]
+		[SerializeField, Tooltip("Syncs line visual to RayCaster tool")]
 		private bool subscribeToRaycasterOnStart = true;
 
-		[SerializeField]
+		[SerializeField, Tooltip("Syncs line visual on tool changes")]
 		private bool subscribeToToolChangeOnStart = true;
 
 		private void Awake()
@@ -35,44 +32,46 @@ namespace CollabXR.Objects.Components
 			}
 		}
 
-		public void SubscribeToRaycaster(Raycaster raycaster)
+		private void Start()
+		{
+			lineRenderer.positionCount = 2;
+			lineRenderer.useWorldSpace = false;
+
+			// laser pointer can exist on hand rig or tool palette
+			hand = GetComponentInParent<RigHandRef>()?.Hand.Value ?? GetComponentInParent<RigHand>();
+			if (hand)
+			{
+				uiLaserDriver = hand.GetComponentInChildren<XRInteractorLaserDriver>();
+			}
+
+			if (subscribeToToolChangeOnStart && hand)
+			{
+				SubscribeToToolChange(hand.isRight ? ToolPalette.Right : ToolPalette.Left);
+			}
+		}
+
+		private void SubscribeToRaycaster(Raycaster raycaster)
 		{
 			if (raycaster == null)
 			{
 				return;
 			}
 
-			// ensure the offset of the ray reflects the true origin of the ray
-			raycaster.onEnable.AddListener((enabled) =>
-			{
-				this.SetEnabled(enabled);
-				//if (enabled)
-				//{
-				//	startOffset = Vector3.forward * raycaster.forwardRayOffset + Vector3.up * raycaster.upwardRayOffset;
-				//}
-			});
+			raycaster.onEnable.AddListener(this.SetEnabled);
 			raycaster.onHitPoint.AddListener(SetEndPositionForFrame);
 			raycaster.onHitNothing.AddListener(SetEndPositionForFrame);
-
-
 		}
 
-		public void SubscribeToToolChange()
+		private void SubscribeToToolChange(ToolPalette palette)
 		{
-			if (ToolPalette.Left == null || ToolPalette.Right == null)
+			if (palette == null)
 			{
 				return;
 			}
 
-			XRInteractorLaserDriver laserDriver = hand.GetComponentInChildren<XRInteractorLaserDriver>();
-			if (laserDriver != null)
-			{
-				laserDriver.SetRayCastOrigin(startOffset);
-			}
+			SyncUILaserPointer(startOffset);
 
-			Debug.Log($"{gameObject} subbing to tool change");
-			// TODO, add to left hand
-			ToolPalette.Right.onToolChange.AddListener((prevTool, newTool) =>
+			palette.onToolChange.AddListener((prevTool, newTool) =>
 			{
 				if (!newTool)
 				{
@@ -82,33 +81,29 @@ namespace CollabXR.Objects.Components
 				if (newTool.TryGetComponent(out Raycaster raycaster))
 				{
 					startOffset = Vector3.forward * raycaster.forwardRayOffset + Vector3.up * raycaster.upwardRayOffset;
-					XRInteractorLaserDriver laserDriver = hand.GetComponentInChildren<XRInteractorLaserDriver>();
-					if (laserDriver != null)
-					{
-						laserDriver.SetRayCastOrigin(startOffset);
-					}
+					SyncUILaserPointer(startOffset);
 				}
 				else
 				{
-					XRInteractorLaserDriver laserDriver = hand.GetComponentInChildren<XRInteractorLaserDriver>();
-					if (laserDriver != null)
-					{
-						laserDriver.SetRayCastOrigin();
-					}
+					SyncUILaserPointer();
 				}
 			});
 		}
 
-		private void Start()
+		/// <summary>
+		/// Update the ray visual when hovering over UI.
+		/// </summary>
+		/// <remarks>
+		/// UI ray is a separate entity as ray projected from tool so must be updated here as tool changes.
+		/// </remarks>
+		public void SyncUILaserPointer(Vector3 origin = default)
 		{
-			lineRenderer.positionCount = 2;
-			lineRenderer.useWorldSpace = false;
-			hand = GetComponentInParent<RigHandRef>()?.Hand.Value;
-
-			if (subscribeToToolChangeOnStart)
+			if (uiLaserDriver == null)
 			{
-				SubscribeToToolChange();
+				return;
 			}
+
+			uiLaserDriver.SetRayCastOrigin(origin);
 		}
 
 		private void OnEnable()
