@@ -42,7 +42,8 @@ namespace CollabXR.Networking
 			if (Object.HasStateAuthority && !initialized)
 			{
 				// will only run if object recieves state authority before fully loading in
-				InitializeToggleControllers();
+				SetDefaultToggles();
+				initialized = true;
 			}
 			UpdateVisibility();
 		}
@@ -52,6 +53,10 @@ namespace CollabXR.Networking
 			Debug.Log("spawned!");
 			base.Spawned();
 			Debug.Log($"SPAWN STATE AUTH: {Object.StateAuthority}");
+			if (Object.HasStateAuthority && !initialized)
+			{
+				SetDefaultToggles();
+			}
 			UpdateVisibility();
 		}
 
@@ -96,13 +101,6 @@ namespace CollabXR.Networking
 			toggleVisibility.Set(index, toggled);
 		}
 
-		public void InitializeToggleControllers()
-		{
-			SetDefaultToggles();
-			UpdateVisibility();
-			initialized = true;
-		}
-
 		public void SetDefaultToggles()
 		{
 			int index = 0;
@@ -125,13 +123,12 @@ namespace CollabXR.Networking
 			if (Object.HasStateAuthority && !initialized)
 			{
 				// will only run if object not yet initialized and recieves state authority after fully loading in
-				InitializeToggleControllers();
+				SetDefaultToggles();
 			}
 			else if (Object.StateAuthority == PlayerRef.None)
 			{
 				Object.RequestStateAuthority();
 			}
-			UpdateVisibility();
 		}
 	}
 
