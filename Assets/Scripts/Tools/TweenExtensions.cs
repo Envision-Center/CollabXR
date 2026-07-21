@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CollabXR.UI
+namespace CollabXR
 {
 	public enum EaseType
 	{
@@ -27,17 +27,27 @@ namespace CollabXR.UI
 				_ => t => t,
 			};
 
-		public static void GenericTween<T>(this MonoBehaviour host, object key, T initial, T final, float duration, EaseType easeType, Action<T> setter, Func<T, T, float, T> lerpFunction)
+		public static void GenericTween<T>(
+			this MonoBehaviour host,
+			object key,
+			T initial,
+			T final,
+			float duration,
+			EaseType easeType,
+			Action<T> setter,
+			Func<T, T, float, T> lerpFunction,
+			Action onComplete = null
+		)
 		{
 			if (_tweens.ContainsKey(key))
 			{
 				host.StopCoroutine(_tweens[key]);
 				_tweens.Remove(key);
 			}
-			_tweens[key] = host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction));
+			_tweens[key] = host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction, onComplete));
 		}
 
-		private static IEnumerator GenericTween<T>(T initial, T final, float duration, Func<float, float> easeFunction, Action<T> setter, Func<T, T, float, T> lerpFunction)
+		private static IEnumerator GenericTween<T>(T initial, T final, float duration, Func<float, float> easeFunction, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)
 		{
 			setter(initial);
 
@@ -52,6 +62,8 @@ namespace CollabXR.UI
 			}
 
 			setter(final);
+
+			onComplete?.Invoke();
 
 			yield break;
 		}

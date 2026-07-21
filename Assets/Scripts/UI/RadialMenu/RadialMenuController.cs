@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CollabXR.Tools;
 using CollabXR.VR;
 using UnityEngine;
 using UnityEngine.XR;
@@ -35,6 +36,7 @@ namespace CollabXR.UI
 
 		private bool isPressed;
 		private bool isMenuOpen;
+		private bool openAnimFinished;
 		private float pressStartTime;
 		private Quaternion referenceRotation;
 		private Vector3 openScale;
@@ -125,14 +127,14 @@ namespace CollabXR.UI
 				OnMenuOpen();
 			}
 
-			if (isMenuOpen)
+			if (isMenuOpen && openAnimFinished)
 				UpdateSelection();
 		}
 
 		private void UpdateSelection()
 		{
 			Vector3 localForward = Quaternion.Inverse(referenceRotation) * hand.Controller.transform.forward;
-			Vector2 tiltAxis = new Vector2(localForward.x, localForward.y);
+			Vector2 tiltAxis = new(localForward.x, localForward.y);
 
 			RadialMenuButton newSelection = defaultButton;
 
@@ -156,24 +158,42 @@ namespace CollabXR.UI
 			{
 				selectedButton?.OnDeselected();
 				selectedButton = newSelection;
-				selectedButton.OnSelected();
+				selectedButton.OnSelected(hand.isRight);
 			}
 		}
 
 		private void OnMenuOpen()
 		{
-			foreach (var button in buttons) { button.OnDeselected(); }
+			foreach (var button in buttons)
+			{
+				button.OnDeselected();
+			}
 			defaultButton?.OnDeselected();
 			selectedButton = null;
 
+			openAnimFinished = false;
+
+			var palette = ToolPalette.Get(hand.isRight);
+			if (palette != null)
+				palette.DeEquipTool(CompleteAnim);
+			else
+				CompleteAnim();
+		}
+
+		private void CompleteAnim()
+		{
+			openAnimFinished = true;
 			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));
 		}
 
 		private void OnMenuClose()
 		{
-			selectedButton.OnClicked(hand.isRight);
+			selectedButton?.OnClicked(hand.isRight);
 
-			foreach (var button in buttons) { button.OnDeselected(); }
+			foreach (var button in buttons)
+			{
+				button.OnDeselected();
+			}
 			defaultButton?.OnDeselected();
 			selectedButton = null;
 

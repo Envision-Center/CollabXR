@@ -1,4 +1,6 @@
+using CollabXR;
 using CollabXR.Tools;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,9 +51,19 @@ namespace CollabXR.UI
 		[SerializeField]
 		private EaseType easeType = EaseType.EaseOut;
 
-		public void OnSelected()
+		public void OnSelected(bool isRightHand)
 		{
-			this.GenericTween(buttonTransform, buttonTransform.localScale, Vector3.one * selectedScale, tweenDuration, easeType, v => buttonTransform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));
+			ToolPalette.Get(isRightHand)?.ActivateToolPreview(toolIndex);
+
+			this.GenericTween(
+				buttonTransform,
+				buttonTransform.localScale,
+				Vector3.one * selectedScale,
+				tweenDuration,
+				easeType,
+				v => buttonTransform.localScale = v,
+				(a, b, t) => Vector3.Lerp(a, b, t)
+			);
 
 			this.GenericTween(buttonImage, buttonImage.color, activeButtonColor.color, tweenDuration, easeType, c => buttonImage.color = c, (a, b, t) => Color.Lerp(a, b, t));
 

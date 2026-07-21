@@ -1,3 +1,4 @@
+using System;
 using CollabXR.Tools.Palette;
 using CollabXR.VR;
 using UnityEngine;
@@ -24,6 +25,8 @@ namespace CollabXR.Tools
 
 		private RigHandRef handRef;
 
+		private Transform selectedToolTransform;
+
 		private void Awake()
 		{
 			handRef = this.GetRigHandRef();
@@ -46,7 +49,21 @@ namespace CollabXR.Tools
 		public void ActivateTool(int index)
 		{
 			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
-			onToolChange?.Invoke(prevTool, curTool);
+
+			curTool.GetComponent<ToolAnimator>()?.AnimateToolEquip(() => onToolChange?.Invoke(prevTool, curTool));
+			selectedToolTransform = curTool;
+		}
+
+		public void ActivateToolPreview(int index)
+		{
+			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
+			curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+		}
+
+		public void DeEquipTool(Action onComplete = null)
+		{
+			selectedToolTransform?.GetComponent<ToolAnimator>()?.AnimateToolDisequip(onComplete);
+			selectedToolTransform = null;
 		}
 	}
 }
