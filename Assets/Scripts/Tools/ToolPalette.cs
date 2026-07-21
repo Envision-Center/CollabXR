@@ -57,12 +57,30 @@ namespace CollabXR.Tools
 		public void ActivateToolPreview(int index)
 		{
 			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
-			curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+
+			if (prevTool?.TryGetComponent(out ToolAnimator prevAnimator) == true)
+			{
+				toolActivator.SetActiveChild(prevTool);
+				prevAnimator.ShowToolPreviewLeave(() =>
+				{
+					toolActivator.SetActiveChild(curTool);
+					curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+				});
+			}
+			else
+			{
+				curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+			}
 		}
 
 		public void DeEquipTool(Action onComplete = null)
 		{
-			selectedToolTransform?.GetComponent<ToolAnimator>()?.AnimateToolDisequip(onComplete);
+			var animator = selectedToolTransform?.GetComponent<ToolAnimator>();
+			if (animator != null)
+				animator.AnimateToolDisequip(onComplete);
+			else
+				onComplete?.Invoke();
+
 			selectedToolTransform = null;
 		}
 	}

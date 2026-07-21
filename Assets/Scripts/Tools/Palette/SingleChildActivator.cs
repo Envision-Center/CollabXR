@@ -70,5 +70,10 @@ namespace CollabXR.Tools.Palette
 
 			return (prevActive, newActive);
 		}
+
+		public (Transform, Transform) SetActiveChild(Transform child)
+		{
+			return SetActiveChild(child.GetSiblingIndex());
+		}
 	}
 }

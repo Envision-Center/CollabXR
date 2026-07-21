@@ -16,7 +16,13 @@ namespace CollabXR.Tools
 		private Transform activePosition;
 
 		[SerializeField]
-		private float animationTime;
+		private Transform leavePosition;
+
+		[SerializeField]
+		private float animationTime = 0.15f;
+
+		[SerializeField]
+		private float leaveTime = 0.1f;
 
 		[SerializeField]
 		private EaseType easeType = EaseType.Linear;
@@ -45,6 +51,22 @@ namespace CollabXR.Tools
 				toolObject.localPosition,
 				hoverPosition.localPosition,
 				animationTime,
+				easeType,
+				v => toolObject.localPosition = v,
+				(a, b, t) => Vector3.Lerp(a, b, t),
+				onComplete
+			);
+		}
+
+		public void ShowToolPreviewLeave(Action onComplete = null)
+		{
+			toolObject.localPosition = hoverPosition.localPosition;
+
+			this.GenericTween(
+				toolObject,
+				toolObject.localPosition,
+				leavePosition.localPosition,
+				leaveTime,
 				easeType,
 				v => toolObject.localPosition = v,
 				(a, b, t) => Vector3.Lerp(a, b, t),

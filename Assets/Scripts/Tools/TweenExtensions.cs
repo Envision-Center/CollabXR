@@ -11,6 +11,9 @@ namespace CollabXR
 		EaseIn,
 		EaseOut,
 		EaseInOut,
+		EaseInCubic,
+		EaseOutCubic,
+		EaseInOutCubic,
 	}
 
 	public static class UiTweens
@@ -24,6 +27,9 @@ namespace CollabXR
 				EaseType.EaseIn => t => t * t,
 				EaseType.EaseOut => t => 1f - (1f - t) * (1f - t),
 				EaseType.EaseInOut => t => t * t * (3 - 2 * t),
+				EaseType.EaseInCubic => t => t * t * t,
+				EaseType.EaseOutCubic => t => 1f - (1f - t) * (1f - t) * (1f - t),
+				EaseType.EaseInOutCubic => t => t * t * t * (3 - 2 * t),
 				_ => t => t,
 			};
 
