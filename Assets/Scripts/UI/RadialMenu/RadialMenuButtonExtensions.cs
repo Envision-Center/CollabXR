@@ -27,14 +27,14 @@ namespace CollabXR.UI
 				_ => t => t,
 			};
 
-		public static void GenericTween<T>(this MonoBehaviour host, T target, T initial, T final, float duration, EaseType easeType, Func<T, T, float, T> lerpFunction)
+		public static void GenericTween<T>(this MonoBehaviour host, object key, T initial, T final, float duration, EaseType easeType, Action<T> setter, Func<T, T, float, T> lerpFunction)
 		{
-			if (_tweens.ContainsKey(target))
+			if (_tweens.ContainsKey(key))
 			{
-				host.StopCoroutine(_tweens[target]);
-				_tweens.Remove(target);
+				host.StopCoroutine(_tweens[key]);
+				_tweens.Remove(key);
 			}
-			_tweens[target] = host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), (t) => target = t, lerpFunction));
+			_tweens[key] = host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction));
 		}
 
 		private static IEnumerator GenericTween<T>(T initial, T final, float duration, Func<float, float> easeFunction, Action<T> setter, Func<T, T, float, T> lerpFunction)
