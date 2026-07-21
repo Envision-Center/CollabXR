@@ -392,13 +392,13 @@ MonoBehaviour:
   buttonTransform: {fileID: 351174611913504476}
   buttonImage: {fileID: 7513605101454929989}
   iconImage: {fileID: 5012479275606544473}
-  toolIndex: 0
-  minAngle: 240
-  maxAngle: 300
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  toolIndex: 1
+  minAngle: 60
+  maxAngle: 120
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
@@ -494,13 +494,13 @@ MonoBehaviour:
   buttonTransform: {fileID: 1417953732629006270}
   buttonImage: {fileID: 9075261309774184803}
   iconImage: {fileID: 3349232856132569671}
-  toolIndex: 0
-  minAngle: 180
-  maxAngle: 240
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  toolIndex: 4
+  minAngle: 120
+  maxAngle: 180
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
@@ -746,13 +746,13 @@ MonoBehaviour:
   buttonTransform: {fileID: 1561923388898296559}
   buttonImage: {fileID: 6641474264881942519}
   iconImage: {fileID: 8128144500520379142}
-  toolIndex: 0
-  minAngle: 60
-  maxAngle: 120
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  toolIndex: 7
+  minAngle: 240
+  maxAngle: 300
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
@@ -926,10 +926,10 @@ MonoBehaviour:
   toolIndex: 0
   minAngle: 0
   maxAngle: 0
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
@@ -1025,13 +1025,13 @@ MonoBehaviour:
   buttonTransform: {fileID: 912480682710458649}
   buttonImage: {fileID: 8967854804011993808}
   iconImage: {fileID: 224322108849539286}
-  toolIndex: 0
-  minAngle: 300
-  maxAngle: 0
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  toolIndex: 2
+  minAngle: 0
+  maxAngle: 60
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
@@ -1127,13 +1127,13 @@ MonoBehaviour:
   buttonTransform: {fileID: 2520957870779640226}
   buttonImage: {fileID: 4607757026632950399}
   iconImage: {fileID: 2107820167184179321}
-  toolIndex: 0
-  minAngle: 0
-  maxAngle: 60
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  toolIndex: 3
+  minAngle: 300
+  maxAngle: 0
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
@@ -1164,7 +1164,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 912480682710458649}
   - {fileID: 2520957870779640226}
@@ -1202,6 +1202,8 @@ MonoBehaviour:
   defaultButton: {fileID: 4885082229889897439}
   holdThreshold: 0.15
   tiltDeadzone: 0.1
+  openCloseTweenDuration: 0.15
+  openCloseEaseType: 2
 --- !u!1 &7797071998134656336
 GameObject:
   m_ObjectHideFlags: 0
@@ -1294,13 +1296,13 @@ MonoBehaviour:
   buttonTransform: {fileID: 7453225617673381133}
   buttonImage: {fileID: 5252541608645667295}
   iconImage: {fileID: 8539989358961363322}
-  toolIndex: 0
-  minAngle: 120
-  maxAngle: 180
-  activeButtonColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  toolIndex: 5
+  minAngle: 180
+  maxAngle: 240
+  activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   activeIconColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
-  inactiveIconColor: {fileID: 11400000, guid: f08907bbc7f45a548a6a8f6278356ac5, type: 2}
+  inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
   selectedScale: 1.2
   easeType: 2
