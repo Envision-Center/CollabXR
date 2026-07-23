@@ -58,7 +58,7 @@ namespace CollabXR.Tools
 		{
 			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
 
-			if (prevTool?.TryGetComponent(out ToolAnimator prevAnimator) == true)
+			/*if (prevTool?.TryGetComponent(out ToolAnimator prevAnimator) == true)
 			{
 				toolActivator.SetActiveChild(prevTool);
 				prevAnimator.ShowToolPreviewLeave(() =>
@@ -67,7 +67,7 @@ namespace CollabXR.Tools
 					curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
 				});
 			}
-			else
+			else*/
 			{
 				curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
 			}

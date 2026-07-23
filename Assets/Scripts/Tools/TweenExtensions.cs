@@ -39,6 +39,48 @@ namespace CollabXR
 			T initial,
 			T final,
 			float duration,
+			AnimationCurve curve,
+			Action<T> setter,
+			Func<T, T, float, T> lerpFunction,
+			Action onComplete = null
+		)
+		{
+			if (_tweens.ContainsKey(key))
+			{
+				host.StopCoroutine(_tweens[key]);
+				_tweens.Remove(key);
+			}
+
+			_tweens[key] = host.StartCoroutine(GenericTween(initial, final, duration, curve, setter, lerpFunction, onComplete));
+		}
+
+		private static IEnumerator GenericTween<T>(T initial, T final, float duration, AnimationCurve easeCurve, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)
+		{
+			setter(initial);
+
+			float elapsed = 0f;
+			while (elapsed < duration)
+			{
+				elapsed += Time.deltaTime;
+				float t = easeCurve.Evaluate(elapsed / duration);
+				T target = lerpFunction(initial, final, t);
+				setter(target);
+				yield return null;
+			}
+
+			setter(final);
+
+			onComplete?.Invoke();
+
+			yield break;
+		}
+
+		public static void GenericTween<T>(
+			this MonoBehaviour host,
+			object key,
+			T initial,
+			T final,
+			float duration,
 			EaseType easeType,
 			Action<T> setter,
 			Func<T, T, float, T> lerpFunction,
