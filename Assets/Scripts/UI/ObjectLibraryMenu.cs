@@ -157,7 +157,10 @@ namespace CollabXR.UI
 					attribution: objData.attribution,
 					thumbnail: objData.thumbnail,
 					creator: objData.creators,
-					version: metadata.BuildNumberMap[ModManager.GetPlatformString()].ToString() + ".0"
+					version: metadata.BuildNumberMap[ModManager.GetPlatformString()].ToString() + ".0",
+					repositoryName: repoName,
+					modGUID: objData.modGUID,
+					assetGUID: objData.assetGUID
 				);
 				infoPanel.ToggleVisibility(true);
 			}
