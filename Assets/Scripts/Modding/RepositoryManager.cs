@@ -25,11 +25,6 @@ namespace CollabXR.ModLoader
 		/// Repository URL to RepositoryMetadata mapping.
 		/// </summary>
 		public Dictionary<string, RepositoryMetadata> loadedRepositories { get; private set; } = new();
-		/// <summary>
-		/// Low-cost method to check if a mod is part of a specific repository.
-		/// Takes more storage space but faster than iterating through all mods.
-		/// </summary>
-		public Dictionary<string, HashSet<Guid>> repositoryModIndex { get; private set; } = new();
 
 		internal bool DoneLoadingRepositories = false;
 
@@ -79,7 +74,6 @@ namespace CollabXR.ModLoader
 			NotifyLoadingBegin();
 
 			Instance.loadedRepositories.Clear();
-			Instance.repositoryModIndex.Clear();
 
 			Debug.Log($"{DEBUG_LOG_HEADER} Starting refresh of all mod repositories...");
 
@@ -121,11 +115,6 @@ namespace CollabXR.ModLoader
 				metadata.secretKey = parameters["secret"];
 
 				Instance.loadedRepositories[metadataUrl] = metadata;
-				if (!Instance.repositoryModIndex.ContainsKey(metadataUrl))
-				{
-					Instance.repositoryModIndex[metadataUrl] = new HashSet<Guid>();
-				}
-				Instance.repositoryModIndex[metadataUrl].Clear();
 
 				Debug.Log($"{DEBUG_LOG_HEADER} Loaded Metadata for \"{metadataUrl}\": V{metadata.StructVersion}@{metadata.BaseURL} hosted by: {metadata.RepoOwner} ({metadata.Mods.Length} mods)");
 
@@ -134,7 +123,6 @@ namespace CollabXR.ModLoader
 				foreach (Guid modUuid in metadata.Mods)
 				{
 					indexModsTasks.Add(ModManager.Instance.IndexMod(metadataUrl, modUuid));
-					Instance.repositoryModIndex[metadataUrl].Add(modUuid);
 				}
 
 				//await UniTask.SwitchToThreadPool();
