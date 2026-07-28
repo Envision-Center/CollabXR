@@ -18,7 +18,7 @@ namespace CollabXR
 
 	public static class UiTweens
 	{
-		private static readonly Dictionary<object, Coroutine> _tweens = new();
+		private static readonly Dictionary<object, (Coroutine, Action)> _tweens = new();
 
 		public static Func<float, float> GetEaseFunction(EaseType easeType) =>
 			easeType switch
@@ -47,11 +47,12 @@ namespace CollabXR
 		{
 			if (_tweens.ContainsKey(key))
 			{
-				host.StopCoroutine(_tweens[key]);
+				host.StopCoroutine(_tweens[key].Item1);
+				_tweens[key].Item2?.Invoke();
 				_tweens.Remove(key);
 			}
 
-			_tweens[key] = host.StartCoroutine(GenericTween(initial, final, duration, curve, setter, lerpFunction, onComplete));
+			_tweens[key] = (host.StartCoroutine(GenericTween(initial, final, duration, curve, setter, lerpFunction, onComplete)), onComplete);
 		}
 
 		private static IEnumerator GenericTween<T>(T initial, T final, float duration, AnimationCurve easeCurve, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)
@@ -89,10 +90,11 @@ namespace CollabXR
 		{
 			if (_tweens.ContainsKey(key))
 			{
-				host.StopCoroutine(_tweens[key]);
+				host.StopCoroutine(_tweens[key].Item1);
+				_tweens[key].Item2?.Invoke();
 				_tweens.Remove(key);
 			}
-			_tweens[key] = host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction, onComplete));
+			_tweens[key] = (host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction, onComplete)), onComplete);
 		}
 
 		private static IEnumerator GenericTween<T>(T initial, T final, float duration, Func<float, float> easeFunction, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)

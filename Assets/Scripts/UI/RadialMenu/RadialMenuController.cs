@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CollabXR.Tools;
 using CollabXR.VR;
@@ -6,6 +7,10 @@ using UnityEngine.XR;
 
 namespace CollabXR.UI
 {
+	// Must run after TransformFollow's LateUpdate (order 10), since this hand's
+	// Tool Palette root has its pose copied from the hand there rather than being
+	// a real Unity parent - otherwise we'd rotate/read the canvas before it's synced.
+	[DefaultExecutionOrder(20)]
 	public class RadialMenuController : MonoBehaviour
 	{
 		[Header("Buttons")]
@@ -38,10 +43,12 @@ namespace CollabXR.UI
 		private bool isMenuOpen;
 		private bool openAnimFinished;
 		private float pressStartTime;
-		private Quaternion referenceRotation;
 		private Vector3 openScale;
 
 		private RadialMenuButton selectedButton;
+		private Vector3 startHandPosition;
+		private Vector3 startMenuGlobalPosition;
+		private Vector3 awakeLocalPosition;
 
 		private void Awake()
 		{
@@ -50,6 +57,8 @@ namespace CollabXR.UI
 
 			handRef = this.GetRigHandRef();
 			handRef.Hand.AddListenerAndCheck(SubscribeToHand);
+
+			awakeLocalPosition = transform.localPosition;
 		}
 
 		private void OnEnable()
@@ -98,7 +107,6 @@ namespace CollabXR.UI
 		{
 			isPressed = true;
 			pressStartTime = Time.time;
-			referenceRotation = hand.Controller.transform.rotation;
 		}
 
 		private void OnButtonRelease()
@@ -110,7 +118,7 @@ namespace CollabXR.UI
 				OnMenuClose();
 				isMenuOpen = false;
 			}
-			else
+			else if (selectedButton != defaultButton)
 			{
 				defaultButton.OnClicked(hand.isRight);
 			}
@@ -127,14 +135,24 @@ namespace CollabXR.UI
 				OnMenuOpen();
 			}
 
-			if (isMenuOpen && openAnimFinished)
+			if (isPressed && isMenuOpen && openAnimFinished)
 				UpdateSelection();
+		}
+
+		private void LateUpdate()
+		{
+			if (isMenuOpen)
+			{
+				transform.position = startMenuGlobalPosition;
+				Vector3 offsetDirection = Camera.main.transform.position - startMenuGlobalPosition;
+				transform.rotation = Quaternion.LookRotation(new(offsetDirection.x, 0, offsetDirection.z));
+			}
 		}
 
 		private void UpdateSelection()
 		{
-			Vector3 localForward = Quaternion.Inverse(referenceRotation) * hand.Controller.transform.forward;
-			Vector2 tiltAxis = new(localForward.x, localForward.y);
+			Vector3 direction = (handRef.transform.position - startHandPosition).normalized;
+			Vector2 tiltAxis = new(Vector3.Dot(direction, transform.right), Vector3.Dot(direction, transform.up));
 
 			RadialMenuButton newSelection = defaultButton;
 
@@ -173,6 +191,9 @@ namespace CollabXR.UI
 
 			openAnimFinished = false;
 
+			startHandPosition = handRef.transform.position;
+			startMenuGlobalPosition = transform.position;
+
 			var palette = ToolPalette.Get(hand.isRight);
 			if (palette != null)
 				palette.DeEquipTool(CompleteAnim);
@@ -188,16 +209,32 @@ namespace CollabXR.UI
 
 		private void OnMenuClose()
 		{
-			selectedButton?.OnClicked(hand.isRight);
-
-			foreach (var button in buttons)
+			try
 			{
-				button.OnDeselected();
-			}
-			defaultButton?.OnDeselected();
-			selectedButton = null;
+				selectedButton?.OnClicked(hand.isRight);
 
-			this.GenericTween(transform, transform.localScale, Vector3.zero, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));
+				foreach (var button in buttons)
+				{
+					button.OnDeselected();
+				}
+				defaultButton?.OnDeselected();
+				selectedButton = null;
+			}
+			catch (Exception e)
+			{
+				Debug.LogError($"Error caught closing menu; proceeding: {e}");
+			}
+
+			this.GenericTween(
+				transform,
+				transform.localScale,
+				Vector3.zero,
+				openCloseTweenDuration,
+				openCloseEaseType,
+				v => transform.localScale = v,
+				(a, b, t) => Vector3.Lerp(a, b, t),
+				() => transform.localPosition = awakeLocalPosition
+			);
 		}
 	}
 }
