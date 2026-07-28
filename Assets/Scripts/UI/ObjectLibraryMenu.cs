@@ -143,22 +143,28 @@ namespace CollabXR.UI
 			{
 				CollabObjectData objData = activeCategory.objectData[dataIndex];
 				
+				string repositoryName;
+				string version;
 				if (!ModManager.Instance.indexedMods.ContainsKey(objData.modGUID))
 				{
 					Debug.LogError($"Mod with GUID {objData.modGUID} not found in indexed mods. Cannot display info panel.");
-					return;
+					repositoryName = "Unknown";
+					version = "Unknown";
 				}
-				Tuple<ModMetadata, string> targetModRecord = ModManager.Instance.indexedMods[objData.modGUID];
-				ModMetadata metadata = targetModRecord.Item1;
-				string repoName = RepositoryManager.Instance.loadedRepositories[targetModRecord.Item2].RepoName;
+				else
+				{
+					Tuple<ModMetadata, string> targetModRecord = ModManager.Instance.indexedMods[objData.modGUID];
+					version = targetModRecord.Item1.BuildNumberMap[ModManager.GetPlatformString()].ToString() + ".0";
+					repositoryName = RepositoryManager.Instance.loadedRepositories[targetModRecord.Item2].RepoName;
+				}
 
 				infoPanel.SetInfoPanel(
 					assetName: objData.assetName,
 					attribution: objData.attribution,
 					thumbnail: objData.thumbnail,
 					creator: objData.creators,
-					version: metadata.BuildNumberMap[ModManager.GetPlatformString()].ToString() + ".0",
-					repositoryName: repoName,
+					version: version,
+					repositoryName: repositoryName,
 					modGUID: objData.modGUID,
 					assetGUID: objData.assetGUID
 				);
