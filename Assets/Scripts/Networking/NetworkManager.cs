@@ -24,6 +24,12 @@ namespace CollabXR.Networking
 		private ScriptableInt region;
 
 		[SerializeField]
+		private ScriptableBool useCustomAppID;
+
+		[SerializeField]
+		private ScriptableString customAppID, defaultAppID;
+
+		[SerializeField]
 		private bool connectOnStart;
 
 		[SerializeField]
@@ -78,7 +84,7 @@ namespace CollabXR.Networking
 
 		public void Connect(string roomName)
 		{
-			Debug.Log("Joining room: " + roomName + " at region: " + GetAppSettings().FixedRegion + " in mode " + defaultMode);
+			Debug.Log($"Joining room: {roomName} with app ID {GetAppSettings().AppIdFusion} in region {GetAppSettings().FixedRegion} in mode {defaultMode}");
 			Runner.StartGame(
 				new StartGameArgs
 				{
@@ -142,6 +148,7 @@ namespace CollabXR.Networking
 		private FusionAppSettings GetAppSettings()
 		{
 			FusionAppSettings appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
+			appSettings.AppIdFusion = useCustomAppID.Value ? customAppID.Value : defaultAppID.Value;
 			appSettings.FixedRegion = regionCodes[region.Value];
 			return appSettings;
 		}
