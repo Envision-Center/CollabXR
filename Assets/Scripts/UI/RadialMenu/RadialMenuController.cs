@@ -7,10 +7,7 @@ using UnityEngine.XR;
 
 namespace CollabXR.UI
 {
-	// Must run after TransformFollow's LateUpdate (order 10), since this hand's
-	// Tool Palette root has its pose copied from the hand there rather than being
-	// a real Unity parent - otherwise we'd rotate/read the canvas before it's synced.
-	[DefaultExecutionOrder(20)]
+	[DefaultExecutionOrder(20)] // for late updating the position
 	public class RadialMenuController : MonoBehaviour
 	{
 		[Header("Buttons")]
