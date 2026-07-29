@@ -2,11 +2,17 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using CollabXR.Scriptables;
+using System;
 
 namespace CollabXR.UI
 {
 	public class ObjectLibraryInfoPanel : MonoBehaviour
 	{
+		[SerializeField]
+		List<GameObject> debugOnlyInfo;
+		[SerializeField] ScriptableBool debugMode;
+
 		[SerializeField]
 		TextMeshProUGUI assetName;
 
@@ -22,6 +28,13 @@ namespace CollabXR.UI
 		[SerializeField]
 		TextMeshProUGUI creator;
 
+		[SerializeField]
+		TextMeshProUGUI repositoryName;
+		[SerializeField]
+		TextMeshProUGUI modGUID;
+		[SerializeField]
+		TextMeshProUGUI assetGUID;
+
 		[Header("Unimplemented placeholder")]
 		[SerializeField]
 		TextMeshProUGUI description;
@@ -29,8 +42,18 @@ namespace CollabXR.UI
 		[SerializeField]
 		TextMeshProUGUI publishDate;
 
-		public void SetInfoPanel(string assetName = default, string attribution = default, Sprite thumbnail = default, List<string> creator = default, string version = default)
-		{
+		public void SetInfoPanel(
+			string assetName = default,
+			string attribution = default,
+			Sprite thumbnail = default,
+			List<string> creator = default,
+			string version = default,
+			string repositoryName = default,
+			Guid modGUID = default,
+			Guid assetGUID = default
+		) {
+			UpdateDebugVisibility();
+
 			this.assetName.text = assetName;
 			this.thumbnail.sprite = thumbnail;
 
@@ -56,6 +79,10 @@ namespace CollabXR.UI
 
 			SetTextField(this.attribution, attribution, "Author: ");
 			SetTextField(this.version, version, "Version: ");
+
+			SetTextField(this.repositoryName, repositoryName, "Repository: ");
+			SetTextField(this.modGUID, modGUID.ToString(), "Mod GUID: ");
+			SetTextField(this.assetGUID, assetGUID.ToString(), "Asset GUID: ");
 		}
 
 		public void ToggleVisibility()
@@ -66,6 +93,19 @@ namespace CollabXR.UI
 		public void ToggleVisibility(bool visible)
 		{
 			gameObject.SetActive(visible);
+		}
+
+		public void UpdateDebugVisibility()
+		{
+			SetDebugVisibility(debugMode.Value);
+		}
+
+		public void SetDebugVisibility(bool visible)
+		{
+			for (int i = 0; i < debugOnlyInfo.Count; i++)
+			{
+				debugOnlyInfo[i].SetActive(visible);
+			}
 		}
 
 		// Set textfield if given valid text, hides the UI otherwise
