@@ -29,6 +29,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Environments/HYG/HYG.unity
     guid: bff9cbe8fdb0c1842859f944ed45a4b5
+  - enabled: 1
+    path: Assets/Environments/GreenScreen/GreenScreen.unity
+    guid: 80ca669176d2ebe4595aae4298ca4c28
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 72ec0ee4c86653843a723196079e1d0c, type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: b6ec8ffb4f5564e4283561866496eb8f, type: 2}
