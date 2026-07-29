@@ -44,9 +44,9 @@ namespace CollabXR.Objects
 		{
 			this.data = data;
 			EnableLoadingAnimation(true, data.availableOnThisPlatform);
-			LoadPrefab(data).Forget();
-
+			
 			SetupPreviewAsync().Forget();
+			LoadPrefab(data).Forget();
 		}
 
 		private async UniTaskVoid SetupPreviewAsync()
