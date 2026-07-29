@@ -148,8 +148,10 @@ namespace CollabXR.UI
 
 		private void UpdateSelection()
 		{
-			float distance = Vector3.Distance(handRef.transform.position, startHandPosition);
-			Vector3 direction = (handRef.transform.position - startHandPosition).normalized;
+			Vector3 projectedPosition = Vector3.ProjectOnPlane(handRef.transform.position, transform.forward);
+			Vector3 projectedStartPosition = Vector3.ProjectOnPlane(startHandPosition, transform.forward);
+			float distance = Vector3.Distance(projectedPosition, projectedStartPosition);
+			Vector2 direction = (projectedPosition - projectedStartPosition).normalized;
 			Vector2 tiltAxis = new(Vector3.Dot(direction, transform.right), Vector3.Dot(direction, transform.up));
 
 			RadialMenuButton newSelection = defaultButton;

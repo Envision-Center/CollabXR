@@ -1317,6 +1317,7 @@ GameObject:
   - component: {fileID: 3890192690896256168}
   - component: {fileID: 3309735603853941811}
   - component: {fileID: 4886171427356959463}
+  - component: {fileID: 5652354204688649386}
   m_Layer: 5
   m_Name: RadialMenu
   m_TagString: Untagged
@@ -1371,7 +1372,7 @@ MonoBehaviour:
   - {fileID: 4933405690413386021}
   defaultButton: {fileID: 4885082229889897439}
   holdThreshold: 0.15
-  selectDistance: 0.1
+  selectDistance: 0.05
   openCloseTweenDuration: 0.15
   openCloseEaseType: 2
 --- !u!114 &4886171427356959463
@@ -1386,6 +1387,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 317dd0eafd5003349940e5098dd96920, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!225 &5652354204688649386
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7017169962667244863}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 1
 --- !u!1 &7797071998134656336
 GameObject:
   m_ObjectHideFlags: 0
