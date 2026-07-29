@@ -154,7 +154,7 @@ namespace CollabXR.UI
 				else
 				{
 					Tuple<ModMetadata, string> targetModRecord = ModManager.Instance.indexedMods[objData.modGUID];
-					version = targetModRecord.Item1.BuildNumberMap[ModManager.GetPlatformString()].ToString() + ".0";
+					version = targetModRecord.Item1.BuildNumberMap[ModManager.GetPlatformString()].ToString();
 					repositoryName = RepositoryManager.Instance.loadedRepositories[targetModRecord.Item2].RepoName;
 				}
 
