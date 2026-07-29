@@ -50,6 +50,12 @@ namespace CollabXR.Tools
 		{
 			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
 
+			// Re-activating the tool that's already selected would otherwise restart its equip
+			// tween from the hover position every time - rapid repeat taps could keep resetting
+			// it and never let it reach the active position.
+			if (curTool == selectedToolTransform)
+				return;
+
 			curTool.GetComponent<ToolAnimator>()?.AnimateToolEquip(() => onToolChange?.Invoke(prevTool, curTool));
 			selectedToolTransform = curTool;
 		}

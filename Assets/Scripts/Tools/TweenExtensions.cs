@@ -18,7 +18,7 @@ namespace CollabXR
 
 	public static class UiTweens
 	{
-		private static readonly Dictionary<object, (Coroutine, Action)> _tweens = new();
+		private static readonly Dictionary<object, Coroutine> _tweens = new();
 
 		public static Func<float, float> GetEaseFunction(EaseType easeType) =>
 			easeType switch
@@ -45,35 +45,8 @@ namespace CollabXR
 			Action onComplete = null
 		)
 		{
-			if (_tweens.ContainsKey(key))
-			{
-				host.StopCoroutine(_tweens[key].Item1);
-				_tweens[key].Item2?.Invoke();
-				_tweens.Remove(key);
-			}
-
-			_tweens[key] = (host.StartCoroutine(GenericTween(initial, final, duration, curve, setter, lerpFunction, onComplete)), onComplete);
-		}
-
-		private static IEnumerator GenericTween<T>(T initial, T final, float duration, AnimationCurve easeCurve, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)
-		{
-			setter(initial);
-
-			float elapsed = 0f;
-			while (elapsed < duration)
-			{
-				elapsed += Time.deltaTime;
-				float t = easeCurve.Evaluate(elapsed / duration);
-				T target = lerpFunction(initial, final, t);
-				setter(target);
-				yield return null;
-			}
-
-			setter(final);
-
-			onComplete?.Invoke();
-
-			yield break;
+			CancelTween(host, key);
+			_tweens[key] = host.StartCoroutine(GenericTween(key, initial, final, duration, curve.Evaluate, setter, lerpFunction, onComplete));
 		}
 
 		public static void GenericTween<T>(
@@ -88,16 +61,21 @@ namespace CollabXR
 			Action onComplete = null
 		)
 		{
-			if (_tweens.ContainsKey(key))
-			{
-				host.StopCoroutine(_tweens[key].Item1);
-				_tweens[key].Item2?.Invoke();
-				_tweens.Remove(key);
-			}
-			_tweens[key] = (host.StartCoroutine(GenericTween(initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction, onComplete)), onComplete);
+			CancelTween(host, key);
+			_tweens[key] = host.StartCoroutine(GenericTween(key, initial, final, duration, GetEaseFunction(easeType), setter, lerpFunction, onComplete));
 		}
 
-		private static IEnumerator GenericTween<T>(T initial, T final, float duration, Func<float, float> easeFunction, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)
+		// Stops any in-flight tween on this key without invoking its onComplete - it was replaced, not completed.
+		private static void CancelTween(MonoBehaviour host, object key)
+		{
+			if (_tweens.TryGetValue(key, out Coroutine running))
+			{
+				host.StopCoroutine(running);
+				_tweens.Remove(key);
+			}
+		}
+
+		private static IEnumerator GenericTween<T>(object key, T initial, T final, float duration, Func<float, float> easeFunction, Action<T> setter, Func<T, T, float, T> lerpFunction, Action onComplete)
 		{
 			setter(initial);
 
@@ -112,10 +90,9 @@ namespace CollabXR
 			}
 
 			setter(final);
+			_tweens.Remove(key);
 
 			onComplete?.Invoke();
-
-			yield break;
 		}
 	}
 }

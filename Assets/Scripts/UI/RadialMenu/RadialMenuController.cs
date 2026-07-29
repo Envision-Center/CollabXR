@@ -47,6 +47,7 @@ namespace CollabXR.UI
 		private Vector3 startMenuGlobalPosition;
 		private Vector3 awakeLocalPosition;
 		private Quaternion openRotation;
+		private int openRequestId;
 
 		private void Awake()
 		{
@@ -199,15 +200,22 @@ namespace CollabXR.UI
 			openRotation = Quaternion.LookRotation(new(offsetDirection.x, 0, offsetDirection.z));
 			transform.rotation = openRotation;
 
+			int requestId = ++openRequestId;
+
 			var palette = ToolPalette.Get(hand.isRight);
 			if (palette != null)
-				palette.DeEquipTool(CompleteAnim);
+				palette.DeEquipTool(() => CompleteAnim(requestId));
 			else
-				CompleteAnim();
+				CompleteAnim(requestId);
 		}
 
-		private void CompleteAnim()
+		private void CompleteAnim(int requestId)
 		{
+			// The tool de-equip animation driving this can finish after the menu was already
+			// closed (or reopened again), so ignore it unless it's still for the current open.
+			if (!isMenuOpen || requestId != openRequestId)
+				return;
+
 			openAnimFinished = true;
 			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));
 		}
@@ -216,7 +224,10 @@ namespace CollabXR.UI
 		{
 			try
 			{
-				selectedButton?.OnClicked(hand.isRight);
+				// If the menu closes before UpdateSelection ever ran a single frame (e.g. a quick
+				// press-release right around holdThreshold), selectedButton is still null here -
+				// fall back to the default button instead of silently committing nothing.
+				(selectedButton ?? defaultButton)?.OnClicked(hand.isRight);
 
 				foreach (var button in buttons)
 				{

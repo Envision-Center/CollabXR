@@ -1371,7 +1371,7 @@ MonoBehaviour:
   - {fileID: 6803261799713781204}
   - {fileID: 4933405690413386021}
   defaultButton: {fileID: 4885082229889897439}
-  holdThreshold: 0.15
+  holdThreshold: 0.075
   selectDistance: 0.05
   openCloseTweenDuration: 0.15
   openCloseEaseType: 2
