@@ -25,7 +25,7 @@ namespace CollabXR.UI
 		private float holdThreshold = 0.15f;
 
 		[SerializeField]
-		private float tiltDeadzone = 0.1f;
+		private float selectDistance = 0.1f;
 
 		[Header("Open/Close")]
 		[SerializeField]
@@ -49,6 +49,7 @@ namespace CollabXR.UI
 		private Vector3 startHandPosition;
 		private Vector3 startMenuGlobalPosition;
 		private Vector3 awakeLocalPosition;
+		private Quaternion openRotation;
 
 		private void Awake()
 		{
@@ -118,7 +119,7 @@ namespace CollabXR.UI
 				OnMenuClose();
 				isMenuOpen = false;
 			}
-			else if (selectedButton != defaultButton)
+			else
 			{
 				defaultButton.OnClicked(hand.isRight);
 			}
@@ -144,19 +145,19 @@ namespace CollabXR.UI
 			if (isMenuOpen)
 			{
 				transform.position = startMenuGlobalPosition;
-				Vector3 offsetDirection = Camera.main.transform.position - startMenuGlobalPosition;
-				transform.rotation = Quaternion.LookRotation(new(offsetDirection.x, 0, offsetDirection.z));
+				transform.rotation = openRotation;
 			}
 		}
 
 		private void UpdateSelection()
 		{
+			float distance = Vector3.Distance(handRef.transform.position, startHandPosition);
 			Vector3 direction = (handRef.transform.position - startHandPosition).normalized;
 			Vector2 tiltAxis = new(Vector3.Dot(direction, transform.right), Vector3.Dot(direction, transform.up));
 
 			RadialMenuButton newSelection = defaultButton;
 
-			if (tiltAxis.magnitude >= tiltDeadzone)
+			if (distance >= selectDistance)
 			{
 				float tiltAngle = -Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 360f / (Mathf.PI * 2f);
 				if (tiltAngle < 0f)
@@ -193,6 +194,11 @@ namespace CollabXR.UI
 
 			startHandPosition = handRef.transform.position;
 			startMenuGlobalPosition = transform.position;
+			transform.position = startMenuGlobalPosition;
+
+			Vector3 offsetDirection = Camera.main.transform.position - startMenuGlobalPosition;
+			openRotation = Quaternion.LookRotation(new(offsetDirection.x, 0, offsetDirection.z));
+			transform.rotation = openRotation;
 
 			var palette = ToolPalette.Get(hand.isRight);
 			if (palette != null)

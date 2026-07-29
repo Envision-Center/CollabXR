@@ -1201,7 +1201,7 @@ MonoBehaviour:
   - {fileID: 4933405690413386021}
   defaultButton: {fileID: 4885082229889897439}
   holdThreshold: 0.15
-  tiltDeadzone: 0.1
+  tiltDeadzone: 0.4
   openCloseTweenDuration: 0.15
   openCloseEaseType: 2
 --- !u!1 &7797071998134656336
