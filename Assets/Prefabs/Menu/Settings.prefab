@@ -1752,7 +1752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7197bc5ae28bf684ea4fee2d5c71fd09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scriptableString: {fileID: 11400000, guid: 94c053bda1674f643843f9c38dbead3b, type: 2}
+  scriptableString: {fileID: 11400000, guid: c0cc3f7ab0636ff44af35c7d623b3401, type: 2}
 --- !u!1001 &241848411856031957
 PrefabInstance:
   m_ObjectHideFlags: 0

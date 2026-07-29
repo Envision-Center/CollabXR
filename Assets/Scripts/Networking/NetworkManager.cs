@@ -28,6 +28,8 @@ namespace CollabXR.Networking
 
 		[SerializeField]
 		private ScriptableString customAppID, defaultAppID;
+		[SerializeField]
+		private ScriptableString customVoiceID, defaultVoiceID;
 
 		[SerializeField]
 		private bool connectOnStart;
@@ -149,6 +151,7 @@ namespace CollabXR.Networking
 		{
 			FusionAppSettings appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
 			appSettings.AppIdFusion = useCustomAppID.Value ? customAppID.Value : defaultAppID.Value;
+			appSettings.AppIdVoice = useCustomAppID.Value ? customVoiceID.Value : defaultVoiceID.Value;
 			appSettings.FixedRegion = regionCodes[region.Value];
 			return appSettings;
 		}

@@ -65,6 +65,8 @@ MonoBehaviour:
   useCustomAppID: {fileID: 11400000, guid: 130f77cc79c3e6e46a96e614c728d93f, type: 2}
   customAppID: {fileID: 11400000, guid: 94c053bda1674f643843f9c38dbead3b, type: 2}
   defaultAppID: {fileID: 11400000, guid: 5591c7267bf9caa4281c97463b98671b, type: 2}
+  customVoiceID: {fileID: 11400000, guid: c0cc3f7ab0636ff44af35c7d623b3401, type: 2}
+  defaultVoiceID: {fileID: 11400000, guid: 353350166316f0742aa5a804da3da5a5, type: 2}
   connectOnStart: 0
   networkRigPrefab: {fileID: 6474538535288998346, guid: e4dcbed537d86824fba4a3285a465916, type: 3}
 --- !u!114 &5315217321896093206
