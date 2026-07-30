@@ -16,12 +16,12 @@ namespace CollabXR
 		private void Awake()
 		{
 			appIDFilePath = Path.Combine(Application.persistentDataPath, filename + ".json");
+			DeserializeCustomAppIDToggle();
 		}
 
 		private void OnEnable()
 		{
 			DeserializeAppID();
-			DeserializeCustomAppIDToggle();
 		}
 
 		public void SerializeAppID()
