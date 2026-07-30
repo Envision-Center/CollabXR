@@ -69,6 +69,7 @@ namespace CollabXR
 				}
 
 				targetField.text = trackedCode.MarkerPayloadString;
+				targetField.onEndEdit.Invoke(targetField.text);
 			}
 			finally
 			{

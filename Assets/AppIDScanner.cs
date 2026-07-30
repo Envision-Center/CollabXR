@@ -32,9 +32,12 @@ namespace CollabXR
 
 		public void DeserializeAppID()
 		{
-			string encodedID = File.ReadAllText(appIDFilePath);
-			string decodedID = Encoding.UTF8.GetString(Convert.FromBase64String(encodedID));
-			targetField.text = decodedID;
+			if (File.Exists(appIDFilePath))
+			{
+				string encodedID = File.ReadAllText(appIDFilePath);
+				string decodedID = Encoding.UTF8.GetString(Convert.FromBase64String(encodedID));
+				targetField.text = decodedID;
+			}
 		}
 
 		public void SerializeCustomAppIDToggle(bool isOn)
