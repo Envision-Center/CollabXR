@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CollabXR.Development;
 using CollabXR.Scriptables;
 using Fusion;
 using Fusion.Photon.Realtime;
@@ -9,6 +10,7 @@ using Photon.Voice.Fusion;
 using Photon.Voice.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using WebSocketSharp;
 
 namespace CollabXR.Networking
 {
@@ -150,8 +152,18 @@ namespace CollabXR.Networking
 		private FusionAppSettings GetAppSettings()
 		{
 			FusionAppSettings appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
+
+#if UNITY_EDITOR
+			bool developerUseCustomAppID = DevelopmentConfig.Instance.GetDeveloperPreferences().useCustomAppID;
+			string developerFusionPref = DevelopmentConfig.Instance.GetDeveloperPreferences().fusionAppID;
+			string developerVoicePref = DevelopmentConfig.Instance.GetDeveloperPreferences().voiceAppID;
+
+			appSettings.AppIdFusion = developerUseCustomAppID ? developerFusionPref : defaultAppID.Value;
+			appSettings.AppIdVoice = developerUseCustomAppID ? developerVoicePref : defaultVoiceID.Value;
+#else
 			appSettings.AppIdFusion = useCustomAppID.Value ? customAppID.Value : defaultAppID.Value;
 			appSettings.AppIdVoice = useCustomAppID.Value ? customVoiceID.Value : defaultVoiceID.Value;
+#endif
 			appSettings.FixedRegion = regionCodes[region.Value];
 			return appSettings;
 		}
