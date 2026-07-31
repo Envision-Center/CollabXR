@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 using UnityEngine.Events;
+using WebSocketSharp;
 
 namespace CollabXR.Scriptables
 {
@@ -16,6 +17,9 @@ namespace CollabXR.Scriptables
 		// value that affects behavior
 		private T variableValue;
 
+		[SerializeField]
+		protected string playerPrefName;
+
 		public event Action<T> onChange = delegate { };
 		public event Action<T> beforeChange = delegate { };
 
@@ -24,12 +28,22 @@ namespace CollabXR.Scriptables
 
 		public void Initialize()
 		{
-			variableValue = serializedValue;
+			if (!playerPrefName.IsNullOrEmpty() && PlayerPrefs.HasKey(playerPrefName))
+			{
+				variableValue = GetPlayerPref();
+				Debug.Log($"Deserialized {playerPrefName} as {variableValue}");
+			}
+			else
+			{
+				variableValue = serializedValue;
+			}
+			initialized = true;
 		}
 
 		public void Set(T t)
 		{
 			Value = t;
+			SetPlayerPref(t);
 		}
 
 		public void AddChangeListenerAndCheck(Action<T> f)
@@ -44,8 +58,7 @@ namespace CollabXR.Scriptables
 			{
 				if (!initialized)
 				{
-					variableValue = serializedValue;
-					initialized = true;
+					Initialize();
 				}
 				return variableValue;
 			}
@@ -60,6 +73,9 @@ namespace CollabXR.Scriptables
 				onChange.Invoke(variableValue);
 			}
 		}
+
+		public abstract T GetPlayerPref();
+		public abstract void SetPlayerPref(T t);
 	}
 
 	public abstract class GenericScriptableVariableEvents<T> : MonoBehaviour

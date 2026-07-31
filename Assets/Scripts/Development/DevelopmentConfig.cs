@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using CollabXR.ModLoader;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,6 +42,11 @@ namespace CollabXR.Development
 			{
 				AssetDatabase.CopyAsset(DeveloperPreferencesTemplatePath, DeveloperPreferencesAbsolutePath);
 				asset = Resources.Load<DeveloperPreferences>(DeveloperPreferencesResource);
+			}
+
+			foreach (string repo in asset.repositoryURLs)
+			{
+				RepositoryManager.AddRepository(repo, false);
 			}
 #endif
 			return asset;

@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a058d799d665544889d70f1bfd8778e, type: 3}
-  m_Name: Region
+  m_Script: {fileID: 11500000, guid: 57714b71741089e42a06b6427d359d4e, type: 3}
+  m_Name: App ID Custom
   m_EditorClassIdentifier: 
-  serializedValue: 12
-  playerPrefName: region
+  serializedValue: 
+  playerPrefName: custom_app_id
