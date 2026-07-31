@@ -76,6 +76,7 @@ crashlytics-build.properties
 
 report.txt
 
+Assets/Samples/
 Assets/Resources/Preferences/
 Assets/Photon/*
 Assets/Photon/Fusion/*
