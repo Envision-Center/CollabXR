@@ -370,7 +370,6 @@ MonoBehaviour:
   scanButton: {fileID: 7149231562147755082}
   scanningColor: {r: 0.03529412, g: 1, b: 0, a: 1}
   filename: voice_app_id
-  useCustomIDToggle: {fileID: 4810295251768813330}
 --- !u!1 &1869262468929076030
 GameObject:
   m_ObjectHideFlags: 0
@@ -1306,7 +1305,6 @@ MonoBehaviour:
   scanButton: {fileID: 8661640913764528979}
   scanningColor: {r: 0.03529412, g: 1, b: 0, a: 1}
   filename: fusion_app_id
-  useCustomIDToggle: {fileID: 4810295251768813330}
 --- !u!1 &8010747520310538409
 GameObject:
   m_ObjectHideFlags: 0
@@ -1527,7 +1525,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000015258789, y: -0.000015258789}
+  m_AnchoredPosition: {x: 0.000015258789, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3534827590114259468
@@ -3006,6 +3004,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2429458345724798529, guid: 4bc5f9d5025d3ee4c89e407d069bed90, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1538800844183288449}
+    - targetCorrespondingSourceObject: {fileID: 2429458345724798529, guid: 4bc5f9d5025d3ee4c89e407d069bed90, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6941961648403282437}
   m_SourcePrefab: {fileID: 100100000, guid: 4bc5f9d5025d3ee4c89e407d069bed90, type: 3}
 --- !u!1 &4524171619305333039 stripped
 GameObject:
@@ -3069,6 +3070,19 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   waitForNetworkObject: 0
+--- !u!114 &6941961648403282437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4524171619305333039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c766e066d000574a9eb714093c86e82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useCustomIDToggle: {fileID: 4810295251768813330}
 --- !u!114 &4810295251768813330 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6755302047848620156, guid: 4bc5f9d5025d3ee4c89e407d069bed90, type: 3}

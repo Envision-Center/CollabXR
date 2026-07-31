@@ -10,13 +10,11 @@ namespace CollabXR
     public class AppIDScanner : InputFieldScanner
 	{
 		public string filename;
-		public Toggle useCustomIDToggle;
 		private string appIDFilePath;
 
 		private void Awake()
 		{
 			appIDFilePath = Path.Combine(Application.persistentDataPath, filename + ".json");
-			DeserializeCustomAppIDToggle();
 		}
 
 		private void OnEnable()
@@ -38,16 +36,6 @@ namespace CollabXR
 				string decodedID = Encoding.UTF8.GetString(Convert.FromBase64String(encodedID));
 				targetField.text = decodedID;
 			}
-		}
-
-		public void SerializeCustomAppIDToggle(bool isOn)
-		{
-			PlayerPrefs.SetInt("custom_app_id", Convert.ToInt32(isOn));
-		}
-
-		public void DeserializeCustomAppIDToggle()
-		{
-			useCustomIDToggle.SetIsOnWithoutNotify(Convert.ToBoolean(PlayerPrefs.GetInt("custom_app_id")));
 		}
 
 	}
