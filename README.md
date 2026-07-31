@@ -1,4 +1,4 @@
-# ![](Web/collabxr.svg) CollabXR
+# CollabXR
 
 ![](Web/brochure.jpg)
 
