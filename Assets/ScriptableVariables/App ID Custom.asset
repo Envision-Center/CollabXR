@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: App ID Custom
   m_EditorClassIdentifier: 
   serializedValue: 
+  playerPrefName: custom_app_id

@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: Voice ID Custom
   m_EditorClassIdentifier: 
   serializedValue: 
+  playerPrefName: custom_voice_id

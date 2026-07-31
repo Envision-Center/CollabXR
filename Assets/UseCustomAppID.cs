@@ -15,12 +15,16 @@ namespace CollabXR
 
 		public void SerializeCustomAppIDToggle(bool isOn)
 		{
-			PlayerPrefs.SetInt("custom_app_id", Convert.ToInt32(isOn));
+			int isOnPref = Convert.ToInt32(isOn);
+			PlayerPrefs.SetInt("custom_app_id", isOnPref);
+			Debug.Log($"serializing custom_app_id={isOn}, pref={isOnPref}");
 		}
 
 		public void DeserializeCustomAppIDToggle()
 		{
-			useCustomIDToggle.SetIsOnWithoutNotify(Convert.ToBoolean(PlayerPrefs.GetInt("custom_app_id")));
+			int isOnPref = PlayerPrefs.GetInt("custom_app_id");
+			useCustomIDToggle.isOn = Convert.ToBoolean(isOnPref);
+			Debug.Log($"deserialized custom_app_id={useCustomIDToggle.isOn}, pref={isOnPref}");
 		}
 	}
 }
