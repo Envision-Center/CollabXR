@@ -17,12 +17,24 @@ namespace CollabXR.UI
 		[SerializeField]
 		private RadialMenuButton defaultButton;
 
+		[SerializeField]
+		private RectTransform cursorTransform;
+
 		[Header("Timing")]
 		[SerializeField]
 		private float holdThreshold = 0.15f;
 
 		[SerializeField]
 		private float selectDistance = 0.1f;
+
+		[SerializeField]
+		private float maxMoveDistance = 0.2f;
+
+		[SerializeField]
+		private float centerRadius;
+
+		[SerializeField]
+		private float totalRadius;
 
 		[Header("Open/Close")]
 		[SerializeField]
@@ -47,6 +59,7 @@ namespace CollabXR.UI
 		private Vector3 startMenuGlobalPosition;
 		private Vector3 awakeLocalPosition;
 		private Quaternion openRotation;
+		private Vector2 cursorPosition;
 		private int openRequestId;
 
 		private void Awake()
@@ -144,6 +157,29 @@ namespace CollabXR.UI
 			{
 				transform.position = startMenuGlobalPosition;
 				transform.rotation = openRotation;
+
+				cursorTransform.anchoredPosition = cursorPosition;
+			}
+		}
+
+		private void SetCursorPosition(Vector2 direction, float distance)
+		{
+			direction = new Vector2(-direction.x, direction.y).normalized;
+
+			// let a = selectDistance, b = maxMoveDistance, c = centerRadius, d = totalRadius, x = distance
+
+			if (distance < selectDistance)
+			{
+				// y1 = cx/a
+				float multiplier = distance * centerRadius / selectDistance;
+				cursorPosition = direction * Mathf.Clamp(multiplier, 0, centerRadius);
+			}
+			else
+			{
+				// y2 = (d-c) / (b-a) * (x-a) + c
+				// y1 intersects y2 at (a, c) and y2 reaches (b, d)
+				float multiplier = (totalRadius - centerRadius) / (maxMoveDistance - selectDistance) * (distance - selectDistance) + centerRadius;
+				cursorPosition = direction * Mathf.Clamp(multiplier, 0, totalRadius);
 			}
 		}
 
@@ -155,11 +191,13 @@ namespace CollabXR.UI
 			Vector2 direction = (projectedPosition - projectedStartPosition).normalized;
 			Vector2 tiltAxis = new(Vector3.Dot(direction, transform.right), Vector3.Dot(direction, transform.up));
 
+			SetCursorPosition(direction, distance);
+
 			RadialMenuButton newSelection = defaultButton;
 
 			if (distance >= selectDistance)
 			{
-				float tiltAngle = -Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 360f / (Mathf.PI * 2f);
+				float tiltAngle = Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 360f / (Mathf.PI * 2f);
 				if (tiltAngle < 0f)
 					tiltAngle += 360f;
 
