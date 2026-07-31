@@ -80,7 +80,7 @@ runs:
     #   id: get-unity-path
     #   shell: bash
     #   run: |
-    #     echo "Platform not supported."
+    #     echo "Platform not yet supported."
 
     - name: Accept Android SDK Licenses
       continue-on-error: true
