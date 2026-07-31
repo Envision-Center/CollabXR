@@ -1,6 +1,6 @@
-# ![](web/collabxr.svg) CollabXR
+# ![](Web/collabxr.svg) CollabXR
 
-![](web/brochure.jpg)
+![](Web/brochure.jpg)
 
 **CollabXR** is a shared immersive platform designed for collaborative learning, training, and research using interactive 3D content.
 
@@ -18,4 +18,4 @@ To get started with making content for use inside CollabXR, see the [preparing f
 
 If you would like to contribute to CollabXR directly, see the [Contributing guidelines](https://envision-center.github.io/CollabXR-Documentation/contribution.html).
 
-![](web/fluid_dynamics.jpg)
+![](Web/fluid_dynamics.jpg)
