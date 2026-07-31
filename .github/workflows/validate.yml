@@ -1,6 +1,7 @@
 name: Validate Code
 run-name: Performs simple code analysis for CollabXR
-on: [push, workflow_dispatch]
+# on: [push, workflow_dispatch]
+on: [push] # Disabled for now until we actually have unit tests
 
 jobs:
   validate-code:

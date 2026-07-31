@@ -2,14 +2,9 @@ name: Build CollabXR
 run-name: Build CollabXR for all platforms
 
 # Only trigger when validation succeeds
-on:
-  workflow_run:
-    workflows: ["Validate Code"]
-    types:
-      - completed
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
-
+# Cancel old workflows if multiple commits are pushed to the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   # Do not cancel release tags
