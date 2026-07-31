@@ -13,6 +13,9 @@ namespace CollabXR.ModLoader
 
 		private float repositoryUpdateTimer;
 
+		[SerializeField]
+		private bool isDuringSession;
+
 		void Update()
 		{
 			repositoryUpdateTimer += Time.deltaTime;
@@ -27,6 +30,11 @@ namespace CollabXR.ModLoader
 						listedRepositories[repoUrl].SetInfo(repoUrl, RepositoryManager.Instance.loadedRepositories[repoUrl]);
 					else
 						listedRepositories[repoUrl].SetInfo(repoUrl, null);
+
+					if (isDuringSession)
+					{
+						listedRepositories[repoUrl].HideAllButtons();						
+					}
 				}
 			}
 

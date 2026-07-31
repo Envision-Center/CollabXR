@@ -62,7 +62,7 @@ jobs:
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
         with:
-          lfs: "true"
+          lfs: 'true'
           submodules: "true"
           # token: ${{ steps.app-token.outputs.token }}
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -70,6 +70,9 @@ jobs:
           # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
           persist-credentials: false
           set-safe-directory: false
+
+      - name: Pull Git LFS
+        run: git lfs pull
 
       - name: Get Collab Keystore
         run: echo "${{ secrets.COLLAB_KEYSTORE }}" | base64 -d -o collab.keystore
@@ -124,7 +127,7 @@ jobs:
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.S3_REGION }}
+          aws-region: ${{ secrets.S3_REGION }}
       - name: Configure AWS CLI
         run: brew install awscli
       - name: Get Build Version
@@ -134,26 +137,26 @@ jobs:
       - name: Construct Upload Path
         run: |
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ vars.S3_BUCKET }}" >> $GITHUB_ENV
-
-      # Tag actions with artifact uploads
+          echo "S3_PATH=s3://${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
       - name: Compress and Upload Desktop Artifact
         if: matrix.name != 'quest3'
         run: |
           zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
           aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
+          echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
       - name: Upload Quest Artifact to S3
         if: matrix.name == 'quest3'
         run: |
           aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH/$FOLDER_NAME/
+          echo "FILE_SIZE=$(du -k ${{ github.workspace }}/Build/${{ matrix.output-binary }} | cut -f1)" >> $GITHUB_ENV
       - name: Output Desktop Build
         if: matrix.name != 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip" > $GITHUB_STEP_SUMMARY
+          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip\"}" ${{ secrets.EC_WEBHOOK }}
       - name: Output Quest Build
         if: matrix.name == 'quest3'
         run: |
-          echo "${{matrix.name}} build: https://${{ vars.S3_BUCKET }}.s3.${{ vars.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}" > $GITHUB_STEP_SUMMARY
+          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}\"}" ${{ secrets.EC_WEBHOOK }}
 
       # - name: Upload CollabXR Executable
       #   uses: actions/upload-artifact@v7

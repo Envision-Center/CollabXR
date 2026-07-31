@@ -1,6 +1,8 @@
 using System;
 using CollabXR.Objects;
 using CollabXR.Tools;
+using CollabXR.ModLoader;
+using CollabXR.ModPackager;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -140,7 +142,32 @@ namespace CollabXR.UI
 			if (entered)
 			{
 				CollabObjectData objData = activeCategory.objectData[dataIndex];
-				infoPanel.SetInfoPanel(objData.assetName, objData.attribution, objData.thumbnail, objData.creators);
+				
+				string repositoryName;
+				string version;
+				if (!ModManager.Instance.indexedMods.ContainsKey(objData.modGUID))
+				{
+					Debug.LogError($"Mod with GUID {objData.modGUID} not found in indexed mods. Cannot display info panel.");
+					repositoryName = "Unknown";
+					version = "Unknown";
+				}
+				else
+				{
+					Tuple<ModMetadata, string> targetModRecord = ModManager.Instance.indexedMods[objData.modGUID];
+					version = targetModRecord.Item1.BuildNumberMap[ModManager.GetPlatformString()].ToString();
+					repositoryName = RepositoryManager.Instance.loadedRepositories[targetModRecord.Item2].RepoName;
+				}
+
+				infoPanel.SetInfoPanel(
+					assetName: objData.assetName,
+					attribution: objData.attribution,
+					thumbnail: objData.thumbnail,
+					creator: objData.creators,
+					version: version,
+					repositoryName: repositoryName,
+					modGUID: objData.modGUID,
+					assetGUID: objData.assetGUID
+				);
 				infoPanel.ToggleVisibility(true);
 			}
 			else
