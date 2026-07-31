@@ -56,9 +56,18 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           photon-install-path: $GITHUB_WORKSPACE/Assets
 
-      - name: Run Unity Tests
-        shell: bash
-        run: ${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -testPlatform PS4 || cat results.xml || echo "Tests failed to run"
+      - uses: game-ci/unity-test-runner@v4
+        # env:
+          # UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          # UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          # UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: $GITHUB_WORKSPACE
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Run Unity Tests
+      #   shell: bash
+      #   run: ${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -testPlatform PS4 || cat results.xml || echo "Tests failed to run"
 
       - name: Dotnet Build
         shell: bash
