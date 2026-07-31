@@ -66,12 +66,14 @@ jobs:
       #     githubToken: ${{ secrets.GITHUB_TOKEN }}
 
       # https://github.com/needle-mirror/com.unity.test-framework/blob/master/Documentation~/reference-command-line.md
+      # Note this command may take a while to run during initial compile
       - name: Run Unity Tests
         shell: bash
         run: ( ${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -quitTimeout 60 -playerHeartbeatTimeout 30 && cat results.xml ) || echo "Tests failed to run"
 
       - name: Dotnet Build
         shell: bash
-        run: ls && dotnet build CollabXR.sln
+        # NOTE: .slnx is project file for macOS, .sln is project file for Windows
+        run: dotnet build CollabXR.slnx
 
       # TODO: upload test artifact if we even want it, or report test results somehow
