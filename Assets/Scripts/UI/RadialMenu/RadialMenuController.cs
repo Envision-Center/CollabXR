@@ -164,8 +164,6 @@ namespace CollabXR.UI
 
 		private void SetCursorPosition(Vector2 direction, float distance)
 		{
-			direction = new Vector2(-direction.x, direction.y).normalized;
-
 			// let a = selectDistance, b = maxMoveDistance, c = centerRadius, d = totalRadius, x = distance
 
 			if (distance < selectDistance)
