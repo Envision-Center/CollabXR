@@ -6,6 +6,7 @@ using CollabXR.Scriptables;
 using Fusion;
 using Fusion.Photon.Realtime;
 using Fusion.Sockets;
+using Photon.Realtime;
 using Photon.Voice.Fusion;
 using Photon.Voice.Unity;
 using UnityEngine;
@@ -29,9 +30,11 @@ namespace CollabXR.Networking
 		private ScriptableBool useCustomAppID;
 
 		[SerializeField]
-		private ScriptableString customAppID, defaultAppID;
+		private ScriptableString customAppID;
 		[SerializeField]
-		private ScriptableString customVoiceID, defaultVoiceID;
+		private ScriptableString customVoiceID;
+
+		private string defaultAppID, defaultVoiceID;
 
 		[SerializeField]
 		private bool connectOnStart;
@@ -57,6 +60,12 @@ namespace CollabXR.Networking
 				Runner = gameObject.AddComponent<NetworkRunner>();
 
 			voiceRecorder = GetComponent<Recorder>();
+
+			//storing app IDs from Keys into variables to allow runtime switching
+			FusionAppSettings appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
+			defaultAppID = appSettings.AppIdFusion;
+			defaultVoiceID = appSettings.AppIdVoice;
+
 		}
 
 		private void Start()
@@ -158,11 +167,11 @@ namespace CollabXR.Networking
 			string developerFusionPref = DevelopmentConfig.Instance.GetDeveloperPreferences().fusionAppID;
 			string developerVoicePref = DevelopmentConfig.Instance.GetDeveloperPreferences().voiceAppID;
 
-			appSettings.AppIdFusion = developerUseCustomAppID ? developerFusionPref : defaultAppID.Value;
-			appSettings.AppIdVoice = developerUseCustomAppID ? developerVoicePref : defaultVoiceID.Value;
+			appSettings.AppIdFusion = developerUseCustomAppID ? developerFusionPref : defaultAppID;
+			appSettings.AppIdVoice = developerUseCustomAppID ? developerVoicePref : defaultVoiceID;
 #else
-			appSettings.AppIdFusion = useCustomAppID.Value ? customAppID.Value : defaultAppID.Value;
-			appSettings.AppIdVoice = useCustomAppID.Value ? customVoiceID.Value : defaultVoiceID.Value;
+			appSettings.AppIdFusion = useCustomAppID.Value ? customAppID.Value : defaultAppID;
+			appSettings.AppIdVoice = useCustomAppID.Value ? customVoiceID.Value : defaultVoiceID;
 #endif
 			appSettings.FixedRegion = regionCodes[region.Value];
 			return appSettings;
