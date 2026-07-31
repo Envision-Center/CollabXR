@@ -249,8 +249,7 @@ namespace CollabXR.UI
 
 		private void CompleteAnim(int requestId)
 		{
-			// The tool de-equip animation driving this can finish after the menu was already
-			// closed (or reopened again), so ignore it unless it's still for the current open.
+			// The tool deequip animation driving this can finish so ignore it unless its still for the current open
 			if (!isMenuOpen || requestId != openRequestId)
 				return;
 
@@ -262,9 +261,7 @@ namespace CollabXR.UI
 		{
 			try
 			{
-				// If the menu closes before UpdateSelection ever ran a single frame (e.g. a quick
-				// press-release right around holdThreshold), selectedButton is still null here -
-				// fall back to the default button instead of silently committing nothing.
+				// fallback to default just in case null
 				(selectedButton ?? defaultButton)?.OnClicked(hand.isRight);
 
 				foreach (var button in buttons)
