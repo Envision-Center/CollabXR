@@ -1,3 +1,4 @@
+using System;
 using CollabXR.Tools.Palette;
 using CollabXR.VR;
 using UnityEngine;
@@ -24,6 +25,8 @@ namespace CollabXR.Tools
 
 		private RigHandRef handRef;
 
+		private Transform selectedToolTransform;
+
 		private void Awake()
 		{
 			handRef = this.GetRigHandRef();
@@ -46,7 +49,45 @@ namespace CollabXR.Tools
 		public void ActivateTool(int index)
 		{
 			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
-			onToolChange?.Invoke(prevTool, curTool);
+
+			// Re-activating the tool that's already selected would otherwise restart its equip
+			// tween from the hover position every time - rapid repeat taps could keep resetting
+			// it and never let it reach the active position.
+			if (curTool == selectedToolTransform)
+				return;
+
+			curTool.GetComponent<ToolAnimator>()?.AnimateToolEquip(() => onToolChange?.Invoke(prevTool, curTool));
+			selectedToolTransform = curTool;
+		}
+
+		public void ActivateToolPreview(int index)
+		{
+			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
+
+			/*if (prevTool?.TryGetComponent(out ToolAnimator prevAnimator) == true)
+			{
+				toolActivator.SetActiveChild(prevTool);
+				prevAnimator.ShowToolPreviewLeave(() =>
+				{
+					toolActivator.SetActiveChild(curTool);
+					curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+				});
+			}
+			else*/
+			{
+				curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+			}
+		}
+
+		public void DeEquipTool(Action onComplete = null)
+		{
+			var animator = selectedToolTransform?.GetComponent<ToolAnimator>();
+			if (animator != null)
+				animator.AnimateToolDisequip(onComplete);
+			else
+				onComplete?.Invoke();
+
+			selectedToolTransform = null;
 		}
 	}
 }

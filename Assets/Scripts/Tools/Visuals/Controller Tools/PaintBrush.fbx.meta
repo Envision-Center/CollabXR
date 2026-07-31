@@ -3,7 +3,12 @@ guid: a3772fc1eb327954ba4bc31a2f78eeab
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CollabTools
+    second: {fileID: 2100000, guid: 0076f4d0714022446abce8bf547d03b8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

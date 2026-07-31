@@ -1,4 +1,5 @@
 using CollabXR.Objects.Components;
+using CollabXR.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -26,9 +27,7 @@ namespace CollabXR.Tools
 
 		private void LateUpdate()
 		{
-			bool isOverUI = interactor.IsOverUIGameObject();
-
-			interactor.TryGetCurrentUIRaycastResult(out RaycastResult result);
+			bool isOverUI = interactor.TryGetCurrentUIRaycastResult(out RaycastResult result) && !result.gameObject.TryGetComponent(out IgnoreUIRaycast _);
 
 			lineRenderer.enabled = isOverUI;
 			laser.SetEndPositionForFrame(result.worldPosition);
