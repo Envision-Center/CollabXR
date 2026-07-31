@@ -69,11 +69,12 @@ jobs:
       # Note this command may take a while to run during initial compile
       - name: Run Unity Tests
         shell: bash
-        run: ( ${{ steps.setup.outputs.unity }} -runTests -batchmode -projectPath . -testResults results.xml -quitTimeout 60 -playerHeartbeatTimeout 30 && cat results.xml ) || echo "Tests failed to run"
+        run: ( ${{ steps.setup.outputs.unity }} -runTests -batchmode -nographic -projectPath . -testResults results.xml -quitTimeout 60 -playerHeartbeatTimeout 30 && cat results.xml ) || echo "Tests failed to run"
 
-      - name: Dotnet Build
-        shell: bash
-        # NOTE: .slnx is project file for macOS, .sln is project file for Windows
-        run: dotnet build CollabXR.slnx
+      # Project files aren't generated in same directory on mac for some reason
+      # - name: Dotnet Build
+      #   shell: bash
+      #   # NOTE: .slnx is project file for macOS, .sln is project file for Windows
+      #   run: ls && dotnet build CollabXR.slnx
 
       # TODO: upload test artifact if we even want it, or report test results somehow
