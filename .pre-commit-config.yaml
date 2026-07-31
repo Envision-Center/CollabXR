@@ -1,57 +1,58 @@
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v6.0.0
-      hooks:
-          - id: check-yaml
-          - id: check-json
-            exclude: "zed/"
-          - id: check-xml
-          - id: check-toml
-          # Windows filepaths are somewhat case-insensitive
-          - id: check-case-conflict
-          # Ensure valid Python
-          - id: check-ast
-            types: [file, text, python]
-          # Clean up whitespace issues
-          - id: trailing-whitespace
-            types: [file, text]
-            exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
-          - id: end-of-file-fixer
-            types: [file, text]
-            exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
-          # Force consistent line endings, we don't care which type
-          - id: mixed-line-ending
-            name: "Enforce Line Consistency"
-            args: ["--fix=auto"]
-            types: [file, text]
-            exclude_types: [bash, batch]
-            exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
-          # Shell scripts MUST have Unix-style line endings to work
-          - id: mixed-line-ending
-            name: Enforce Shell Line-Endings
-            args: ["--fix=lf"]
-            types: [bash]
-          # Batch scripts MUST have Windows-style line endings to work
-          - id: mixed-line-ending
-            name: Enforce Batch Line-Endings
-            args: ["--fix=crlf"]
-            types: [batch]
-          # Don't accidentally upload secrets
-          # - id: detect-aws-credentials
-          #   args: ["--allow-missing-credentials"]
-          # - id: detect-private-key
-    # Set up CSharpier and format code
-    # https://csharpier.com/docs/Pre-commit#standalone
-    - repo: local
-      hooks:
-          - id: dotnet-tool-restore
-            name: Install .NET Tools
-            entry: dotnet tool restore
-            language: system
-            pass_filenames: false
-            types: [c#]
-          - id: csharpier
-            name: Run CSharpier
-            entry: dotnet tool run CSharpier format
-            language: system
-            types: [c#]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+        exclude: "zed/"
+      - id: check-xml
+      - id: check-toml
+      # Windows filepaths are somewhat case-insensitive
+      - id: check-case-conflict
+      # Ensure valid Python
+      # - id: check-ast
+      #   types: [file, text, python]
+      # Clean up whitespace issues
+      - id: trailing-whitespace
+        types: [file, text]
+        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
+      - id: end-of-file-fixer
+        types: [file, text]
+        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
+      # Force consistent line endings, we don't care which type
+      - id: mixed-line-ending
+        name: "Enforce Line Consistency"
+        args: ["--fix=auto"]
+        types: [file, text]
+        exclude_types: [bash, batch]
+        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
+      # Shell scripts MUST have Unix-style line endings to work
+      - id: mixed-line-ending
+        name: Enforce Shell Line-Endings
+        args: ["--fix=lf"]
+        types: [bash]
+      # Batch scripts MUST have Windows-style line endings to work
+      - id: mixed-line-ending
+        name: Enforce Batch Line-Endings
+        args: ["--fix=crlf"]
+        types: [batch]
+      # Don't accidentally upload secrets
+      - id: detect-aws-credentials
+        args: ["--allow-missing-credentials"]
+      - id: detect-private-key
+  # Set up CSharpier and format code
+  # https://csharpier.com/docs/Pre-commit#standalone
+  - repo: local
+    hooks:
+      - id: dotnet-tool-restore
+        name: Install .NET Tools
+        entry: dotnet tool restore
+        language: system
+        pass_filenames: false
+        types: [c#]
+      - id: csharpier
+        name: Run CSharpier
+        entry: dotnet csharpier format --config-path .editorconfig
+        language: system
+        types: [c#]
+        pass_filenames: true

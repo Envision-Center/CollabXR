@@ -34,6 +34,15 @@
 					// ],
 				},
 			},
+			"line_ending": "enforce_lf",
+		},
+		"YAML": {
+			"hard_tabs": false,
+			"tab_size": 2,
+			"line_ending": "enforce_lf",
+		},
+		"Editorconfig": {
+			"line_ending": "enforce_lf",
 		},
 	},
 }
