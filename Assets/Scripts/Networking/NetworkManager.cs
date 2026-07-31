@@ -70,17 +70,11 @@ namespace CollabXR.Networking
 
 		private void Start()
 		{
-			ConnectToLobby();
 			if (connectOnStart)
 			{
 				defaultMode = GameMode.Single;
 				Connect("Developer room " + UnityEngine.Random.Range(1000, 9999));
 			}
-		}
-
-		private void ConnectToLobby()
-		{
-			Runner.JoinSessionLobby(SessionLobby.Shared, null, null, GetAppSettings());
 		}
 
 		public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -97,18 +91,18 @@ namespace CollabXR.Networking
 
 		public void Connect(string roomName)
 		{
-			Debug.Log($"Joining room: {roomName} with app ID {GetAppSettings().AppIdFusion} in region {GetAppSettings().FixedRegion} in mode {defaultMode}");
-			Runner.StartGame(
+			StartGameArgs args =
 				new StartGameArgs
 				{
 					GameMode = defaultMode,
 					SessionName = roomName,
-					//Scene = 1,
-					//SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>(),
 					CustomPhotonAppSettings = GetAppSettings(),
 					Config = NetworkProjectConfig.Global,
-				}
-			);
+					UseCachedRegions = false
+				};
+
+			Debug.Log($"Joining room: {args.SessionName} with app ID {args.CustomPhotonAppSettings.AppIdFusion} in region {args.CustomPhotonAppSettings.FixedRegion} in mode {defaultMode}");
+			Runner.StartGame(args);
 		}
 
 		//private bool shouldInstantiatePlayerOnSceneLoad;

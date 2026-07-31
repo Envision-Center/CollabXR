@@ -28,7 +28,7 @@ namespace CollabXR.Scriptables
 
 		public void Initialize()
 		{
-			if (!playerPrefName.IsNullOrEmpty())
+			if (!playerPrefName.IsNullOrEmpty() && PlayerPrefs.HasKey(playerPrefName))
 			{
 				variableValue = GetPlayerPref();
 				Debug.Log($"Deserialized {playerPrefName} as {variableValue}");
