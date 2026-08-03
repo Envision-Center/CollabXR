@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7fe0428704d2f04db349de9f5b3b70c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuIcon: {fileID: 21300000, guid: 123e674219dc34b40b44ee5ab72f9ece, type: 3}
+  menuIcon: {fileID: 21300000, guid: 2e805dcf29d601549a22f7807e515f41, type: 3}
   fovText: {fileID: 5088250160449524850}
   qualityText: {fileID: 8533780648360869852}
   debugText: {fileID: 6549991097026026004}

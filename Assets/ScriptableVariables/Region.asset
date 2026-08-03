@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: Region
   m_EditorClassIdentifier: 
   serializedValue: 12
+  playerPrefName: region

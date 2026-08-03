@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using CollabXR.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace CollabXR
 {
@@ -17,7 +19,7 @@ namespace CollabXR
 
 		private void LateUpdate()
 		{
-			bool isOverUI = interactor.IsOverUIGameObject();
+			bool isOverUI = interactor.TryGetCurrentUIRaycastResult(out RaycastResult raycastResult) && !raycastResult.gameObject.TryGetComponent(out IgnoreUIRaycast _);
 
 			sprite.enabled = isOverUI;
 

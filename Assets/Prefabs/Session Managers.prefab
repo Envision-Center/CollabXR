@@ -70,6 +70,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 897e5d86fd1df7e4bad86300001aecbb, type: 2}
   - {fileID: 11400000, guid: 832dd644159852843a596203d9f17ecf, type: 2}
   - {fileID: 11400000, guid: 0f8bc5026ca1b914aa6fec51f76bca3f, type: 2}
+  - {fileID: 11400000, guid: 5d14223a5ad92d341ac594c448d9e08d, type: 2}
   _currentEnvironmentIndex: 0
   _currentTeleportIndex: 0
   OnEnvironmentLoadComplete:

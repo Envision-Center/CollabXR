@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10de15684cb9a6a4da2eeeba2dbdb5e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuIcon: {fileID: 0}
+  menuIcon: {fileID: 21300000, guid: 06e6d7005d884ad49a7ced3a8ce716b7, type: 3}
   magnitudeSlider: {fileID: 3598681704647220978}
   latitudeSlider: {fileID: 7128126392886163988}
   longitudeSlider: {fileID: 5602941982748895161}
