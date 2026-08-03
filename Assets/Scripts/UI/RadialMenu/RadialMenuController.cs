@@ -183,11 +183,12 @@ namespace CollabXR.UI
 
 		private void UpdateSelection()
 		{
-			Vector3 projectedPosition = Vector3.ProjectOnPlane(handRef.transform.position, transform.forward);
-			Vector3 projectedStartPosition = Vector3.ProjectOnPlane(startHandPosition, transform.forward);
-			float distance = Vector3.Distance(projectedPosition, projectedStartPosition);
-			Vector2 direction = (projectedPosition - projectedStartPosition).normalized;
-			Vector2 tiltAxis = new(Vector3.Dot(direction, transform.right), Vector3.Dot(direction, transform.up));
+			Vector3 worldDisplacement = handRef.transform.position - startHandPosition;
+
+			Vector2 tiltAxis = new(Vector3.Dot(worldDisplacement, transform.right), Vector3.Dot(worldDisplacement, transform.up));
+
+			float distance = tiltAxis.magnitude;
+			Vector2 direction = tiltAxis.normalized;
 
 			SetCursorPosition(direction, distance);
 

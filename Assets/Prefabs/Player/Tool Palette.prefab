@@ -6841,6 +6841,10 @@ PrefabInstance:
       propertyPath: selectedScale
       value: 1.1
       objectReference: {fileID: 0}
+    - target: {fileID: 3309735603853941811, guid: 1bab9df0e2907e846b3eb8913225204c, type: 3}
+      propertyPath: maxMoveDistance
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 3441572244229050508, guid: 1bab9df0e2907e846b3eb8913225204c, type: 3}
       propertyPath: selectedScale
       value: 1.1
