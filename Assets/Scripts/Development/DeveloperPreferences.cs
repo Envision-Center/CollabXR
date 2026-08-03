@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,6 +9,9 @@ namespace CollabXR.Development
 	{
 		[HideInInspector, SerializeField]
 		public string defaultRoom = "";
+		public bool useCustomAppID;
+		public string fusionAppID, voiceAppID;
+		public List<string> repositoryURLs;
 
 		public void GenerateNewRoomFixed()
 		{

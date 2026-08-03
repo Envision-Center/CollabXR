@@ -21,6 +21,9 @@ namespace CollabXR.ModLoader
 
 		private List<string> defaultRepositories = new List<string>() { "https://vpa33j6tuqgrwanxgjoqmxw7wy0vvwib.lambda-url.us-east-1.on.aws/" };
 
+		/// <summary>
+		/// Repository URL to RepositoryMetadata mapping.
+		/// </summary>
 		public Dictionary<string, RepositoryMetadata> loadedRepositories { get; private set; } = new();
 
 		internal bool DoneLoadingRepositories = false;
@@ -186,7 +189,6 @@ namespace CollabXR.ModLoader
 			if (Instance.loadedRepositories.ContainsKey(url))
 			{
 				Debug.Log($"{DEBUG_LOG_HEADER} Refreshing repository \"{url}\"...");
-
 				Task.Run(async () =>
 				{
 					Instance.NotifyLoadingBegin();

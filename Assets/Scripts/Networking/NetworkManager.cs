@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CollabXR.Development;
 using CollabXR.Scriptables;
 using Fusion;
 using Fusion.Photon.Realtime;
 using Fusion.Sockets;
+using Photon.Realtime;
 using Photon.Voice.Fusion;
 using Photon.Voice.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using WebSocketSharp;
 
 namespace CollabXR.Networking
 {
@@ -22,6 +25,16 @@ namespace CollabXR.Networking
 
 		[SerializeField]
 		private ScriptableInt region;
+
+		[SerializeField]
+		private ScriptableBool useCustomAppID;
+
+		[SerializeField]
+		private ScriptableString customAppID;
+		[SerializeField]
+		private ScriptableString customVoiceID;
+
+		private string defaultAppID, defaultVoiceID;
 
 		[SerializeField]
 		private bool connectOnStart;
@@ -47,21 +60,21 @@ namespace CollabXR.Networking
 				Runner = gameObject.AddComponent<NetworkRunner>();
 
 			voiceRecorder = GetComponent<Recorder>();
+
+			//storing app IDs from Keys into variables to allow runtime switching
+			FusionAppSettings appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
+			defaultAppID = appSettings.AppIdFusion;
+			defaultVoiceID = appSettings.AppIdVoice;
+
 		}
 
 		private void Start()
 		{
-			ConnectToLobby();
 			if (connectOnStart)
 			{
 				defaultMode = GameMode.Single;
 				Connect("Developer room " + UnityEngine.Random.Range(1000, 9999));
 			}
-		}
-
-		private void ConnectToLobby()
-		{
-			Runner.JoinSessionLobby(SessionLobby.Shared, null, null, GetAppSettings());
 		}
 
 		public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -78,18 +91,18 @@ namespace CollabXR.Networking
 
 		public void Connect(string roomName)
 		{
-			Debug.Log("Joining room: " + roomName + " at region: " + GetAppSettings().FixedRegion + " in mode " + defaultMode);
-			Runner.StartGame(
+			StartGameArgs args =
 				new StartGameArgs
 				{
 					GameMode = defaultMode,
 					SessionName = roomName,
-					//Scene = 1,
-					//SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>(),
 					CustomPhotonAppSettings = GetAppSettings(),
 					Config = NetworkProjectConfig.Global,
-				}
-			);
+					UseCachedRegions = false
+				};
+
+			Debug.Log($"Joining room: {args.SessionName} with app ID {args.CustomPhotonAppSettings.AppIdFusion} in region {args.CustomPhotonAppSettings.FixedRegion} in mode {defaultMode}");
+			Runner.StartGame(args);
 		}
 
 		//private bool shouldInstantiatePlayerOnSceneLoad;
@@ -142,6 +155,18 @@ namespace CollabXR.Networking
 		private FusionAppSettings GetAppSettings()
 		{
 			FusionAppSettings appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
+
+#if UNITY_EDITOR
+			bool developerUseCustomAppID = DevelopmentConfig.Instance.GetDeveloperPreferences().useCustomAppID;
+			string developerFusionPref = DevelopmentConfig.Instance.GetDeveloperPreferences().fusionAppID;
+			string developerVoicePref = DevelopmentConfig.Instance.GetDeveloperPreferences().voiceAppID;
+
+			appSettings.AppIdFusion = developerUseCustomAppID ? developerFusionPref : defaultAppID;
+			appSettings.AppIdVoice = developerUseCustomAppID ? developerVoicePref : defaultVoiceID;
+#else
+			appSettings.AppIdFusion = useCustomAppID.Value ? customAppID.Value : defaultAppID;
+			appSettings.AppIdVoice = useCustomAppID.Value ? customVoiceID.Value : defaultVoiceID;
+#endif
 			appSettings.FixedRegion = regionCodes[region.Value];
 			return appSettings;
 		}
