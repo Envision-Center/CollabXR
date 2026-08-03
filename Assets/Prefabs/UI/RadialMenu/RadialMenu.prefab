@@ -189,7 +189,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &2120700829456730160
 MonoBehaviour:
@@ -683,7 +683,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &499820807628377262
 MonoBehaviour:
@@ -886,7 +886,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &7684608677006666662
 MonoBehaviour:
@@ -1001,7 +1001,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &2880028153473316315
 MonoBehaviour:
@@ -1292,7 +1292,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &7866820363973707950
 MonoBehaviour:
@@ -1407,7 +1407,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &1729976524319479756
 MonoBehaviour:
@@ -1522,7 +1522,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &374410104849584159
 MonoBehaviour:
@@ -1697,7 +1697,7 @@ MonoBehaviour:
   cursorTransform: {fileID: 6946444508654376116}
   holdThreshold: 0.075
   selectDistance: 0.05
-  maxMoveDistance: 0.2
+  maxMoveDistance: 0.175
   centerRadius: 40
   totalRadius: 135
   openCloseTweenDuration: 0.15
@@ -1927,7 +1927,7 @@ MonoBehaviour:
   inactiveButtonColor: {fileID: 11400000, guid: d4dce6c281864a748b162a7ceecbd43d, type: 2}
   inactiveIconColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
   tweenDuration: 0.2
-  selectedScale: 1.2
+  selectedScale: 1.1
   easeType: 2
 --- !u!114 &1338065315313497677
 MonoBehaviour:
