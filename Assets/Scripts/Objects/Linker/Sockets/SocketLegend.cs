@@ -115,7 +115,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			}
 
 			// Check if there's a toggle controller
-			if (pointOfReference.TryGetComponent(out toggleController))
+			if (pointOfReference != null && pointOfReference.TryGetComponent(out toggleController))
 			{
 				Debug.Log("Found ToggleController for SocketLegend");
 			}
@@ -123,6 +123,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			// Instantiate a new variable list
 			foreach (var variable in legend.variables)
 			{
+				Debug.Log("Creating variable " + variable.name);
 				var display = Instantiate(variablePrefab, variableList, false);
 
 				GameObject variableLabel = display.transform.GetChild(1).gameObject;

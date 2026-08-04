@@ -106,13 +106,9 @@ namespace CollabXR.Tools
 
 		public void SetTarget(GameObject g)
 		{
-			if (g != null)
+			if (g != null && g.TryGetComponent<SocketBase>(out hovered))
 			{
-				hovered = g.GetComponent<SocketBase>();
-				if (hovered != null)
-				{
-					Debug.Log("Hovered is " + hovered.ToString());
-				}
+				Debug.Log("Hovered is " + hovered.ToString());
 			}
 			else
 			{
