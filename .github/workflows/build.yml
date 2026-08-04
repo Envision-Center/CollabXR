@@ -25,25 +25,21 @@ jobs:
           #     unity-hub-path: "C:/Program\\ Files/Unity\\ Hub/Unity\\ Hub.exe"
           #     unity-build-profile: "Assets/Settings/Build Profiles/WindowsDesktop.asset"
           #     output-binary: Collab.exe
-          #     upload-path:
           - name: "windows"
             platform: [self-hosted, macOS, ARM64]
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/WindowsDesktop.asset"
             output-binary: CollabXR.exe
-            upload-path: CollabXR.exe
           - name: "quest3"
             platform: [self-hosted, macOS, ARM64]
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
             output-binary: CollabXR.apk
-            upload-path: CollabXR.apk
           # - name: "macos" # For
           #   platform: [self-hosted, macOS, ARM64]
           #   unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           #   unity-build-profile: "Assets/Settings/BuildProfiles/MacOSDesktop.asset"
           #   output-binary: CollabXR.App
-          #   upload-path: CollabXR.App
 
     runs-on: ${{ matrix.platform }}
     environment: ${{ github.event.inputs.environment }}
