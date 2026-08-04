@@ -77,7 +77,7 @@ jobs:
 
       - name: Setup CollabXR
         id: setup
-        uses: ./.github/composite/collabxr
+        uses: ./.github/composite/setup
         with:
           unity-hub: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           unity-version: ${{ vars.UNITY_VERSION }}
@@ -89,54 +89,24 @@ jobs:
         run: |
           COLLAB_KEYSTORE_PASSWORD=${{ secrets.COLLAB_KEYSTORE_PASSWORD }} "${{ steps.setup.outputs.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ matrix.unity-build-profile }}" -build "${{ github.workspace }}/Build/${{ matrix.output-binary }}"
 
-      - name: List Build Outputs
-        run: |
-          ls ${{ github.workspace }}/Build/
-
-      - name: Strip Debug Info
-        continue-on-error: true
-        run: |
-          rm -rf ${{ github.workspace }}/Build/CollabXR_BurstDebugInformation_DoNotShip
+      - name: Build CollabXR
+        id: build
+        uses: ./.github/composite/build
+        with:
+          unity: ${{ steps.setup.outputs.unity }}
+          build-profile: ${{ matrix.unity-build-profile }}
+          keystore-password: ${{ secrets.COLLAB_KEYSTORE_PASSWORD }}
+          output-name: ${{ matrix.output-binary }}
 
       # Configure AWS
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+      - name: Upload Artifact
+        id: upload
+        uses: ./.github/composite/upload
         with:
-          aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.S3_REGION }}
-      - name: Configure AWS CLI
-        run: brew install awscli
-      - name: Get Build Version
-        run: |
-          brew install yq
-          echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ${{ github.workspace }}/ProjectSettings/ProjectSettings.asset)" >> $GITHUB_ENV
-      - name: Construct Upload Path
-        run: |
-          echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
-      - name: Compress and Upload Desktop Artifact
-        if: matrix.name != 'quest3'
-        run: |
-          zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
-          aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
-          echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
-      - name: Upload Quest Artifact to S3
-        if: matrix.name == 'quest3'
-        run: |
-          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH/$FOLDER_NAME/
-          echo "FILE_SIZE=$(du -k ${{ github.workspace }}/Build/${{ matrix.output-binary }} | cut -f1)" >> $GITHUB_ENV
-      - name: Output Desktop Build
-        if: matrix.name != 'quest3'
-        run: |
-          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip\"}" ${{ secrets.EC_WEBHOOK }}
-      - name: Output Quest Build
-        if: matrix.name == 'quest3'
-        run: |
-          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}\"}" ${{ secrets.EC_WEBHOOK }}
-
-      # - name: Upload CollabXR Executable
-      #   uses: actions/upload-artifact@v7
-      #   with:
-      #     name: ${{ matrix.name }}-build
-      #     path: ${{ github.workspace }}/Build/${{ matrix.upload-path }}
+          access-key: ${{ vars.AWS_ACCESS_KEY }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.S3_REGION }}
+          bucket: ${{ secrets.S3_BUCKET }}
+          filepath: ${{ steps.build.outputs.filepath }}
+          webhook: ${{ secrets.EC_WEBHOOK }}
+          platform-name: ${{ matrix.name }}

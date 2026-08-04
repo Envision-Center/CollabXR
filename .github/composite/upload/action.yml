@@ -1,0 +1,73 @@
+name: "AWS Upload"
+description: "Sets up AWS credentials and uploads the given filepath. If the filepath is a directory, zips it up first."
+
+inputs:
+  access-key:
+    description: "The AWS Access Key"
+    required: true
+  secret-access-key:
+    description: "The secret AWS Access Key"
+    required: true
+  region:
+    description: "The AWS S3 region"
+    required: true
+  bucket:
+    description: "The AWS S3 bucket to upload to."
+    required: true
+  filepath:
+    description: "Filepath to upload. If a directory, automatically zips the file before uploading."
+    required: true
+  webhook:
+    description: "Optional webhook secret"
+    default: null
+  platform-name:
+    description: "Name of platform for use in webhook"
+    default: "unspecified"
+
+outputs:
+  file-size:
+    description: "Resulting build size in kilobytes."
+    value: ${{ steps.upload.outputs.FILE_SIZE }}
+
+runs:
+  using: composite
+
+  steps:
+      - name: Configure AWS CLI
+        run: brew install awscli
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ inputs.access-key }}
+          aws-secret-access-key: ${{ inputs.secret-access-key }}
+          aws-region: ${{ inputs.region }}
+
+      - name: Get Build Version
+        id: version
+        run: |
+          brew install yq
+          echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ${{ github.workspace }}/ProjectSettings/ProjectSettings.asset)" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION=$BUNDLE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Construct Upload Path
+        run: |
+          echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
+          echo "S3_PATH=s3://${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
+
+      - name: Compress and Upload Artifact
+        id: upload
+        run: |
+          echo "FILEPATH=${{inputs.filepath}}" >> $GITHUB_ENV
+          cd $FILEPATH/..
+          if [ -d "$FILEPATH" ]; then echo "FILENAME=${FILEPATH##*/}.zip" >> $GITHUB_ENV && zip -9 -r ${FILENAME}.zip ${FILENAME}; else "FILENAME=${FILEPATH##*/}"; fi
+          echo "FILE_SIZE=$(du -k $FILENAME | cut -f1)" >> $GITHUB_ENV
+          echo "FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_OUTPUT"
+          if [[ $FILE_SIZE -lt 1000 ]]; then echo "File size of ${FILE_SIZE} was unexpected!!" && exit 1; fi
+          aws s3 cp ${FILENAME} $S3_PATH/$FOLDER_NAME/
+
+      - name: Notify
+        id: notify
+        if: ${{ inputs.webhook != null }}
+        run: |
+          echo "MESSAGE=${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha }}" >> $GITHUB_ENV
+          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"`${GITHUB_REF_NAME}` ${{inputs.platform}} build ($FILE_SIZE KB): https://${{ inputs.bucket }}.s3.${{ inputs.region }}.amazonaws.com/$FOLDER_NAME/${FILENAME}\n> ${MESSAGE:q}\"}" ${{ inputs.webhook }}

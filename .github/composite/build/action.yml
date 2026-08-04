@@ -1,0 +1,45 @@
+name: "CollabXR Setup"
+description: "Performs initial CollabXR setup for use in other pipelines"
+
+inputs:
+  unity:
+    description: "Unity executable path"
+    requireD: true
+  build-profile:
+    description: "Build profile to use"
+    requireD: true
+  keystore-password:
+    description: "Password to use for unlocking the keystore"
+    required: true
+  output-name:
+    description: "Name of resulting binary/directory"
+    required: true
+
+
+# https://docs.github.com/en/actions/tutorials/create-actions/create-a-composite-action#creating-an-action-metadata-file
+outputs:
+  filepath:
+    description: "Filepath of build output."
+    value: ${{ steps.build.outputs.OUTPUT_PATH }}
+
+runs:
+  using: composite
+
+  steps:
+      - name: Build CollabXR Executable
+        id: build
+        run: |
+          echo "OUTPUT_PATH=${{ github.workspace }}/Build/${{ input.output-name }}" >> $GITHUB_ENV
+          echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_OUTPUT
+          COLLAB_KEYSTORE_PASSWORD=${{ inputs.keystore-password }} "${{ input.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ inputs.build-profile }}" -build "${OUTPUT_PATH}"
+
+      - name: List Build Outputs
+        id: list
+        run: |
+          ls ${{ github.workspace }}/Build/
+
+      - name: Strip Debug Info
+        id: strip-debug
+        continue-on-error: true
+        run: |
+          rm -rf ${{ github.workspace }}/Build/CollabXR_BurstDebugInformation_DoNotShip
