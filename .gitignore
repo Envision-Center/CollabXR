@@ -86,3 +86,10 @@ Assets/Photon/Fusion/*
 # Forcibly include Fusion lobby config
 !Assets/Photon/Fusion/Resources/NetworkProjectConfig.fusion
 !Assets/Photon/Fusion/Resources/NetworkProjectConfig.fusion.meta
+
+# Ignore samples users may have imported for learning
+Assets/Samples/
+Assets/Samples.meta
+
+# Ignore test results
+results.xml

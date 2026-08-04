@@ -3,6 +3,7 @@ name: Bug Report
 about: Report unepected behavior
 title: 'bug: short summary'
 labels: bug
+type: Bug
 assignees: ''
 
 ---

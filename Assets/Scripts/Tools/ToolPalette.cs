@@ -2,6 +2,7 @@ using System;
 using CollabXR.Tools.Palette;
 using CollabXR.VR;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace CollabXR.Tools
 {
@@ -15,9 +16,16 @@ namespace CollabXR.Tools
 			return isRight ? Right : Left;
 		}
 
+		/// <summary>
+		/// On user selects new tool, passes the previous tool and the new tool.
+		/// </summary>
+		public UnityEvent<Transform, Transform> onToolChange;
+
 		public RigHand Hand { get; private set; }
 
 		private RigHandRef handRef;
+
+		private Transform selectedToolTransform;
 
 		private void Awake()
 		{
@@ -38,11 +46,48 @@ namespace CollabXR.Tools
 				Left = this;
 		}
 
-		//private void Start()
-		//{
-		//    ActivateTool(0);
-		//}
+		public void ActivateTool(int index)
+		{
+			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
 
-		public void ActivateTool(int index) => toolActivator.SetActiveChild(index);
+			// Re-activating the tool that's already selected would otherwise restart its equip
+			// tween from the hover position every time - rapid repeat taps could keep resetting
+			// it and never let it reach the active position.
+			if (curTool == selectedToolTransform)
+				return;
+
+			curTool.GetComponent<ToolAnimator>()?.AnimateToolEquip(() => onToolChange?.Invoke(prevTool, curTool));
+			selectedToolTransform = curTool;
+		}
+
+		public void ActivateToolPreview(int index)
+		{
+			(Transform prevTool, Transform curTool) = toolActivator.SetActiveChild(index);
+
+			/*if (prevTool?.TryGetComponent(out ToolAnimator prevAnimator) == true)
+			{
+				toolActivator.SetActiveChild(prevTool);
+				prevAnimator.ShowToolPreviewLeave(() =>
+				{
+					toolActivator.SetActiveChild(curTool);
+					curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+				});
+			}
+			else*/
+			{
+				curTool.GetComponent<ToolAnimator>()?.ShowToolPreview();
+			}
+		}
+
+		public void DeEquipTool(Action onComplete = null)
+		{
+			var animator = selectedToolTransform?.GetComponent<ToolAnimator>();
+			if (animator != null)
+				animator.AnimateToolDisequip(onComplete);
+			else
+				onComplete?.Invoke();
+
+			selectedToolTransform = null;
+		}
 	}
 }
