@@ -115,7 +115,7 @@ jobs:
         if: matrix.name != 'quest3'
         run: |
           cd ${{ github.workspace }}
-          zip -r ${{matrix.name}}.zip /Build/
+          zip -r ${{matrix.name}}.zip Build/
           aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
           echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
       - name: Upload Quest Artifact to S3
