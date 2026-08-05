@@ -55,6 +55,7 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
       - name: Install Git LFS
+        shell: bash
         run: brew install git-lfs && git lfs install
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
@@ -69,6 +70,7 @@ jobs:
           set-safe-directory: false
 
       - name: Pull Git LFS
+        shell: bash
         run: git lfs pull
 
       - name: Setup CollabXR
@@ -80,10 +82,6 @@ jobs:
           keystore: ${{ secrets.COLLAB_KEYSTORE }}
           token: ${{ secrets.ACCESS_TOKEN }}
           photon-install-path: $GITHUB_WORKSPACE/Assets
-
-      - name: Build CollabXR Executable
-        run: |
-          COLLAB_KEYSTORE_PASSWORD=${{ secrets.COLLAB_KEYSTORE_PASSWORD }} "${{ steps.setup.outputs.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ matrix.unity-build-profile }}" -build "${{ github.workspace }}/Build/${{ matrix.output-binary }}"
 
       - name: Build CollabXR
         id: build
