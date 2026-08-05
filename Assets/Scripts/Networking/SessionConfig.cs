@@ -44,6 +44,8 @@ namespace CollabXR.Networking
 		bool sessionReady = false;
 		float sessionReadyTimeout;
 
+		public float sessionReadyTimeoutSeconds = 3.0f;
+
 		[SerializeField]
 		private ScriptableInt role;
 
@@ -66,9 +68,9 @@ namespace CollabXR.Networking
 			}
 			if (state == ConnectionState.Session && !sessionReady)
 			{
-				if (!NetworkManager.Runner.IsSharedModeMasterClient && sessionReadyTimeout < 3)
+				if (!NetworkManager.Runner.IsSharedModeMasterClient && sessionReadyTimeout < sessionReadyTimeoutSeconds)
 				{
-					sessionReadyTimeout += Time.deltaTime;
+					//sessionReadyTimeout += Time.deltaTime;
 					// joining an existing room, need to find session manager instance
 					List<NetworkObject> spawnedObjects = NetworkManager.Runner.GetAllNetworkObjects();
 					foreach (NetworkObject obj in spawnedObjects)
