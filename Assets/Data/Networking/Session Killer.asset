@@ -19,10 +19,10 @@ MonoBehaviour:
   prefab: {fileID: 6300490576755696877, guid: 999d2ef6d6f19f149ac4abd2bb7c7a8a, type: 3}
   attribution: 
   contextPrefab: {fileID: 0}
-  isSimpleModel: 1
+  isSimpleModel: 0
   formattedName: Session Killer
   category: Networking
   assetName: Session Killer.asset
-  thumbnail: {fileID: 21300000, guid: 07f245c4d6fed35429632d91ec70eb39, type: 3}
+  thumbnail: {fileID: 21300000, guid: 662ae237300fee247a43823401881e39, type: 3}
   availableOnThisPlatform: 1
   creators: []
