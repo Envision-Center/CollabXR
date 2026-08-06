@@ -106,16 +106,10 @@ namespace CollabXR.Objects.Linker.Sockets
 		public List<SocketBase> connections = new List<SocketBase>();
 
 		[NonSerialized]
-		public UnityEvent eventConnected;
+		public UnityEvent eventConnected = new UnityEvent();
 
 		[NonSerialized]
-		public UnityEvent eventDisconnected;
-
-		private void Awake()
-		{
-			eventConnected = new UnityEvent();
-			eventDisconnected = new UnityEvent();
-		}
+		public UnityEvent eventDisconnected = new UnityEvent();
 
 		// Start is called once before the first execution of Update after the MonoBehaviour is created
 		void Start()
