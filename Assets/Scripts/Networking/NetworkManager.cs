@@ -91,7 +91,7 @@ namespace CollabXR.Networking
 
 		public void Connect(string roomName)
 		{
-			//NetworkProjectConfig.Global.Simulation.EnableAdaptivePacketFragmentation = true;
+			NetworkProjectConfig.Global.Simulation.EnableAdaptivePacketFragmentation = true;
 
 			StartGameArgs args =
 				new StartGameArgs

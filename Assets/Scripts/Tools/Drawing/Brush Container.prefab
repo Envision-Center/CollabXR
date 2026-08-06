@@ -74,12 +74,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8956031368613977477, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
       propertyPath: NetworkedBehaviours.Array.size
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8956031368613977477, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
       propertyPath: 'NetworkedBehaviours.Array.data[3]'
       value: 
-      objectReference: {fileID: 2706869689159714911}
+      objectReference: {fileID: 0}
     - target: {fileID: 8956031368613977477, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
       propertyPath: 'NetworkedBehaviours.Array.data[4]'
       value: 
@@ -97,18 +97,9 @@ PrefabInstance:
     - {fileID: 5815232389075925469, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
     - {fileID: 7227155842940599176, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
     - {fileID: -1037120944393883916, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
+    - {fileID: 1699188243204170697, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
+    - {fileID: -643580527953164766, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
---- !u!114 &2706869689159714911 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -643580527953164766, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
-  m_PrefabInstance: {fileID: 5945087200312774269}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ae02f66123a4d718833ec8ee1e575a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

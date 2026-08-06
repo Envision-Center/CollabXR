@@ -42,9 +42,6 @@ namespace CollabXR.Networking
 		private NetworkObject sessionManagerInstance;
 		public ConnectionState state;
 		bool sessionReady = false;
-		float sessionReadyTimeout;
-
-		public float sessionReadyTimeoutSeconds = 3.0f;
 
 		[SerializeField]
 		private ScriptableInt role;
@@ -68,23 +65,14 @@ namespace CollabXR.Networking
 			}
 			if (state == ConnectionState.Session && !sessionReady)
 			{
-				if (!NetworkManager.Runner.IsSharedModeMasterClient && sessionReadyTimeout < sessionReadyTimeoutSeconds)
-				{
-					//sessionReadyTimeout += Time.deltaTime;
-					// joining an existing room, need to find session manager instance
-					List<NetworkObject> spawnedObjects = NetworkManager.Runner.GetAllNetworkObjects();
-					foreach (NetworkObject obj in spawnedObjects)
-					{
-						// found object, checking if valid
-						if (obj.GetComponent<EnvironmentManager>() != null && obj.IsValid)
-						{
-							sessionManagerInstance = obj;
-							break;
-						}
-					}
-				}
-				if (sessionManagerInstance == null)
-					return;
+				SessionManager.sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
+			}
+		}
+
+		public void OnSessionReady(bool ready)
+		{
+			if(ready)
+			{
 				onSessionReady.Invoke();
 				onSessionReady.RemoveAllListeners();
 				statePrefabInstance = Instantiate(sessionPrefab);
@@ -116,7 +104,6 @@ namespace CollabXR.Networking
 			else if (state == ConnectionState.Disconnecting)
 			{
 				sessionReady = false;
-				sessionReadyTimeout = 0;
 				sessionManagerInstance = null;
 				onSessionReady.RemoveAllListeners();
 				EnvironmentManager.Instance.DisconnectFromEnvironment();
