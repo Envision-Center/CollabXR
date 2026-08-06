@@ -58,7 +58,7 @@
         "AdditionalLoss": 0.005
     },
     "Heap": {
-        "PageShift": 15,
+        "PageShift": 16,
         "PageCount": 1024,
         "GlobalsSize": 0
     },
