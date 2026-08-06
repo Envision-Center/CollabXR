@@ -85,13 +85,16 @@ namespace CollabXR.Tools
 					selectedEnd = selectedStart;
 					selectedStart = swap;
 				}
-				if (selectedStart.CanConnect(selectedEnd))
+
+				// If either socket is connected, disconnect them
+				if (selectedStart.IsConnected(selectedEnd) || selectedEnd.IsConnected(selectedStart))
 				{
-					if (selectedEnd.CanConnect(selectedStart))
-					{
-						Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
-						selectedEnd.Connect(selectedStart);
-					}
+					selectedStart.Disconnect(selectedEnd);
+				} // If both sockets can connect to each other, do so
+				else if (selectedStart.CanConnect(selectedEnd) && selectedEnd.CanConnect(selectedStart))
+				{
+					Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
+					selectedEnd.Connect(selectedStart);
 				}
 			}
 			else

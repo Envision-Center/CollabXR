@@ -1,9 +1,20 @@
+using System;
 using System.Collections.Generic;
+using Fusion;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace CollabXR.Objects.Linker.Sockets
 {
+	// https://doc.photonengine.com/fusion/v2/manual/fusion-types/network-collections
+	public struct NetworkLinkerSocketConnection : INetworkStruct
+	{
+		public ushort fromSocketIndex; // TODO: could be compressed as a byte?
+		public NetworkId toObject;
+		public ushort toSocketIndex;
+	}
+
 	/// <summary>
 	/// How data is piped through this socket.
 	/// </summary>
@@ -93,6 +104,18 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// </summary>
 		[Tooltip("List of sockets we are connected to. Can be preset to connect at startup.")]
 		public List<SocketBase> connections = new List<SocketBase>();
+
+		[NonSerialized]
+		public UnityEvent eventConnected;
+
+		[NonSerialized]
+		public UnityEvent eventDisconnected;
+
+		private void Awake()
+		{
+			eventConnected = new UnityEvent();
+			eventDisconnected = new UnityEvent();
+		}
 
 		// Start is called once before the first execution of Update after the MonoBehaviour is created
 		void Start()
@@ -191,6 +214,16 @@ namespace CollabXR.Objects.Linker.Sockets
 		}
 
 		/// <summary>
+		/// Determines whether this socket is connected to the other one.
+		/// </summary>
+		/// <param name="otherSocket"></param>
+		/// <returns>True if outputting to that socket.</returns>
+		public bool IsConnected(SocketBase otherSocket)
+		{
+			return connections.Contains(otherSocket);
+		}
+
+		/// <summary>
 		/// Attempts to connect the output socket to this input one.
 		/// <br/>
 		/// THIS DOES NOT VALIDATE WHETHER THE SOCKETS ARE CONNECTABLE BEFOREHAND.
@@ -202,9 +235,16 @@ namespace CollabXR.Objects.Linker.Sockets
 			OnConnect(dataProvider);
 			dataProvider.OnConnect(this);
 
+			eventConnected.Invoke();
+
 			Debug.Log("SOCKET CONNECTED!!!");
 		}
 
+		/// <summary>
+		/// Disconnects this socket from the other one.
+		/// </summary>
+		/// <param name="dataProvider"></param>
+		/// <returns></returns>
 		public bool Disconnect(SocketBase dataProvider)
 		{
 			// Ensure it was not already connected
@@ -215,6 +255,11 @@ namespace CollabXR.Objects.Linker.Sockets
 
 			dataProvider.OnDisconnect(this);
 			OnDisconnect(dataProvider);
+
+			eventDisconnected.Invoke();
+
+			dataProvider.connections.Remove(this);
+			connections.Remove(dataProvider);
 
 			return true;
 		}
@@ -228,5 +273,36 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// Emitted when this socket is disconnected from another.
 		/// </summary>
 		public virtual void OnDisconnect(SocketBase otherSocket) { }
+
+		/// <summary>
+		/// Returns the NetworkID of the parent NetworkObject, if any.
+		/// </summary>
+		/// <returns></returns>
+		public NetworkObject GetNetworkObject()
+		{
+			return _GetNetworkObject(transform);
+		}
+
+		/// <summary>
+		/// Slowly walks up the chain of transforms to find the NetworkId.
+		/// </summary>
+		/// <param name="from"></param>
+		/// <returns>The NetworkId of the ancestor NetworkObject, or a blank NetworkId</returns>
+		private NetworkObject _GetNetworkObject(Transform from)
+		{
+			if (from == null)
+			{
+				// Invalid network ID
+				Debug.LogError("No network object found for the given socket!");
+				return null;
+			}
+
+			NetworkObject obj;
+			if (from.TryGetComponent(out obj))
+			{
+				return obj;
+			}
+			return _GetNetworkObject(from.parent);
+		}
 	}
 }
