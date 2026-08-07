@@ -8,6 +8,7 @@ using UnityEngine.Events;
 namespace CollabXR.Objects.Linker.Sockets
 {
 	// https://doc.photonengine.com/fusion/v2/manual/fusion-types/network-collections
+	[Serializable]
 	public struct NetworkLinkerSocketConnection : INetworkStruct
 	{
 		public ushort fromSocketIndex; // TODO: could be compressed as a byte?

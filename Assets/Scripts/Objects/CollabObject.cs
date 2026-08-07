@@ -8,6 +8,7 @@ using CollabXR.Objects.Linker.Sockets;
 using CollabXR.VR;
 using Cysharp.Threading.Tasks;
 using Fusion;
+using SaintsField.Playa;
 using UnityEngine;
 using UnityEngine.Events;
 using WebSocketSharp;
@@ -45,11 +46,12 @@ namespace CollabXR.Objects
 		/// <summary>
 		/// An array of local sockets that can be indexed for network synchronization.
 		/// </summary>
-		private SocketBase[] sockets;
+		[ShowInInspector]
+		private SocketBase[] sockets = null;
 
 		private const int SOCKET_CAPACITY = 4;
 
-		[Networked, Capacity(SOCKET_CAPACITY), OnChangedRender(nameof(SetSocketLinks))]
+		[Networked, Capacity(SOCKET_CAPACITY), OnChangedRender(nameof(SetSocketLinks)), ShowInInspector]
 		public NetworkLinkedList<NetworkLinkerSocketConnection> socketLinks => default;
 
 		private GameObject dataRoot;
@@ -73,14 +75,17 @@ namespace CollabXR.Objects
 
 		private void OnDestroy()
 		{
-			// Free up event listeners for garbage collection
-			foreach (SocketBase socket in sockets)
+			if (sockets != null)
 			{
-				if (socket != null)
+				// Free up event listeners for garbage collection
+				foreach (SocketBase socket in sockets)
 				{
-					// Whenever a socket gets connected/disconnected, propogate updates to network peers
-					socket.eventConnected.RemoveListener(UpdateSocketLinks);
-					socket.eventDisconnected.RemoveListener(UpdateSocketLinks);
+					if (socket != null)
+					{
+						// Whenever a socket gets connected/disconnected, propogate updates to network peers
+						socket.eventConnected.RemoveListener(UpdateSocketLinks);
+						socket.eventDisconnected.RemoveListener(UpdateSocketLinks);
+					}
 				}
 			}
 
