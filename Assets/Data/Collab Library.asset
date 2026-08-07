@@ -29,15 +29,12 @@ MonoBehaviour:
       - {fileID: 11400000, guid: ffd737f9b8c4b154090c7a910f6ea5c0, type: 2}
       - {fileID: 11400000, guid: b0ac512d5a3c67344a3cfedc1e2ff3a4, type: 2}
       - {fileID: 11400000, guid: a687b0ad44dd10e4b8ba00e7ffd4dfcf, type: 2}
-    - name: Networking
-      objectData:
-      - {fileID: 11400000, guid: 3a47d60f1f4be854d91953da33592b84, type: 2}
     - name: Nuclear Pharmacy
       objectData:
       - {fileID: 11400000, guid: 0bed972511fc3314787e2ce87085a438, type: 2}
       - {fileID: 11400000, guid: 4070bba0238b5c545ab08a7994cef427, type: 2}
       - {fileID: 11400000, guid: e8babac65414ee048a9d0e18972ccd34, type: 2}
-    - name: primitives
+    - name: Primitives
       objectData:
       - {fileID: 11400000, guid: de954db99c0916a49a853a7b97d7598b, type: 2}
       - {fileID: 11400000, guid: b0ffe646a659ede4ea1706baed31d805, type: 2}
