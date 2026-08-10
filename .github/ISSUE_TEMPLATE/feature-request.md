@@ -3,6 +3,7 @@ name: Feature Request
 about: Suggest an idea for this project
 title: 'feat: short summary'
 labels: enhancement
+type: enhancement
 assignees: ''
 
 ---

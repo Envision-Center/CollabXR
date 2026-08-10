@@ -25,25 +25,21 @@ jobs:
           #     unity-hub-path: "C:/Program\\ Files/Unity\\ Hub/Unity\\ Hub.exe"
           #     unity-build-profile: "Assets/Settings/Build Profiles/WindowsDesktop.asset"
           #     output-binary: Collab.exe
-          #     upload-path:
           - name: "windows"
             platform: [self-hosted, macOS, ARM64]
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/WindowsDesktop.asset"
             output-binary: CollabXR.exe
-            upload-path: CollabXR.exe
           - name: "quest3"
             platform: [self-hosted, macOS, ARM64]
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
             output-binary: CollabXR.apk
-            upload-path: CollabXR.apk
           # - name: "macos" # For
           #   platform: [self-hosted, macOS, ARM64]
           #   unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           #   unity-build-profile: "Assets/Settings/BuildProfiles/MacOSDesktop.asset"
           #   output-binary: CollabXR.App
-          #   upload-path: CollabXR.App
 
     runs-on: ${{ matrix.platform }}
     environment: ${{ github.event.inputs.environment }}
@@ -118,7 +114,8 @@ jobs:
       - name: Compress and Upload Desktop Artifact
         if: matrix.name != 'quest3'
         run: |
-          zip -r ${{matrix.name}}.zip ${{ github.workspace }}/Build/${{ matrix.upload-path }}
+          cd ${{ github.workspace }}
+          zip -r ${{matrix.name}}.zip Build/
           aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
           echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
       - name: Upload Quest Artifact to S3
@@ -134,9 +131,3 @@ jobs:
         if: matrix.name == 'quest3'
         run: |
           curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}\"}" ${{ secrets.EC_WEBHOOK }}
-
-      # - name: Upload CollabXR Executable
-      #   uses: actions/upload-artifact@v7
-      #   with:
-      #     name: ${{ matrix.name }}-build
-      #     path: ${{ github.workspace }}/Build/${{ matrix.upload-path }}
