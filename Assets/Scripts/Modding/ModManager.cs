@@ -227,7 +227,7 @@ namespace CollabXR.ModLoader
 		public static bool IsModDirty(Guid modUuid)
 		{
 			Debug.Assert(Instance.indexedMods.ContainsKey(modUuid), $"Mod with UUID {modUuid} not found in indexedMods");
-			
+
 			// is the mod not in the previous index? (new mod)
 			if (!Instance.prevIndexedMods.ContainsKey(modUuid))
 			{
@@ -284,19 +284,27 @@ namespace CollabXR.ModLoader
 					UnityWebRequest request = GenerateAWSWebRequestAssetBundle(uri, repoData, (uint)indexedMods[modUuid].Item1.BuildNumberMap[GetPlatformString()]);
 
 					modLoadingRequests[uri] = request;
-
-					await request.SendWebRequest();
-
-					Instance.loadedMods[modUuid].AssetBundle = DownloadHandlerAssetBundle.GetContent(request);
-
-					Debug.Log($"{DEBUG_LOG_HEADER} Loaded Mod {modUuid} in to memory.");
-
-					foreach (ModLoadTask loadTask in Instance.loadedMods[modUuid].ModLoadTasks)
+					try
 					{
-						loadTask.NotifyModReady();
-					}
+						await request.SendWebRequest();
 
-					Instance.loadedMods[modUuid].ModLoadTasks.Clear();
+						Instance.loadedMods[modUuid].AssetBundle = DownloadHandlerAssetBundle.GetContent(request);
+
+						Debug.Log($"{DEBUG_LOG_HEADER} Loaded Mod {modUuid} in to memory.");
+
+						foreach (ModLoadTask loadTask in Instance.loadedMods[modUuid].ModLoadTasks)
+						{
+							loadTask.NotifyModReady();
+						}
+						Instance.loadedMods[modUuid].ModLoadTasks.Clear();
+					}
+					catch (Exception ex)
+					{
+						Instance.loadedMods.Remove(modUuid);
+						Instance.modLoadingRequests.Remove(uri);
+						Debug.Log($"{DEBUG_LOG_HEADER} Failed web request when loading Mod {modUuid}, please rejoin the room to reload");
+						Debug.Log(ex);
+					}
 				});
 			}
 		}
@@ -488,13 +496,21 @@ namespace CollabXR.ModLoader
 
 				Task.Run(async () =>
 				{
-					ModLoadTask modLoadTask = new ModLoadTask(modUuid);
+					try
+					{
+						ModLoadTask modLoadTask = new ModLoadTask(modUuid);
+						Guid loadedModGuid = await modLoadTask;
+						await UniTask.SwitchToMainThread();
 
-					Guid loadedModGuid = await modLoadTask;
-
-					await UniTask.SwitchToMainThread();
-
-					Instance.assetPointerTable[assetUuid].Value = await loadedMods[loadedModGuid].AssetBundle.LoadAssetWithSubAssetsAsync(indexedMods[loadedModGuid].Item1.AssetMap[assetUuid]);
+						Instance.assetPointerTable[assetUuid].Value = await loadedMods[loadedModGuid].AssetBundle.LoadAssetWithSubAssetsAsync(indexedMods[loadedModGuid].Item1.AssetMap[assetUuid]);
+					}
+					catch (Exception ex) // if fails to load mod, remove asset from pointer table so as to not batch future requests
+					{
+						Debug.Log($"{DEBUG_LOG_HEADER} Failed to load asset {assetUuid}");
+						Debug.Log(ex);
+						Instance.assetPointerTable.Remove(assetUuid);
+						return;
+					}
 
 					Debug.Log($"{DEBUG_LOG_HEADER} Loaded Asset {assetUuid} from Mod {modUuid} in to memory.");
 
