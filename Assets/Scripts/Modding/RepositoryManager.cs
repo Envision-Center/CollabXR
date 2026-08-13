@@ -107,6 +107,8 @@ namespace CollabXR.ModLoader
 
 				await repositoryRequest.SendWebRequest();
 
+				Debug.Log($"{DEBUG_LOG_HEADER} Attempting to desearilize: {repositoryRequest.downloadHandler.text}");
+
 				RepositoryMetadata metadata = JsonConvert.DeserializeObject<RepositoryMetadata>(repositoryRequest.downloadHandler.text);
 
 				string query = new Uri(metadataUrl).Query;
@@ -120,9 +122,9 @@ namespace CollabXR.ModLoader
 
 				List<UniTask> indexModsTasks = new();
 
-				foreach (Guid modUuid in metadata.Mods)
+				foreach (string modUrl in metadata.Mods)
 				{
-					indexModsTasks.Add(ModManager.Instance.IndexMod(metadataUrl, modUuid));
+					indexModsTasks.Add(ModManager.Instance.IndexMod(metadataUrl, modUrl));
 				}
 
 				//await UniTask.SwitchToThreadPool();
