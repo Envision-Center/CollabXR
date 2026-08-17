@@ -109,14 +109,16 @@ namespace CollabXR.Tools
 
 		public void SetTarget(GameObject g)
 		{
+			// If the game object exists, attempt to set our hovering value to the socket on it
 			if (g != null && g.TryGetComponent<SocketBase>(out hovered))
 			{
-				Debug.Log("Hovered is " + hovered.ToString());
+				//Debug.Log("Hovered is " + hovered.ToString());
+				// no-op
 			}
 			else
 			{
-				hovered = null;
-				Debug.Log("Hovered is null");
+				hovered = null; // Otherwise, clear hover status
+				//Debug.Log("Hovered is null");
 			}
 		}
 	}

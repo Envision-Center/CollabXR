@@ -110,20 +110,28 @@ namespace CollabXR.Objects
 
 		private void InitializePrefab()
 		{
+			Debug.Log("Called InitializePrefab");
 			Data = FindDataset();
+
+			// This is a built-in object??
 			if (Data == null)
 			{
+				Debug.Log("InitializePrefab: data was null");
 				// only spawn placeholder if this Object has Data (aka isn't a drawing)
 				if (!Category.ToString().IsNullOrEmpty() && DataName.Value.ToString().IsNullOrEmpty())
 				{
 					MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
 					dataRoot = Instantiate(MainLibraryRef.Instance.placeholderPrefab, transform);
 					dataRoot.name = MainLibraryRef.Instance.placeholderPrefab.name;
+
+					FinalizeModPrefab(prefabReference.Value);
 				}
 				return;
 			}
-			else if (Data.prefab == null) // This is a mod, data must be streamed in
+
+			if (Data.prefab == null) // This is a mod, data must be streamed in
 			{
+				Debug.Log("InitializePrefab: prefab was null");
 				dataRoot = Instantiate(MainLibraryRef.Instance.placeholderPrefab, transform);
 				dataRoot.name = MainLibraryRef.Instance.placeholderPrefab.name;
 				CollabObjectPreview preview = dataRoot.GetComponent<CollabObjectPreview>();
@@ -134,16 +142,9 @@ namespace CollabXR.Objects
 				return;
 			}
 
-			if (!Data.isSimpleModel)
-			{
-				return;
-			}
-
 			// This is a built-in object
-			if (Data.prefab != null)
-			{
-				FinalizeModPrefab(prefabReference.Value);
-			}
+			Debug.Log("InitializePrefab: fallback");
+			FinalizeModPrefab(prefabReference.Value);
 		}
 
 		private async UniTaskVoid LoadModPrefab()
@@ -166,10 +167,18 @@ namespace CollabXR.Objects
 		/// <param name="prefab"></param>
 		private void FinalizeModPrefab(GameObject prefab)
 		{
-			dataRoot = Instantiate(prefab, transform);
-			dataRoot.name = prefab.name;
-			BuildSockets(dataRoot);
+			if (prefab != null)
+			{
+				dataRoot = Instantiate(prefab, transform);
+				dataRoot.name = prefab.name;
+				BuildSockets(dataRoot);
+			}
+
 			EnumerateSockets();
+			if (!HasStateAuthority)
+			{
+				SetSocketLinks(); // Initial socket link state before other changes are replicated
+			}
 			FinishedLoading.Invoke();
 		}
 
@@ -234,7 +243,9 @@ namespace CollabXR.Objects
 				// Whenever a socket gets connected/disconnected, propogate updates to network peers
 				socket.eventConnected.AddListener(UpdateSocketLinks);
 				socket.eventDisconnected.AddListener(UpdateSocketLinks);
+				Debug.Log("Added a socket listener " + socket.name);
 			}
+			Debug.Log($"Sockets enumerated ({sockets.Length}): {sockets}");
 		}
 
 		/// <summary>
@@ -309,7 +320,7 @@ namespace CollabXR.Objects
 		}
 
 		/// <summary>
-		/// When a socket is changed, and we are state authority, update socketLinks array to match.
+		/// When a socket is changed, and we ARE state authority, update socketLinks array to match.
 		/// </summary>
 		private void UpdateSocketLinks()
 		{

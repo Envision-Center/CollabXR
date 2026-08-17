@@ -38,7 +38,6 @@ namespace CollabXR.Networking
 		protected override void CheckForScripts()
 		{
 			toggles = GetComponentsInChildren<ToggleController>();
-			Debug.Log($"SCRIPT CHECK STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
 				// will only run if object recieves state authority before fully loading in
@@ -50,9 +49,7 @@ namespace CollabXR.Networking
 
 		public override void Spawned()
 		{
-			Debug.Log("spawned!");
 			base.Spawned();
-			Debug.Log($"SPAWN STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
 				SetDefaultToggles();
@@ -119,7 +116,6 @@ namespace CollabXR.Networking
 
 		public void StateAuthorityChanged()
 		{
-			Debug.Log($"ON CHANGE STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
 				// will only run if object not yet initialized and recieves state authority after fully loading in
