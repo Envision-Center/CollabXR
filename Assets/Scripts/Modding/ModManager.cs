@@ -111,12 +111,13 @@ namespace CollabXR.ModLoader
 
 		private Uri GetAssetBundleURI(RepositoryMetadata repository, Guid modUuid)
 		{
-			return new Uri(new Uri(repository.BaseURL), $"{modUuid.ToString()}.{GetPlatformString()}");
+			var modUrl = repository.rootFolderLookUp[modUuid] + modUuid.ToString();
+			return new Uri(new Uri(repository.BaseURL), $"{modUrl}.{GetPlatformString()}");
 		}
 
-		private Uri GetAssetBundleMetaURI(RepositoryMetadata repository, Guid modUuid)
+		private Uri GetAssetBundleMetaURI(RepositoryMetadata repository, string modUrl)
 		{
-			return new Uri(new Uri(repository.BaseURL), $"{modUuid.ToString()}.meta.json");
+			return new Uri(new Uri(repository.BaseURL), $"{modUrl}.meta.json");
 		}
 
 		private static UnityWebRequest SignAWSWebRequest(UnityWebRequest request, RepositoryMetadata repository)
@@ -171,12 +172,16 @@ namespace CollabXR.ModLoader
 			return null;
 		}
 
-		internal async UniTask IndexMod(string repository, Guid modUuid)
+		internal async UniTask IndexMod(string repository, string modUrl)
 		{
 			await UniTask.SwitchToMainThread();
 
+			// parse mod guid from the url
+			Guid modUuid = new(modUrl[(modUrl.LastIndexOf("/") + 1)..]);
+
 			RepositoryMetadata repoData = RepositoryManager.Instance.loadedRepositories[repository];
-			UnityWebRequest repositoryRequest = GenerateAWSWebRequest(GetAssetBundleMetaURI(repoData, modUuid), repoData);
+			var assetBundleMetaURl = GetAssetBundleMetaURI(repoData, modUrl);
+			UnityWebRequest repositoryRequest = GenerateAWSWebRequest(assetBundleMetaURl, repoData);
 
 			try
 			{
