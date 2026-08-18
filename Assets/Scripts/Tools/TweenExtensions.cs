@@ -67,7 +67,7 @@ namespace CollabXR
 
 		private static void CancelTween(MonoBehaviour host, object key)
 		{
-			if (_tweens.TryGetValue(key, out Coroutine running))
+			if (_tweens.TryGetValue(key, out Coroutine running) && running != null)
 			{
 				host.StopCoroutine(running);
 				_tweens.Remove(key);

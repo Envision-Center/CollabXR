@@ -1,5 +1,6 @@
 using System;
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace CollabXR.ModLoader
 {
@@ -25,6 +26,24 @@ namespace CollabXR.ModLoader
 		public string accessKey;
 		public string secretKey;
 
-		public Guid[] Mods;
+		public string[] Mods;
+
+		/// <summary>
+		/// Stores the folder path in which the mod is stored, look up by mod guid
+		/// To get full path to mod, use folder path + mod guid
+		/// </summary>
+		[NonSerialized]
+		public Dictionary<Guid, string> rootFolderLookUp;
+
+		[OnDeserialized]
+		private void ConstructLookUpTable(StreamingContext context)
+		{
+			rootFolderLookUp = new();
+			foreach (var url in Mods)
+			{ 
+				int delim = url.LastIndexOf('/');
+				rootFolderLookUp.Add(new(url[(delim + 1)..]), url[..(delim + 1)]);
+			}
+		}
 	}
 }

@@ -3,7 +3,17 @@ guid: e69db8806169d924f80210aaa7dc52f1
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ControllerGrip
+    second: {fileID: 2100000, guid: 007f771f2bedd064d9dbdc2e3b630d97, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: plastic.001
+    second: {fileID: 2100000, guid: fe688603a0a63ac43a00bd2104546f6e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
