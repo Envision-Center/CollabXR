@@ -44,14 +44,14 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "11f09e231a903f2be3b429f2eaa4ffc575fa6810"
+      "hash": "3d6acd5bdf9a96de842fcf74490c714ee08061bd"
     },
     "com.meta.xr.depthapi.urp": {
       "version": "https://github.com/oculus-samples/Unity-DepthAPI.git?path=/Packages/com.meta.xr.depthapi.urp",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "11f09e231a903f2be3b429f2eaa4ffc575fa6810"
+      "hash": "3d6acd5bdf9a96de842fcf74490c714ee08061bd"
     },
     "com.meta.xr.mrutilitykit": {
       "version": "205.0.0",
