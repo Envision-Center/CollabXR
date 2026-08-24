@@ -7,6 +7,7 @@ using CollabXR.Tools;
 using CollabXR.Tools.Drawing;
 using CollabXR.Tools.Palette;
 using CollabXR.VR;
+using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -64,7 +65,23 @@ namespace CollabXR.UI
 				stroke.MarkForDeletion();
 		}
 
-		public void ActionKickAllPlayers() { }
+		public void ActionKickAllPlayers()
+		{
+			GameMenu[] gameMenus = FindObjectsOfType<GameMenu>();
+			foreach (GameMenu menu in gameMenus)
+			{
+				if (menu == this)
+					continue;
+
+				menu.RPC_KickAllPlayers();
+			}
+		}
+
+		[Rpc(RpcSources.All, RpcTargets.All)]
+		public void RPC_KickAllPlayers()
+		{
+			ActionDisconnect();
+		}
 
 		// delayed deletion coroutine
 		//IEnumerator DeleteAllObjects()
