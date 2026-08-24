@@ -63,10 +63,6 @@ namespace CollabXR.Networking
 			{
 				SessionConfig.Instance.ChangeConnectionState(ConnectionState.Lobby);
 			}
-			if (state == ConnectionState.Session && !sessionReady)
-			{
-				SessionManager.sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
-			}
 		}
 
 		public void OnSessionReady(bool ready)
@@ -83,6 +79,7 @@ namespace CollabXR.Networking
 		public void ChangeConnectionState(ConnectionState newState)
 		{
 			Debug.Log("Switching to state " + newState);
+			bool isActuallyNewState = state != newState;
 			state = newState;
 			if (statePrefabInstance != null)
 			{
@@ -93,8 +90,9 @@ namespace CollabXR.Networking
 				statePrefabInstance = Instantiate(lobbyPrefab);
 				Instantiate(networkManagerPrefab);
 			}
-			else if (state == ConnectionState.Session)
+			else if (state == ConnectionState.Session && isActuallyNewState)
 			{
+				SessionManager.sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
 				RepositoryManager.RefreshAllMods();
 				if (NetworkManager.Runner.IsSharedModeMasterClient)
 				{
