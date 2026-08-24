@@ -64,6 +64,8 @@ namespace CollabXR.UI
 				stroke.MarkForDeletion();
 		}
 
+		public void ActionKickAllPlayers() { }
+
 		// delayed deletion coroutine
 		//IEnumerator DeleteAllObjects()
 		//      {
