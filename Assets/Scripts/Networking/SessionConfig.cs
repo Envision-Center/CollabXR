@@ -25,6 +25,7 @@ namespace CollabXR.Networking
 	public class SessionConfig : SingletonBehavior<SessionConfig>
 	{
 		public UnityEvent onSessionReady; // invokes after session managers are spawned
+		public EventVariable<bool> sessionManagerSpawned = new();
 
 		[SerializeField]
 		private GameObject lobbyPrefab;
@@ -92,7 +93,7 @@ namespace CollabXR.Networking
 			}
 			else if (state == ConnectionState.Session && isActuallyNewState)
 			{
-				SessionManager.sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
+				sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
 				RepositoryManager.RefreshAllMods();
 				if (NetworkManager.Runner.IsSharedModeMasterClient)
 				{
@@ -104,6 +105,7 @@ namespace CollabXR.Networking
 				sessionReady = false;
 				sessionManagerInstance = null;
 				onSessionReady.RemoveAllListeners();
+				sessionManagerSpawned = new();
 				EnvironmentManager.Instance.DisconnectFromEnvironment();
 				if (NetworkManager.Runner != null && !NetworkManager.Runner.IsShutdown)
 				{
