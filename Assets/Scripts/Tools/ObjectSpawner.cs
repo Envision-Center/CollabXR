@@ -181,7 +181,9 @@ namespace CollabXR.Tools
 		public void SpawnObject()
 		{
 			if (enabled)
+			{
 				SpawnObject(defaultSpawnPos, GetDefaultSpawnRot());
+			}
 		}
 
 		public void SpawnObject(Vector3 position, Quaternion rotation) => SpawnObject(DataToSpawn.Value, position, rotation);
