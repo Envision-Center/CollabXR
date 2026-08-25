@@ -136,16 +136,22 @@ namespace CollabXR.UI
 			}
 			else
 			{
-				SwitchToDefault();
+				defaultButton.OnClicked(hand.isRight);
 			}
 		}
 
 		/// <summary>
-		/// Forcibly switches to the default tool.
+		/// Forcibly switches to the default tool. Closes menu if it is currently open.
 		/// Note: this method is bound to by the Spawner tool in the Tool Palette prefab.
 		/// </summary>
 		public void SwitchToDefault()
 		{
+			isPressed = false;
+			if (isMenuOpen)
+			{
+				OnMenuClose();
+				isMenuOpen = false;
+			}
 			defaultButton.OnClicked(hand.isRight);
 		}
 
