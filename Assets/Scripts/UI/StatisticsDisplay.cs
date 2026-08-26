@@ -34,6 +34,8 @@ namespace CollabXR.UI
 				statsStr += $"Ping: {Mathf.RoundToInt((float)NetworkManager.Runner.GetPlayerRtt(NetworkManager.Runner.LocalPlayer) * 1000)} ms\n";
 				statsStr += $"Bandwith In: {snapshot.InBandwidth}\n";
 				statsStr += $"Bandwith Out: {snapshot.OutBandwidth}\n";
+				statsStr += $"Network Objects: {NetworkManager.networkObjectCount}\n";
+				statsStr += $"Players: {NetworkManager.playerCount}\n";
 				statisticsInfo.text = statsStr;
 				lastUpdate = Time.time;
 			}

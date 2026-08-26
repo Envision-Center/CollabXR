@@ -46,6 +46,9 @@ namespace CollabXR.Networking
 
 		[SerializeField]
 		private ScriptableInt role;
+		[SerializeField]
+		private LoadingPopup popupPrefab;
+		private LoadingPopup popup;
 
 		protected override void Awake()
 		{
@@ -74,6 +77,11 @@ namespace CollabXR.Networking
 				onSessionReady.RemoveAllListeners();
 				statePrefabInstance = Instantiate(sessionPrefab);
 				sessionReady = true;
+
+				if (popup != null)
+				{
+					GameObject.Destroy(popup.gameObject);
+				}
 			}
 		}
 
@@ -98,6 +106,11 @@ namespace CollabXR.Networking
 				if (NetworkManager.Runner.IsSharedModeMasterClient)
 				{
 					sessionManagerInstance = NetworkManager.Runner.Spawn(sessionManager);
+				}
+
+				if(!sessionReady)
+				{
+					popup = Instantiate(popupPrefab);
 				}
 			}
 			else if (state == ConnectionState.Disconnecting)
