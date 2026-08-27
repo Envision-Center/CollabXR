@@ -59,11 +59,17 @@ namespace CollabXR.Tools.Drawing
 			{
 				strokeMesh.AddRibbonPoint(ribbonPoints[i], Quaternion.Euler(ribbonEulerAngles[i]), ribbonWeight, ribbonColor);
 			}
+			strokeMesh.UpdateGeometry();
+
 			if (verts < 1)
+			{
 				return;
+			}
 
 			if (intendedParent != null)
+			{
 				transform.parent = intendedParent.transform;
+			}
 		}
 
 		public int GetCapacityRemaining()
@@ -82,7 +88,7 @@ namespace CollabXR.Tools.Drawing
 			ribbonWeight = weight;
 		}
 
-		public bool AddStrokePoint(Vector3 point, Quaternion rotation)
+		public void AddStrokePoint(Vector3 point, Quaternion rotation)
 		{
 			Vector3 localPoint = transform.InverseTransformPoint(point);
 			ribbonPoints.Add(localPoint);
@@ -90,7 +96,6 @@ namespace CollabXR.Tools.Drawing
 
 			//SetDirty();
 			UpdateStrokeRenderer();
-			return true;
 		}
 
 		public void SetLastPoint(Vector3 point, Quaternion rotation)
