@@ -1,38 +1,34 @@
 using System;
 using CollabXR.Networking;
-using CollabXR.UI;
 using Fusion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CollabXR
 {
 	public class SessionManager : SingletonNetworkBehavior<SessionManager>
 	{
-		private GameMenu _menuToPreserve;
-
 		public override void Spawned()
 		{
 			Debug.Log($"[SESSION MANAGER] Session Manager has spawned!");
 			SessionConfig.Instance.sessionManagerSpawned.Value = true;
 		}
 
-		public void KickAllExcept(GameMenu menu)
+		public void KickEveryoneElse()
 		{
-			_menuToPreserve = menu;
 			RPC_Kick();
 		}
 
-		[Rpc(RpcSources.All, RpcTargets.All)]
+		// InvokeLocal is false so the caller doesnt gets kicked
+		[Rpc(RpcSources.All, RpcTargets.All, InvokeLocal = false)]
 		private void RPC_Kick()
 		{
-			GameMenu[] gameMenus = FindObjectsOfType<GameMenu>();
-			foreach (GameMenu menu in gameMenus)
-			{
-				if (menu == _menuToPreserve)
-					continue;
+			Debug.Log("[SESSION MANAGER] Kicked from the room by another player.");
 
-				menu.ActionDisconnect();
-			}
+			if (NetworkManager.Instance != null)
+				NetworkManager.Instance.DisconnectFromRoom();
+			else
+				SceneManager.LoadSceneAsync("Menu");
 		}
 	}
 }

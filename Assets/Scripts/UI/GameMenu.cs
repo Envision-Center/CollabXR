@@ -67,7 +67,7 @@ namespace CollabXR.UI
 
 		public void ActionKickAllPlayers()
 		{
-			SessionManager.Instance.KickAllExcept(this);
+			SessionManager.Instance.KickEveryoneElse();
 		}
 
 		// delayed deletion coroutine
