@@ -14,7 +14,7 @@ namespace CollabXR.UI
 		[SerializeField]
 		private List<RadialMenuButton> buttons = new();
 
-		[SerializeField]
+		[SerializeField, Tooltip("Tool that is automatically selected upon button tap if the menu is not opened.")]
 		private RadialMenuButton defaultButton;
 
 		[SerializeField]
@@ -86,13 +86,17 @@ namespace CollabXR.UI
 		public void SubscribeToHand(RigHand newHand)
 		{
 			if (subscribed)
+			{
 				Unsubscribe();
+			}
 
 			hand = newHand;
 			handNotNull = newHand != null;
 
 			if (handNotNull)
+			{
 				Subscribe();
+			}
 		}
 
 		private void Subscribe()
@@ -136,10 +140,27 @@ namespace CollabXR.UI
 			}
 		}
 
+		/// <summary>
+		/// Forcibly switches to the default tool. Closes menu if it is currently open.
+		/// Note: this method is bound to by the Spawner tool in the Tool Palette prefab.
+		/// </summary>
+		public void SwitchToDefault()
+		{
+			isPressed = false;
+			if (isMenuOpen)
+			{
+				OnMenuClose();
+				isMenuOpen = false;
+			}
+			defaultButton.OnClicked(hand.isRight);
+		}
+
 		private void Update()
 		{
 			if (!isPressed)
+			{
 				return;
+			}
 
 			if (!isMenuOpen && Time.time - pressStartTime >= holdThreshold)
 			{
@@ -148,7 +169,9 @@ namespace CollabXR.UI
 			}
 
 			if (isPressed && isMenuOpen && openAnimFinished)
+			{
 				UpdateSelection();
+			}
 		}
 
 		private void LateUpdate()
@@ -196,9 +219,11 @@ namespace CollabXR.UI
 
 			if (distance >= selectDistance)
 			{
-				float tiltAngle = Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 360f / (Mathf.PI * 2f);
+				float tiltAngle = Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 180f / Mathf.PI;
 				if (tiltAngle < 0f)
+				{
 					tiltAngle += 360f;
+				}
 
 				foreach (var button in buttons)
 				{
@@ -241,16 +266,22 @@ namespace CollabXR.UI
 
 			var palette = ToolPalette.Get(hand.isRight);
 			if (palette != null)
+			{
 				palette.DeEquipTool(() => CompleteAnim(requestId));
+			}
 			else
+			{
 				CompleteAnim(requestId);
+			}
 		}
 
 		private void CompleteAnim(int requestId)
 		{
 			// The tool deequip animation driving this can finish so ignore it unless its still for the current open
 			if (!isMenuOpen || requestId != openRequestId)
+			{
 				return;
+			}
 
 			openAnimFinished = true;
 			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));

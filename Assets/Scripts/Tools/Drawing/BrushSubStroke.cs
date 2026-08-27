@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CollabXR.Networking;
 using CollabXR.Objects;
 using Fusion;
@@ -11,10 +11,10 @@ namespace CollabXR.Tools.Drawing
 		private RibbonMesh strokeMesh;
 
 		[SerializeField]
-		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(32)]
+		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(256)]
 		private NetworkLinkedList<Vector3> ribbonPoints => default;
 
-		[Networked, Capacity(32)]
+		[Networked, Capacity(256)]
 		private NetworkLinkedList<Vector3> ribbonEulerAngles => default;
 
 		[Networked]
@@ -59,11 +59,17 @@ namespace CollabXR.Tools.Drawing
 			{
 				strokeMesh.AddRibbonPoint(ribbonPoints[i], Quaternion.Euler(ribbonEulerAngles[i]), ribbonWeight, ribbonColor);
 			}
+			strokeMesh.UpdateGeometry();
+
 			if (verts < 1)
+			{
 				return;
+			}
 
 			if (intendedParent != null)
+			{
 				transform.parent = intendedParent.transform;
+			}
 		}
 
 		public int GetCapacityRemaining()
@@ -82,7 +88,7 @@ namespace CollabXR.Tools.Drawing
 			ribbonWeight = weight;
 		}
 
-		public bool AddStrokePoint(Vector3 point, Quaternion rotation)
+		public void AddStrokePoint(Vector3 point, Quaternion rotation)
 		{
 			Vector3 localPoint = transform.InverseTransformPoint(point);
 			ribbonPoints.Add(localPoint);
@@ -90,7 +96,6 @@ namespace CollabXR.Tools.Drawing
 
 			//SetDirty();
 			UpdateStrokeRenderer();
-			return true;
 		}
 
 		public void SetLastPoint(Vector3 point, Quaternion rotation)
