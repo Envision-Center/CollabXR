@@ -67,20 +67,7 @@ namespace CollabXR.UI
 
 		public void ActionKickAllPlayers()
 		{
-			GameMenu[] gameMenus = FindObjectsOfType<GameMenu>();
-			foreach (GameMenu menu in gameMenus)
-			{
-				if (menu == this)
-					continue;
-
-				menu.RPC_KickAllPlayers();
-			}
-		}
-
-		[Rpc(RpcSources.All, RpcTargets.All)]
-		public void RPC_KickAllPlayers()
-		{
-			ActionDisconnect();
+			SessionManager.Instance.KickAllExcept(this);
 		}
 
 		// delayed deletion coroutine
