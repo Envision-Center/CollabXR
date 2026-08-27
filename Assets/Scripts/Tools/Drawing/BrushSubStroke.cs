@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CollabXR.Networking;
 using CollabXR.Objects;
 using Fusion;
@@ -11,10 +11,10 @@ namespace CollabXR.Tools.Drawing
 		private RibbonMesh strokeMesh;
 
 		[SerializeField]
-		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(32)]
+		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(256)]
 		private NetworkLinkedList<Vector3> ribbonPoints => default;
 
-		[Networked, Capacity(32)]
+		[Networked, Capacity(256)]
 		private NetworkLinkedList<Vector3> ribbonEulerAngles => default;
 
 		[Networked]
