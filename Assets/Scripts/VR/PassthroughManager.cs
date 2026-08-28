@@ -100,7 +100,7 @@ namespace CollabXR.VR
 		}
 
 		private void UpdateOcclusionSystem()
-		{			
+		{
 			bool occlusionOn = PassthroughOn.Value && OcclusionMethod.Value == OcclusionMethods.LiveDepth && HardwareConfig.type == HardwareType.DepthQuest;
 
 			if (occlusionOn)
