@@ -55,6 +55,8 @@ namespace CollabXR.VR
 			PassthroughOn.Value = HardwareConfig.IsMetaDevice ? OVRManager.IsPassthroughRecommended() : passthroughOnInitial;
 			OcclusionMethod.Value = occlusionMethodInitial;
 			Debug.Log($"Starting passthrough.. {PassthroughOn.Value}");
+			OnSetPassthrough(PassthroughOn.Value);
+			OnOcclusionMethodChange(OcclusionMethod.Value);
 		}
 
 		private void OnSetPassthrough(bool b)
@@ -69,6 +71,8 @@ namespace CollabXR.VR
 
 			UpdateSkyboxVisibility();
 			UpdateOcclusionSystem();
+
+			Debug.Log("Passthrough: " + PassthroughOn.Value + ", WaitingForCameraHardwareDelay: " + WaitingForCameraHardwareDelay);
 		}
 
 		public void SetSkyboxOnInPassthrough(bool b)
@@ -79,6 +83,7 @@ namespace CollabXR.VR
 
 		public void FinishWaitingForCameraHardwareDelay(OVRPassthroughLayer layer)
 		{
+			Debug.Log("Passthrough: Finished waiting for camera hardware delay");
 			WaitingForCameraHardwareDelay = false;
 			UpdateSkyboxVisibility();
 		}
@@ -87,6 +92,7 @@ namespace CollabXR.VR
 		{
 			if (!WaitingForCameraHardwareDelay && HardwareConfig.type != HardwareType.Desktop)
 			{
+				Debug.Log("Passthrough: Updating Skybox Visibility");
 				mainCamera.clearFlags = PassthroughOn.Value && !SkyboxOnInPassthrough ? CameraClearFlags.Color : CameraClearFlags.Skybox;
 				mainCamera.backgroundColor = Color.clear;
 			}
@@ -99,6 +105,8 @@ namespace CollabXR.VR
 
 		private void UpdateOcclusionSystem()
 		{
+			Debug.Log("Passthrough: Updating Occlusion System");
+			
 			bool occlusionOn = PassthroughOn.Value && OcclusionMethod.Value == OcclusionMethods.LiveDepth && HardwareConfig.type == HardwareType.DepthQuest;
 
 			if (occlusionOn)
@@ -115,6 +123,7 @@ namespace CollabXR.VR
 
 		public void SwapEnvironmentSkybox()
 		{
+			Debug.Log("Passthrough: Swapping Environment Skybox");
 			storedSkybox = RenderSettings.skybox;
 			if (HardwareConfig.type == HardwareType.Desktop && !PassthroughOn.Value)
 			{
