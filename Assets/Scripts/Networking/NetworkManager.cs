@@ -19,7 +19,11 @@ namespace CollabXR.Networking
 	{
 		public static NetworkRunner Runner { get; private set; }
 
+		public static int networkObjectCount => Runner.GetAllNetworkObjects().Count;
+		public static int playerCount => Runner.SessionInfo.PlayerCount;
+
 		public GameMode defaultMode = GameMode.Shared;
+
 
 		private string[] regionCodes = { "asia", "au", "cae", "eu", "hk", "in", "jp", "za", "sa", "kr", "tr", "uae", "us", "usw", "ussc" };
 

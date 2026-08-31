@@ -21,6 +21,11 @@ namespace CollabXR.Environments
 			LoadNetworkObjects();
 		}
 
+		private void OnDestroy()
+		{
+			PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
+		}
+
 		private void LoadNetworkObjects()
 		{
 			if (environmentData.networkObjects.objects.Count > 0)
