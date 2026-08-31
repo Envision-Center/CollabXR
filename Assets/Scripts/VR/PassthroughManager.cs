@@ -55,6 +55,8 @@ namespace CollabXR.VR
 			PassthroughOn.Value = HardwareConfig.IsMetaDevice ? OVRManager.IsPassthroughRecommended() : passthroughOnInitial;
 			OcclusionMethod.Value = occlusionMethodInitial;
 			Debug.Log($"Starting passthrough.. {PassthroughOn.Value}");
+			OnSetPassthrough(PassthroughOn.Value);
+			OnOcclusionMethodChange(OcclusionMethod.Value);
 		}
 
 		private void OnSetPassthrough(bool b)
