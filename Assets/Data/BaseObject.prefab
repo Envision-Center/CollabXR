@@ -145,8 +145,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  translationLerp: 0.5
-  rotationLerp: 0.5
+  translationLerp: 1
+  rotationLerp: 1
   localOffset:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
@@ -336,6 +336,7 @@ MonoBehaviour:
   toggles: []
   _toggleVisibility: []
   _nonUniformScale: {x: 1, y: 1, z: 1}
+  _initialized: 0
 --- !u!114 &-643580527953164766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -348,6 +349,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ae02f66123a4d718833ec8ee1e575a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _ComponentIndices:
+    _items: []
 --- !u!114 &1699188243204170697
 MonoBehaviour:
   m_ObjectHideFlags: 0
