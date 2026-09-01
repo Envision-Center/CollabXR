@@ -62,10 +62,11 @@ runs:
         id: upload
         shell: bash
         run: |
-          echo "FILEPATH=${{inputs.filepath}}" >> $GITHUB_ENV
+          FILEPATH=${{inputs.filepath}}
           cd $FILEPATH/..
-          if [ -d "$FILEPATH" ]; then echo "FILENAME=${FILEPATH##*/}.zip" >> $GITHUB_ENV && zip -9 -r ${FILENAME}.zip ${FILENAME}; else "FILENAME=${FILEPATH##*/}" >> $GITHUB_ENV ; fi
-          echo "FILE_SIZE=$(du -k $FILENAME | cut -f1)" >> $GITHUB_ENV
+          if [ -d "$FILEPATH" ]; then FILENAME="${FILEPATH##*/}.zip" && zip -9 -r ${FILENAME} "${FILEPATH##*/}"; else FILENAME="${FILEPATH##*/}"; fi
+          FILE_SIZE=$(du -k $FILENAME | cut -f1)
+          echo "FILE_SIZE=${FILE_SIZE}" >> $GITHUB_ENV
           echo "FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_OUTPUT"
           if [[ $FILE_SIZE -lt 1000 ]]; then echo "File size of ${FILE_SIZE} was unexpected!!" && exit 1; fi
           aws s3 cp ${FILENAME} $S3_PATH/$FOLDER_NAME/
@@ -75,5 +76,5 @@ runs:
         if: ${{ inputs.webhook != null }}
         shell: bash
         run: |
-          echo "MESSAGE=${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha }}" >> $GITHUB_ENV
+          MESSAGE=${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha }}
           curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"`${GITHUB_REF_NAME}` ${{inputs.platform}} build ($FILE_SIZE KB): https://${{ inputs.bucket }}.s3.${{ inputs.region }}.amazonaws.com/$FOLDER_NAME/${FILENAME}\n> ${MESSAGE:q}\"}" ${{ inputs.webhook }}
