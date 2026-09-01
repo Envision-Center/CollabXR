@@ -34,7 +34,9 @@ runs:
 
   steps:
       - name: Configure AWS CLI
+        shell: bash
         run: brew install awscli
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -54,7 +56,7 @@ runs:
         shell: bash
         run: |
           echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
+          echo "S3_PATH=s3://${{ inputs.bucket }}" >> $GITHUB_ENV
 
       - name: Compress and Upload Artifact
         id: upload
