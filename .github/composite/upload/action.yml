@@ -63,8 +63,8 @@ runs:
         shell: bash
         run: |
           FILEPATH=${{inputs.filepath}}
-          cd $FILEPATH/..
-          if [ -d "$FILEPATH" ]; then FILENAME="${FILEPATH##*/}.zip" && zip -9 -r ${FILENAME} "${FILEPATH##*/}"; else FILENAME="${FILEPATH##*/}"; fi
+          cd $(dirname $FILEPATH)
+          if [ -d "$FILEPATH" ]; then FILENAME="${FILEPATH##*/}.zip" && zip -9 -r ${FILENAME} "$FILEPATH"; else FILENAME="${FILEPATH##*/}"; fi
           FILE_SIZE=$(du -k $FILENAME | cut -f1)
           echo "FILE_SIZE=${FILE_SIZE}" >> $GITHUB_ENV
           echo "FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_OUTPUT"
