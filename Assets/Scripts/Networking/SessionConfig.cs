@@ -25,6 +25,7 @@ namespace CollabXR.Networking
 	public class SessionConfig : SingletonBehavior<SessionConfig>
 	{
 		public UnityEvent onSessionReady; // invokes after session managers are spawned
+		public EventVariable<bool> sessionManagerSpawned = new();
 
 		[SerializeField]
 		private GameObject lobbyPrefab;
@@ -45,6 +46,9 @@ namespace CollabXR.Networking
 
 		[SerializeField]
 		private ScriptableInt role;
+		[SerializeField]
+		private LoadingPopup popupPrefab;
+		private LoadingPopup popup;
 
 		protected override void Awake()
 		{
@@ -63,10 +67,6 @@ namespace CollabXR.Networking
 			{
 				SessionConfig.Instance.ChangeConnectionState(ConnectionState.Lobby);
 			}
-			if (state == ConnectionState.Session && !sessionReady)
-			{
-				SessionManager.sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
-			}
 		}
 
 		public void OnSessionReady(bool ready)
@@ -77,12 +77,18 @@ namespace CollabXR.Networking
 				onSessionReady.RemoveAllListeners();
 				statePrefabInstance = Instantiate(sessionPrefab);
 				sessionReady = true;
+
+				if (popup != null)
+				{
+					GameObject.Destroy(popup.gameObject);
+				}
 			}
 		}
 
 		public void ChangeConnectionState(ConnectionState newState)
 		{
 			Debug.Log("Switching to state " + newState);
+			bool isActuallyNewState = state != newState;
 			state = newState;
 			if (statePrefabInstance != null)
 			{
@@ -93,12 +99,18 @@ namespace CollabXR.Networking
 				statePrefabInstance = Instantiate(lobbyPrefab);
 				Instantiate(networkManagerPrefab);
 			}
-			else if (state == ConnectionState.Session)
+			else if (state == ConnectionState.Session && isActuallyNewState)
 			{
+				sessionManagerSpawned.AddListenerAndCheck(OnSessionReady);
 				RepositoryManager.RefreshAllMods();
 				if (NetworkManager.Runner.IsSharedModeMasterClient)
 				{
 					sessionManagerInstance = NetworkManager.Runner.Spawn(sessionManager);
+				}
+
+				if(!sessionReady)
+				{
+					popup = Instantiate(popupPrefab);
 				}
 			}
 			else if (state == ConnectionState.Disconnecting)
@@ -106,6 +118,7 @@ namespace CollabXR.Networking
 				sessionReady = false;
 				sessionManagerInstance = null;
 				onSessionReady.RemoveAllListeners();
+				sessionManagerSpawned = new();
 				EnvironmentManager.Instance.DisconnectFromEnvironment();
 				if (NetworkManager.Runner != null && !NetworkManager.Runner.IsShutdown)
 				{

@@ -3682,10 +3682,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OnTriggerPress:
     m_PersistentCalls:
+      m_Calls: []
+  OnTriggerRelease:
+    m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 6647136154632569650}
         m_TargetAssemblyTypeName: CollabXR.Tools.ObjectSpawner, Assembly-CSharp
-        m_MethodName: InstantiatePreviewObject
+        m_MethodName: SpawnObject
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3695,12 +3698,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  OnTriggerRelease:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6647136154632569650}
-        m_TargetAssemblyTypeName: CollabXR.Tools.ObjectSpawner, Assembly-CSharp
-        m_MethodName: SpawnObject
+      - m_Target: {fileID: 5036445532551072910}
+        m_TargetAssemblyTypeName: CollabXR.UI.RadialMenuController, Assembly-CSharp
+        m_MethodName: SwitchToDefault
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6179,6 +6179,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1bab9df0e2907e846b3eb8913225204c, type: 3}
+--- !u!114 &5036445532551072910 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3309735603853941811, guid: 1bab9df0e2907e846b3eb8913225204c, type: 3}
+  m_PrefabInstance: {fileID: 7497233862869782717}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f70caed920e28f4a9ed59fb2db28f8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &6770946388417260565 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3890192690896256168, guid: 1bab9df0e2907e846b3eb8913225204c, type: 3}
