@@ -32,7 +32,7 @@ runs:
         run: |
           echo "OUTPUT_PATH=${{ github.workspace }}/Build/${{ inputs.output-name }}" >> $GITHUB_ENV
           echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_OUTPUT
-          COLLAB_KEYSTORE_PASSWORD=${{ inputs.keystore-password }} "${{ inputs.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ inputs.build-profile }}" -build "${OUTPUT_PATH}"
+          COLLAB_KEYSTORE_PASSWORD=${{ inputs.keystore-password }} "${{ inputs.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ inputs.build-profile }}" -build "$OUTPUT_PATH"
 
       - name: List Build Outputs
         id: list
