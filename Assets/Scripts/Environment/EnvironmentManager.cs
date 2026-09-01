@@ -241,5 +241,18 @@ namespace CollabXR.Environments
 				UpdateWithAuthority(requestedEnvIndex, requestedTeleportIndex);
 			}
 		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+			Debug.LogError($"Environment Manager has been destroyed!");
+		}
+
+		public override void Despawned(NetworkRunner runner, bool hasState)
+		{
+			base.Despawned(runner, hasState);
+			Debug.LogError("Environment Manager has been despawned!", this);
+		}
+
 	}
 }

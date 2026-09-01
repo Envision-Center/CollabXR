@@ -7,6 +7,7 @@ using CollabXR.Tools;
 using CollabXR.Tools.Drawing;
 using CollabXR.Tools.Palette;
 using CollabXR.VR;
+using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -62,6 +63,11 @@ namespace CollabXR.UI
 			BrushSubStroke[] brushStrokes = FindObjectsOfType<BrushSubStroke>();
 			foreach (BrushSubStroke stroke in brushStrokes)
 				stroke.MarkForDeletion();
+		}
+
+		public void ActionKickAllPlayers()
+		{
+			SessionManager.Instance.KickEveryoneElse();
 		}
 
 		// delayed deletion coroutine

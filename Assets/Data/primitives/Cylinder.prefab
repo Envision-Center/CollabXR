@@ -53,8 +53,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  translationLerp: 0.5
-  rotationLerp: 0.5
+  translationLerp: 1
+  rotationLerp: 1
   localOffset:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
@@ -94,7 +94,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7258602380195169005}
         m_TargetAssemblyTypeName: CollabXR.Objects.NetworkScalable, Assembly-CSharp
-        m_MethodName: UniformScale
+        m_MethodName: AddUniformScaleJoystick
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -199,7 +199,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d8ffcfdb6529d4989ec63162922682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uniformNetworkScale: {x: 1, y: 1, z: 1}
+  _baseNetworkScale: {x: 1, y: 1, z: 1}
+  _uniformNetworkScale: 1
   _nonUniformNetworkScale: {x: 0, y: 0, z: 0}
 --- !u!114 &5044368955400937628
 MonoBehaviour:
@@ -233,7 +234,7 @@ GameObject:
   - component: {fileID: 1434039792042638497}
   - component: {fileID: 1555252772094382606}
   - component: {fileID: 6826529660908717836}
-  - component: {fileID: 6988142591870369882}
+  - component: {fileID: 4475430030121853604}
   m_Layer: 0
   m_Name: Cylinder
   m_TagString: Untagged
@@ -309,8 +310,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &6988142591870369882
-CapsuleCollider:
+--- !u!64 &4475430030121853604
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -327,8 +328,7 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.50000006
-  m_Height: 1.9999992
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 1.1368684e-13, z: -0.0000010430808}
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}

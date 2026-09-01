@@ -1,3 +1,4 @@
+using System;
 using CollabXR.Tools;
 using CollabXR.Tools.Palette;
 using UnityEngine;
@@ -29,7 +30,10 @@ namespace CollabXR.UI
 
 						GetComponentInParent<GameMenu>()?.gameObject.SetActive(false);
 						Image imgToChange = isRight ? rightHandToolIcon : leftHandToolIcon;
-						imgToChange.sprite = b.GetComponent<Button>().targetGraphic.GetComponent<Image>().sprite;
+						if (imgToChange)
+						{
+							imgToChange.sprite = b.GetComponent<Button>().targetGraphic.GetComponent<Image>().sprite;
+						}
 					}
 				);
 			}

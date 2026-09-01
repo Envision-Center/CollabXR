@@ -9,8 +9,15 @@ namespace CollabXR.Tools
 	{
 		public bool isErasing;
 		public BrushSubStroke overlappingStroke;
+		public TriggerForwarder triggerForwarder;
 
-		private void OnTriggerEnter(Collider other)
+		private void OnEnable()
+		{
+			triggerForwarder.TriggerEnter += TriggerEnter;
+			triggerForwarder.TriggerExit += TriggerExit;
+		}
+
+		private void TriggerEnter(Collider other)
 		{
 			if (!isErasing)
 				return;
@@ -26,7 +33,7 @@ namespace CollabXR.Tools
 			}
 		}
 
-		private void OnTriggerExit(Collider other)
+		private void TriggerExit(Collider other)
 		{
 			if (other.CompareTag("Erasable"))
 			{
@@ -38,6 +45,8 @@ namespace CollabXR.Tools
 
 		private void OnDisable()
 		{
+			triggerForwarder.TriggerEnter -= TriggerEnter;
+			triggerForwarder.TriggerExit -= TriggerExit;
 			SetIsErasing(false);
 		}
 
