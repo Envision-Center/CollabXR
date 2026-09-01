@@ -30,12 +30,14 @@ jobs:
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/WindowsDesktop.asset"
             output-binary: CollabXR.exe
+            upload-name: CollabXR-Windows.zip
           - name: "quest3"
             platform: [self-hosted, macOS, ARM64]
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
             output-binary: CollabXR.apk
-          # - name: "macos" # For
+            upload-name: CollabXR-Quest.apk
+          # - name: "macos"
           #   platform: [self-hosted, macOS, ARM64]
           #   unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           #   unity-build-profile: "Assets/Settings/BuildProfiles/MacOSDesktop.asset"
@@ -102,5 +104,6 @@ jobs:
           region: ${{ secrets.S3_REGION }}
           bucket: ${{ secrets.S3_BUCKET }}
           filepath: ${{ steps.build.outputs.filepath }}
+          filename: ${{ matrix.upload-name }}
           webhook: ${{ secrets.EC_WEBHOOK }}
           platform-name: ${{ matrix.name }}

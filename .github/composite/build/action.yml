@@ -30,12 +30,18 @@ runs:
         id: build
         shell: bash
         run: |
+          # Ensure a build output directory exists
           OUTPUT_DIRECTORY=${{ github.workspace }}/Build
           mkdir -p $OUTPUT_DIRECTORY
+
+          # Figure out where the heck we're outputing this
           OUTPUT_PATH=$OUTPUT_DIRECTORY/${{ inputs.output-name }}
           echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_OUTPUT
+
+          # Change our reported output path to the build directory if this is an executable
           case $OUTPUT_PATH in *.exe) echo "OUTPUT_PATH=$OUTPUT_DIRECTORY" >> $GITHUB_OUTPUT; esac
 
+          # Build the Unity project with the original output path
           COLLAB_KEYSTORE_PASSWORD=${{ inputs.keystore-password }} "${{ inputs.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ inputs.build-profile }}" -build "${OUTPUT_PATH}"
 
       - name: List Build Outputs
