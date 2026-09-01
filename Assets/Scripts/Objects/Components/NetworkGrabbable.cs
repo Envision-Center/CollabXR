@@ -64,7 +64,7 @@ namespace CollabXR.Objects.Components
 			{
 				float currentTwoHandedGrabDistance = Vector3.Distance(primaryGrabber.transform.position, secondaryGrabber.transform.position);
 				float ratio = currentTwoHandedGrabDistance / initialTwoHandedGrabDistance;
-				scalable.SetUniformScale(initialGrabScale * ratio);
+				scalable?.SetUniformScale(initialGrabScale * ratio);
 
 				TwoHandedGrabTransform.Instance.SetTransform(this, primaryGrabber, secondaryGrabber, primaryLocalGrabPosition, secondaryLocalGrabPosition);
 				transform.position = TwoHandedGrabTransform.Instance.transform.position;
@@ -92,7 +92,7 @@ namespace CollabXR.Objects.Components
 			primaryGrabber = grabber;
 			secondaryGrabber = grabber2;
 			UpdateHoldingState();
-			initialGrabScale = scalable.uniformNetworkScale;
+			initialGrabScale = (scalable != null) ? scalable.uniformNetworkScale : 1.0f;
 			if (Holding == HoldState.OneHanded)
 			{
 				primaryLocalGrabPosition = transform.InverseTransformPoint(primaryGrabber.transform.position);
