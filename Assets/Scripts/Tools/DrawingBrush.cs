@@ -116,7 +116,7 @@ namespace CollabXR.Tools
 		{
 			CollabObject c = obj?.GetComponentInParent<CollabObject>();
 			BrushSubStroke b = obj?.GetComponentInParent<BrushSubStroke>();
-			CollabObject bContainer = b.GetComponentInParent<CollabObject>();
+			CollabObject bContainer = b?.GetComponentInParent<CollabObject>();
 			NetworkObject netObj = obj?.GetComponentInParent<NetworkObject>();
 
 			if (c != null && c.HasData) // is a valid collab object with data
@@ -124,7 +124,7 @@ namespace CollabXR.Tools
 				intersectedObject = c;
 				CheckOverlaps();
 			}
-			else if(b != null && bContainer != null)
+			else if(b != null && bContainer != null) // is a valid brush stroke with a container
 			{
 				intersectedObject = bContainer;
 				CheckOverlaps();
