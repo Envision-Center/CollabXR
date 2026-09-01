@@ -60,8 +60,8 @@ jobs:
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
         with:
-          lfs: 'true'
-          submodules: "true"
+          lfs: true
+          submodules: true
           # token: ${{ steps.app-token.outputs.token }}
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.head_ref }}
