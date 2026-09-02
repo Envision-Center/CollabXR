@@ -123,7 +123,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			// Instantiate a new variable list
 			foreach (var variable in legend.variables)
 			{
-				Debug.Log("Creating variable " + variable.name);
+				//Debug.Log("Creating variable " + variable.name);
 				var display = Instantiate(variablePrefab, variableList, false);
 
 				GameObject variableLabel = display.transform.GetChild(1).gameObject;

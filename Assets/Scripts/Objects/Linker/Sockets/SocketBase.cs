@@ -230,11 +230,10 @@ namespace CollabXR.Objects.Linker.Sockets
 			OnConnect(dataProvider);
 			dataProvider.OnConnect(this);
 
-			eventConnected.Invoke();
-
 			connections.Add(dataProvider);
-
 			Debug.Log("SOCKET CONNECTED!!!");
+
+			eventConnected.Invoke();
 		}
 
 		/// <summary>
