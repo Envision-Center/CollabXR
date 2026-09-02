@@ -30,12 +30,14 @@ jobs:
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/WindowsDesktop.asset"
             output-binary: CollabXR.exe
+            upload-name: CollabXR-Windows.zip
           - name: "quest3"
             platform: [self-hosted, macOS, ARM64]
             unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
             unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
             output-binary: CollabXR.apk
-          # - name: "macos" # For
+            upload-name: CollabXR-Quest.apk
+          # - name: "macos"
           #   platform: [self-hosted, macOS, ARM64]
           #   unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           #   unity-build-profile: "Assets/Settings/BuildProfiles/MacOSDesktop.asset"
@@ -55,12 +57,13 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
       - name: Install Git LFS
+        shell: bash
         run: brew install git-lfs && git lfs install
       - name: Checkout CollabXR Repository
         uses: actions/checkout@v7
         with:
-          lfs: 'true'
-          submodules: "true"
+          lfs: true
+          submodules: true
           # token: ${{ steps.app-token.outputs.token }}
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.head_ref }}
@@ -69,11 +72,12 @@ jobs:
           set-safe-directory: false
 
       - name: Pull Git LFS
+        shell: bash
         run: git lfs pull
 
       - name: Setup CollabXR
         id: setup
-        uses: ./.github/composite/collabxr
+        uses: ./.github/composite/setup
         with:
           unity-hub: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           unity-version: ${{ vars.UNITY_VERSION }}
@@ -81,53 +85,25 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           photon-install-path: $GITHUB_WORKSPACE/Assets
 
-      - name: Build CollabXR Executable
-        run: |
-          COLLAB_KEYSTORE_PASSWORD=${{ secrets.COLLAB_KEYSTORE_PASSWORD }} "${{ steps.setup.outputs.unity }}" -quit -batchmode -nographic -silent-crashes -logFile - -projectPath ${{ github.workspace }} -activeBuildProfile "${{ matrix.unity-build-profile }}" -build "${{ github.workspace }}/Build/${{ matrix.output-binary }}"
-
-      - name: List Build Outputs
-        run: |
-          ls ${{ github.workspace }}/Build/
-
-      - name: Strip Debug Info
-        continue-on-error: true
-        run: |
-          rm -rf ${{ github.workspace }}/Build/CollabXR_BurstDebugInformation_DoNotShip
+      - name: Build CollabXR
+        id: build
+        uses: ./.github/composite/build
+        with:
+          unity: ${{ steps.setup.outputs.unity }}
+          build-profile: ${{ matrix.unity-build-profile }}
+          keystore-password: ${{ secrets.COLLAB_KEYSTORE_PASSWORD }}
+          output-name: ${{ matrix.output-binary }}
 
       # Configure AWS
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+      - name: Upload Artifact
+        id: upload
+        uses: ./.github/composite/upload
         with:
-          aws-access-key-id: ${{ vars.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.S3_REGION }}
-      - name: Configure AWS CLI
-        run: brew install awscli
-      - name: Get Build Version
-        run: |
-          brew install yq
-          echo "BUNDLE_VERSION=$(yq '.PlayerSettings.bundleVersion' ${{ github.workspace }}/ProjectSettings/ProjectSettings.asset)" >> $GITHUB_ENV
-      - name: Construct Upload Path
-        run: |
-          echo "FOLDER_NAME=${GITHUB_REF_NAME}-v${BUNDLE_VERSION//\"/}-run-${{github.run_id}}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_ENV
-          echo "S3_PATH=s3://${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
-      - name: Compress and Upload Desktop Artifact
-        if: matrix.name != 'quest3'
-        run: |
-          cd ${{ github.workspace }}
-          zip -r ${{matrix.name}}.zip Build/
-          aws s3 cp ${{matrix.name}}.zip $S3_PATH/$FOLDER_NAME/
-          echo "FILE_SIZE=$(du -k ${{matrix.name}}.zip | cut -f1)" >> $GITHUB_ENV
-      - name: Upload Quest Artifact to S3
-        if: matrix.name == 'quest3'
-        run: |
-          aws s3 cp ${{ github.workspace }}/Build/${{ matrix.output-binary }} $S3_PATH/$FOLDER_NAME/
-          echo "FILE_SIZE=$(du -k ${{ github.workspace }}/Build/${{ matrix.output-binary }} | cut -f1)" >> $GITHUB_ENV
-      - name: Output Desktop Build
-        if: matrix.name != 'quest3'
-        run: |
-          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{matrix.name}}.zip\"}" ${{ secrets.EC_WEBHOOK }}
-      - name: Output Quest Build
-        if: matrix.name == 'quest3'
-        run: |
-          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"Artifact for ${GITHUB_REF_NAME} branch - ${{matrix.name}} build ($FILE_SIZE KB): https://${{ secrets.S3_BUCKET }}.s3.${{ secrets.S3_REGION }}.amazonaws.com/$FOLDER_NAME/${{ matrix.output-binary }}\"}" ${{ secrets.EC_WEBHOOK }}
+          access-key: ${{ vars.AWS_ACCESS_KEY }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ secrets.S3_REGION }}
+          bucket: ${{ secrets.S3_BUCKET }}
+          filepath: ${{ steps.build.outputs.filepath }}
+          filename: ${{ matrix.upload-name }}
+          webhook: ${{ secrets.EC_WEBHOOK }}
+          platform-name: ${{ matrix.name }}
