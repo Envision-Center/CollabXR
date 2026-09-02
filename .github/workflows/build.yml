@@ -31,12 +31,12 @@ jobs:
             unity-build-profile: "Assets/Settings/BuildProfiles/WindowsDesktop.asset"
             output-binary: CollabXR.exe
             upload-name: CollabXR-Windows.zip
-          - name: "quest3"
-            platform: [self-hosted, macOS, ARM64]
-            unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
-            unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
-            output-binary: CollabXR.apk
-            upload-name: CollabXR-Quest.apk
+          # - name: "quest3"
+          #   platform: [self-hosted, macOS, ARM64]
+          #   unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
+          #   unity-build-profile: "Assets/Settings/BuildProfiles/QuestRelease.asset"
+          #   output-binary: CollabXR.apk
+          #   upload-name: CollabXR-Quest.apk
           # - name: "macos"
           #   platform: [self-hosted, macOS, ARM64]
           #   unity-hub-path: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
@@ -112,7 +112,7 @@ jobs:
         shell: bash
         env: # Find a commit message or something to provide extra details
           MESSAGE: ${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha }}
-        # Notify developers that build finished
+        # Notify developers that build finished #
         run: |
           echo ${MESSAGE:q}
           curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"**${GITHUB_REF_NAME}** ${{ matrix.name }} (${{ steps.upload.outputs.file-size || '(no file)' }} KB): ${{ steps.upload.outputs.artifact-url || '(no url provided)' }}\n> ${MESSAGE:q}\"}" ${{ secrets.EC_WEBHOOK }}
