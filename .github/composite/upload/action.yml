@@ -20,17 +20,14 @@ inputs:
   filename:
     description: "Name the uploaded file should have."
     required: true
-  webhook:
-    description: "Optional webhook secret"
-    default: null
-  platform-name:
-    description: "Name of platform for use in webhook"
-    default: "unspecified"
 
 outputs:
   file-size:
     description: "Resulting build size in kilobytes."
     value: ${{ steps.upload.outputs.FILE_SIZE }}
+  artifact-url:
+    description: "URL linking to the uploaded artifact."
+    value: ${{ steps.construct-artifact-url.outputs.ARTIFACT_URL }}
 
 runs:
   using: composite
@@ -84,12 +81,8 @@ runs:
           # Upload the file
           aws s3 cp ${FILENAME} $S3_PATH/$FOLDER_NAME/
 
-      - name: Notify
-        id: notify
-        if: ${{ inputs.webhook != null }}
+      - name: Construct Artifact URL
+        id: construct-artifact-url
         shell: bash
-        env: # Find a commit message or something to provide extra details
-          MESSAGE: ${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha }}
-        # Notify developers that build finished
         run: |
-          curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"**${GITHUB_REF_NAME}** ${{ inputs.platform-name }} ($FILE_SIZE KB): https://${{ inputs.bucket }}.s3.${{ inputs.region }}.amazonaws.com/$FOLDER_NAME/${{ inputs.filename }}\n> ${MESSAGE:q}\"}" ${{ inputs.webhook }}
+          echo "ARTIFACT_URL=https://${{ inputs.bucket }}.s3.${{ inputs.region }}.amazonaws.com/$FOLDER_NAME/${{ inputs.filename }}" >> $GITHUB_OUTPUT
