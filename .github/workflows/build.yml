@@ -125,6 +125,7 @@ jobs:
           read_nullsep message < <(jq -j '(tostring | gsub("\u0000"; ""), "\u0000")' <<'EOF'
           ${{ toJSON(github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha) }}
           EOF
+          ) || { echo "Error decoding metadata" >&2; exit 1; }
 
           echo "${message}"
 
