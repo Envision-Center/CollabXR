@@ -115,11 +115,18 @@ namespace CollabXR.Tools
 		public void SetStrokeParentFromObject(GameObject obj)
 		{
 			CollabObject c = obj?.GetComponentInParent<CollabObject>();
+			BrushSubStroke b = obj?.GetComponentInParent<BrushSubStroke>();
+			CollabObject bContainer = b?.GetComponentInParent<CollabObject>();
 			NetworkObject netObj = obj?.GetComponentInParent<NetworkObject>();
 
 			if (c != null && c.HasData) // is a valid collab object with data
 			{
 				intersectedObject = c;
+				CheckOverlaps();
+			}
+			else if(b != null && bContainer != null) // is a valid brush stroke with a container
+			{
+				intersectedObject = bContainer;
 				CheckOverlaps();
 			}
 			else if (obj == null)
