@@ -41,11 +41,9 @@ namespace CollabXR.Objects
 		}
 
 		public virtual void OnFirstMarkedForDeletion() {
-			Debug.Log($"My name is {Object.Name} and I am now marked for deletion.");
-			Debug.Log($"Found {Object.NestedObjects.Count()} nested objects to mark for deletion.");
-			foreach(NetworkObject nestedObj in Object.NestedObjects)
+			foreach (SpawnableObject nestedSpawnable in transform.GetComponentsInChildren<SpawnableObject>())
 			{
-				nestedObj.GetComponent<SpawnableObject>()?.MarkForDeletion();
+				nestedSpawnable?.MarkForDeletion();
 			}
 		}
 

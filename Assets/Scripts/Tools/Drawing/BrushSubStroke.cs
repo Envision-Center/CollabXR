@@ -129,7 +129,6 @@ namespace CollabXR.Tools.Drawing
 		public override void OnFirstMarkedForDeletion()
 		{
 			base.OnFirstMarkedForDeletion();
-			Debug.Log($"Marking {Object.Id} brush stroke for deletion.");
 			SessionManager.Instance.RemoveBrushStroke();
 		}
 
