@@ -549,7 +549,6 @@ GameObject:
   - component: {fileID: 2004716325854136371}
   - component: {fileID: 7927402415534282802}
   - component: {fileID: 930805143257424157}
-  - component: {fileID: 464864270468625879}
   - component: {fileID: 2992862847275739759}
   - component: {fileID: 3469735914853853035}
   - component: {fileID: 2920034470761194097}
@@ -657,29 +656,6 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 2348234368942555124}
---- !u!114 &464864270468625879
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6829725803464291784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47c3d8fff41da5f46af6037ed538bf20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  disabledInPassthrough: []
-  enabledInPassthrough: []
-  onPassthroughChange:
-    m_PersistentCalls:
-      m_Calls: []
-  onPassthroughEnabled:
-    m_PersistentCalls:
-      m_Calls: []
-  onPassthroughDisabled:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &2992862847275739759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -708,7 +684,6 @@ MonoBehaviour:
   _removeHands: 0
   CustomTrackingSpace: {fileID: 0}
   <MaskMeshFilters>k__BackingField: []
-  _cameraRig: {fileID: 0}
 --- !u!114 &2920034470761194097
 MonoBehaviour:
   m_ObjectHideFlags: 0
