@@ -204,7 +204,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			// Make sure we support the data type,
 			// that the data flows in the right direction,
 			// and that the connection does not already exist
-			Debug.Log(string.Format("CanConnect: {0}, {1}, {2}", otherSocket != null, otherSocket?.flow != flow, !connections.Contains(otherSocket)));
+			//Debug.Log(string.Format("CanConnect: {0}, {1}, {2}", otherSocket != null, otherSocket?.flow != flow, !connections.Contains(otherSocket)));
 			return otherSocket != null && otherSocket.flow != flow && !connections.Contains(otherSocket);
 		}
 
@@ -252,10 +252,10 @@ namespace CollabXR.Objects.Linker.Sockets
 			dataProvider.OnDisconnect(this);
 			OnDisconnect(dataProvider);
 
-			eventDisconnected.Invoke();
-
 			dataProvider.connections.Remove(this);
 			connections.Remove(dataProvider);
+
+			eventDisconnected.Invoke();
 
 			return true;
 		}

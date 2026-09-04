@@ -116,15 +116,17 @@ namespace CollabXR.Objects
 			// This is a built-in object??
 			if (Data == null)
 			{
-				Debug.Log("InitializePrefab: data was null");
+				Debug.Log(string.Format("InitializePrefab: data was null ({0}:{1})", Category, DataName.Value));
 				// only spawn placeholder if this Object has Data (aka isn't a drawing)
 				if (!Category.ToString().IsNullOrEmpty() && DataName.Value.ToString().IsNullOrEmpty())
 				{
 					MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
-					dataRoot = Instantiate(MainLibraryRef.Instance.placeholderPrefab, transform);
-					dataRoot.name = MainLibraryRef.Instance.placeholderPrefab.name;
-
-					FinalizeModPrefab(prefabReference.Value);
+					FinalizeModPrefab(MainLibraryRef.Instance.placeholderPrefab);
+				}
+				else
+				{
+					Debug.Log("no-op because no category or data name");
+					EnumerateSockets();
 				}
 				return;
 			}
@@ -149,6 +151,7 @@ namespace CollabXR.Objects
 
 		private async UniTaskVoid LoadModPrefab()
 		{
+			Debug.Log("load mod prefab async");
 			// If this is a mod and not a built-in CollabXR object...
 			if (Data.modGUID != null)
 			{
@@ -167,6 +170,7 @@ namespace CollabXR.Objects
 		/// <param name="prefab"></param>
 		private void FinalizeModPrefab(GameObject prefab)
 		{
+			Debug.Log("finalize mod prefab: " + prefab.name);
 			if (prefab != null)
 			{
 				dataRoot = Instantiate(prefab, transform);
@@ -317,6 +321,8 @@ namespace CollabXR.Objects
 					fromSocket.Connect(toSocket);
 				}
 			}
+
+			Debug.Log(socketLinks);
 		}
 
 		/// <summary>
@@ -324,6 +330,7 @@ namespace CollabXR.Objects
 		/// </summary>
 		private void UpdateSocketLinks()
 		{
+			Debug.Log("Update Socket Links call " + HasStateAuthority.ToString());
 			if (!HasStateAuthority)
 			{
 				return;
@@ -380,6 +387,8 @@ namespace CollabXR.Objects
 					socketLinks.Add(link);
 				}
 			}
+
+			Debug.Log(socketLinks);
 		}
 
 		private int FindSocketId(SocketBase socket)

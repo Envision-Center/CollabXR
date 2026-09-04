@@ -89,10 +89,13 @@ namespace CollabXR.Tools
 				// If either socket is connected, disconnect them
 				if (selectedStart.IsConnected(selectedEnd) || selectedEnd.IsConnected(selectedStart))
 				{
+					// TODO: request state authority
+					Debug.Log(string.Format("Linker Tool: DISCONNECTING between {0} -> {1} !", selectedEnd, selectedStart));
 					selectedStart.Disconnect(selectedEnd);
 				} // If both sockets can connect to each other, do so
 				else if (selectedStart.CanConnect(selectedEnd) && selectedEnd.CanConnect(selectedStart))
 				{
+					// TODO: request state authority
 					Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
 					selectedEnd.Connect(selectedStart);
 				}
