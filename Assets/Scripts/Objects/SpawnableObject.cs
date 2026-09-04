@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using CollabXR.Networking;
 using Fusion;
 using UnityEngine;
@@ -35,6 +36,16 @@ namespace CollabXR.Objects
 			if (state == ObjectState.Alive)
 			{
 				state = ObjectState.ShouldBeDeleted;
+				OnFirstMarkedForDeletion();
+			}
+		}
+
+		public virtual void OnFirstMarkedForDeletion() {
+			Debug.Log($"My name is {Object.Name} and I am now marked for deletion.");
+			Debug.Log($"Found {Object.NestedObjects.Count()} nested objects to mark for deletion.");
+			foreach(NetworkObject nestedObj in Object.NestedObjects)
+			{
+				nestedObj.GetComponent<SpawnableObject>()?.MarkForDeletion();
 			}
 		}
 

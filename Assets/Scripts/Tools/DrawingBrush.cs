@@ -79,16 +79,23 @@ namespace CollabXR.Tools
 			{
 				return;
 			}
+			if (SessionManager.Instance.CanAddBrushStroke())
+			{
+				SessionManager.Instance.AddBrushStroke();
+				NetworkObject spawnedStroke = NetworkManager.Runner.Spawn(substrokePrefab, position: brushTipTransform.position);
 
-			NetworkObject spawnedStroke = NetworkManager.Runner.Spawn(substrokePrefab, position: brushTipTransform.position);
+				currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
+				currentSubStroke.SetParent(currentStrokeContainer);
+				currentSubStroke.Init(StrokeColor, baseStrokeWeight);
 
-			currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
-			currentSubStroke.SetParent(currentStrokeContainer);
-			currentSubStroke.Init(StrokeColor, baseStrokeWeight);
+				currentSubStroke.name += currentWholeStroke.Count;
 
-			currentSubStroke.name += currentWholeStroke.Count;
-
-			currentWholeStroke.Add(currentSubStroke);
+				currentWholeStroke.Add(currentSubStroke);
+			}
+			else
+			{
+				EndStroke();
+			}
 		}
 
 		private void LateUpdate()
