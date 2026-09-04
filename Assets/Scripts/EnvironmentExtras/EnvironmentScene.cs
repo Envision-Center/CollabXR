@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace CollabXR.Environments
+namespace CollabXR.EnvironmentExtras
 {
 	[RequireComponent(typeof(PassthroughEvents))]
 	public class EnvironmentScene : MonoBehaviour
@@ -18,7 +18,7 @@ namespace CollabXR.Environments
 		private void Awake()
 		{
 			PassthroughManager.Instance.SetSkyboxOnInPassthrough(skyboxOnInPassthrough);
-			LoadNetworkObjects();
+			// LoadNetworkObjects();
 		}
 
 		private void OnDestroy()
@@ -26,13 +26,13 @@ namespace CollabXR.Environments
 			PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 		}
 
-		private void LoadNetworkObjects()
-		{
-			if (environmentData.networkObjects.objects.Count > 0)
-			{
-				EnvironmentManager.Instance.SpawnNetworkedObjects(environmentData.networkObjects.objects);
-			}
-		}
+		// private void LoadNetworkObjects()
+		// {
+		// 	if (environmentData.networkObjects.objects.Count > 0)
+		// 	{
+		// 		EnvironmentManager.Instance.SpawnNetworkedObjects(environmentData.networkObjects.objects);
+		// 	}
+		// }
 
 #if UNITY_EDITOR
 		private void OnValidate()
