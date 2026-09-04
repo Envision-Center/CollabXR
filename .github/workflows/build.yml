@@ -105,5 +105,12 @@ jobs:
           bucket: ${{ secrets.S3_BUCKET }}
           filepath: ${{ steps.build.outputs.filepath }}
           filename: ${{ matrix.upload-name }}
-          webhook: ${{ secrets.EC_WEBHOOK }}
-          platform-name: ${{ matrix.name }}
+
+      - name: Notify
+        id: notify
+        # if: ${{ secrets.EC_WEBHOOK != null }}
+        shell: bash
+        # env: # Find a commit message or something to provide extra details
+          # MESSAGE: ${{ github.event.head_commit.message || github.event.workflow_run.head_commit.message || github.event.pull_request.title || github.sha }}
+        run: |
+          curl -s -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"**${GITHUB_REF_NAME}** ${{ matrix.name }} (${{ steps.upload.outputs.file-size || '(no file)' }} KB): ${{ steps.upload.outputs.artifact-url || '(no url provided)' }}\"}" ${{ secrets.EC_WEBHOOK }}
