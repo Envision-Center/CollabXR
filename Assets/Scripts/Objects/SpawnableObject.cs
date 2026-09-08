@@ -61,7 +61,7 @@ namespace CollabXR.Objects
 			NetworkManager.Runner.Despawn(Object);
 		}
 
-		public void ParentToOtherCollabObject(CollabObject obj) // for attaching brush containers to objects
+		public void ParentToOtherSpawnableObject(SpawnableObject obj) // for attaching brush containers to objects
 		{
 			myParent = obj;
 			if (Object.IsValid)
