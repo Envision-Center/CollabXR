@@ -4,9 +4,16 @@ using System.Runtime.CompilerServices;
 
 namespace CollabXR.ModLoader
 {
+	internal enum ModLoadStatus
+	{
+		Pending,
+		Failed,
+		Completed
+	}
+
 	internal class ModLoadTask
 	{
-		internal bool IsLoaded = false;
+		internal ModLoadStatus status;
 
 		internal Guid modUuid { get; set; }
 
