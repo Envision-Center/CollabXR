@@ -19,6 +19,8 @@ namespace CollabXR.Objects
 		public UnityEvent<bool> isTouchingAnything;
 		public UnityEvent<bool> isNotTouchingAnything;
 
+		public GameObject ignoreObject;
+
 		private void Awake()
 		{
 			isTouchingAnything.AddListener((bool b) => isNotTouchingAnything.Invoke(!b));
@@ -41,7 +43,7 @@ namespace CollabXR.Objects
 
 		private void OnTriggerEnter(Collider other)
 		{
-			if (!overlappingObjects.Contains(other.gameObject))
+			if (!overlappingObjects.Contains(other.gameObject) && other.gameObject != ignoreObject)
 			{
 				overlappingObjects.Add(other.gameObject);
 				ApplyOverlappingObjectsChange();
