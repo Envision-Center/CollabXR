@@ -4,9 +4,16 @@ using System.Runtime.CompilerServices;
 
 namespace CollabXR.ModLoader
 {
+	internal enum ModLoadStatus
+	{
+		Pending,
+		Failed,
+		Completed
+	}
+
 	internal class ModLoadTask
 	{
-		internal bool IsLoaded = false;
+		internal ModLoadStatus status;
 
 		internal Guid modUuid { get; set; }
 
@@ -27,6 +34,13 @@ namespace CollabXR.ModLoader
 			{
 				awaiter.NotifyModReady();
 			}
+		}
+
+		internal void NotifyModFailedToLoad()
+		{
+			IsLoaded = false;
+
+			awaiters.Clear();
 		}
 
 		public ModLoadTaskAwaiter GetAwaiter()
@@ -78,6 +92,8 @@ namespace CollabXR.ModLoader
 		IAssetReference assetReference { get; set; }
 
 		void NotifyAssetReady();
+
+		void NotifyAssetFailedToLoad();
 	}
 
 	internal class AssetPointerLoadTask<T> : IAssetPointerLoadTask
@@ -103,6 +119,13 @@ namespace CollabXR.ModLoader
 			{
 				awaiter.NotifyAssetReady();
 			}
+		}
+
+		public void NotifyAssetFailedToLoad()
+		{
+			IsLoaded = true;
+
+			awaiters.Clear();
 		}
 
 		public AssetPointerLoadTaskAwaiter<T> GetAwaiter()

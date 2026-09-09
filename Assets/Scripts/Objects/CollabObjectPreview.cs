@@ -56,11 +56,11 @@ namespace CollabXR.Objects
 
 			await UniTask.WaitUntil(() => ModManager.Instance.indexedMods.ContainsKey(data.modGUID));
 			
-			while (state == PreviewState.Loading)
+			while (state == PreviewState.Loading && loadingVisual.activeSelf)
 			{
 				if (!RequestExists(out UnityWebRequest request))
 				{
-					await UniTask.Yield();
+					await UniTask.Yield(this.GetCancellationTokenOnDestroy(), true);
 					continue;
 				}
 
