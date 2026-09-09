@@ -15,6 +15,11 @@ namespace CollabXR.EnvironmentExtras
 
 		private Material sceneSkyboxMaterial;
 
+		private void Awake()
+		{
+			passthroughEvents = GetComponent<EnvironmentPassthroughEvents>();
+		}
+
 #if UNITY_EDITOR
 		private void OnValidate()
 		{
