@@ -217,6 +217,7 @@ GameObject:
   - component: {fileID: 733611891}
   - component: {fileID: 733611890}
   - component: {fileID: 733611893}
+  - component: {fileID: 733611894}
   m_Layer: 0
   m_Name: env
   m_TagString: Untagged
@@ -231,7 +232,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 733611889}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 47c3d8fff41da5f46af6037ed538bf20, type: 3}
   m_Name: 
@@ -266,7 +267,14 @@ MonoBehaviour:
     info:
       name: Default
       thumbnail: {fileID: 21300000, guid: 73d6a79c699f0b54f9670050af712491, type: 3}
+  passthroughEvents: {fileID: 733611894}
   skyboxOnInPassthrough: 0
+  OnEnabled:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDisabled:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &733611892
 Transform:
   m_ObjectHideFlags: 0
@@ -296,6 +304,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lightingConfig: {fileID: 11400000, guid: 23753e020f6920b41b3d342d06d05013, type: 2}
   activateOnEnable: 1
+--- !u!114 &733611894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733611889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb47c44f246b0644e8ff81df424b136f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disabledInPassthrough:
+  - {fileID: 411835295}
+  enabledInPassthrough: []
+  onPassthroughChange:
+    m_PersistentCalls:
+      m_Calls: []
+  onPassthroughEnabled:
+    m_PersistentCalls:
+      m_Calls: []
+  onPassthroughDisabled:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1059051678
 GameObject:
   m_ObjectHideFlags: 0

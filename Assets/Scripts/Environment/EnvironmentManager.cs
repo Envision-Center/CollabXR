@@ -29,48 +29,18 @@ namespace CollabXR.Environments
 		bool loadingScene = false;
 		bool teleportAfterSceneLoad = false;
 
-		//, needsRefresh = false, needsEnvSet = false;
+		[SerializeField]
+		public EnvironmentScene currentEnvInstance;
 
-		//protected override void Awake()
-		//{
-		//	base.Awake();
-		//}
-
+		/// <summary>
+		/// Overriding singleton initialization function
+		/// Loads currentEnvSceneName, which starts as empty "", so loads nothing
+		/// </summary>
 		public override void Spawned()
 		{
 			base.Spawned();
 			LoadEnvironmentSceneLocal();
 		}
-
-		//public override void Despawned(NetworkRunner runner, bool hasState)
-		//{
-		//	base.Despawned(runner, hasState);
-		//	SceneManager.sceneLoaded -= OnSceneLoad;
-		//}
-
-		//private void Update()
-		//{
-		//	if (needsRefresh)
-		//	{
-		//		// ignore what scene is calling this, only use the current networked environment scene
-		//		// this is a hack to avoid scene loading timing issues
-		//		string sceneName = GetEnvironment().sceneName;
-		//		Scene targetScene = SceneManager.GetSceneByName(sceneName);
-		//		if (targetScene.rootCount > 0)
-		//		{
-		//			SceneManager.SetActiveScene(targetScene);
-		//		}
-
-		//		SetEnvironment();
-		//		waitingOnLoad = false;
-		//		needsRefresh = false;
-		//	}
-		//	else if (needsEnvSet)
-		//	{
-		//		SetEnvironment();
-		//		needsEnvSet = false;
-		//	}
-		//}
 
 		public void SpawnNetworkedObjects(List<GameObject> objs)
 		{
@@ -80,22 +50,18 @@ namespace CollabXR.Environments
 			}
 		}
 
-		// scufffed TODO: refactor
+		/// <summary>
+		/// Teleports player to location of current teleport index
+		/// </summary>
 		private void Teleport()
 		{
+			Debug.Log($"Teleporting to {currentTeleportIndex} in {GetEnvironment().sceneName}");
 			if (loadingScene)
 			{
 				return;
 			}
 
-			var envScene = FindObjectOfType<EnvironmentScene>();
-
-			if (envScene == null)
-			{
-				return;
-			}
-
-			Transform t = envScene.teleports[currentTeleportIndex].transform;
+			Transform t = currentEnvInstance.teleports[currentTeleportIndex].transform;
 
 			Matrix4x4 localToPrevious = previousTeleportMatrix.inverse * HardwareRig.Instance.root.localToWorldMatrix;
 			Matrix4x4 newMat = t.localToWorldMatrix * localToPrevious;
@@ -105,31 +71,27 @@ namespace CollabXR.Environments
 			previousTeleportMatrix = t.localToWorldMatrix;
 		}
 
-		//public void OnSceneLoad(Scene scene, LoadSceneMode mode)
-		//{
-		//	if (scene.buildIndex > 1) // not the menu or game
-		//	{
-		//		Debug.Log("Loaded " + scene.name + " with index " + scene.buildIndex + " in mode " + mode);
-		//		needsRefresh = true;
-		//	}
-		//}
-
+		/// <summary>
+		/// Main function that load the current environment at "currentEnvSceneName".
+		/// </summary>
 		void LoadEnvironmentSceneLocal()
 		{
-			Debug.Log(currentEnvSceneName);
-			Debug.Log(loadingScene);
+			// flag to indicate if a scene is currently loading
 			if (loadingScene)
+			{
 				return;
-
+			}
 			loadingScene = true;
 
 			if (!currentEnvSceneName.Equals(""))
 			{
 				SceneManager.UnloadSceneAsync(currentEnvSceneName);
+				currentEnvInstance = null;
 			}
 
 			currentEnvSceneName = GetEnvironment().sceneName;
-			SceneManager.LoadSceneAsync(GetEnvironment().sceneName, LoadSceneMode.Additive).completed += OnSceneLoadComplete;
+			Debug.Log($"Initializing loading of: {currentEnvSceneName}");
+			SceneManager.LoadSceneAsync(currentEnvSceneName, LoadSceneMode.Additive).completed += OnSceneLoadComplete;
 		}
 
 		public void DisconnectFromEnvironment()
@@ -137,14 +99,20 @@ namespace CollabXR.Environments
 			if (!currentEnvSceneName.Equals(""))
 			{
 				SceneManager.UnloadSceneAsync(currentEnvSceneName);
+				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
+				currentEnvInstance = null;
 			}
 		}
 
 		private void OnSceneLoadComplete(AsyncOperation op)
 		{
 			loadingScene = false;
+
+			// hotswap scenes
 			Scene loadedScene = SceneManager.GetSceneByName(GetEnvironment().sceneName);
 			SceneManager.SetActiveScene(loadedScene);
+			
+			// initialize depth masks for all root gameobjects
 			GameObject[] rootObjects = loadedScene.GetRootGameObjects();
 			foreach (GameObject obj in rootObjects) // initialize anything that needs it
 			{
@@ -154,63 +122,32 @@ namespace CollabXR.Environments
 					PassthroughManager.Instance.AddDepthMask(mask);
 				}
 			}
-			OnEnvironmentLoadComplete.Invoke();
+		
+			// set currentScene reference and initialize networked objects
+			// NOTE: currently no environment uses networked objects, but I'm keeping it just for consistency
+			EnvironmentScene sceneScript = FindFirstObjectByType<EnvironmentScene>();
+			if (sceneScript == null)
+			{
+				Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
+				return;
+			}
+			if (sceneScript.environmentData.networkObjects.objects.Count > 0)
+			{
+				Debug.Log("EnvironmentManager: Spawning networked objects");
+				EnvironmentManager.Instance.SpawnNetworkedObjects(sceneScript.environmentData.networkObjects.objects);
+			}
+			SetEnvironmentInstance(sceneScript);
+			
+			Debug.Log($"EnvironmentManager: Setting skybox in passthrough to {currentEnvInstance.skyboxOnInPassthrough}");
+			PassthroughManager.Instance.SetSkyboxOnInPassthrough(currentEnvInstance.skyboxOnInPassthrough);
+			
 			Teleport();
+			OnEnvironmentLoadComplete.Invoke();			
 		}
-
-		//void TeleportLocal()
-		//{
-		//	if (!waitingOnLoad) {
-		//		SetEnvironment();
-		//	}
-		//}
-
-		//void SetEnvironment()
-		//{
-		//	SetLighting();
-		//}
-
-		//void SetLighting()
-		//{
-		//	GetEnvironment().customLightingConfig?.Activate();
-		//}
 
 		public EnvironmentData GetEnvironmentAtIndex(int index) => environmentData[index];
 
 		public EnvironmentData GetEnvironment() => environmentData[currentEnvironmentIndex];
-
-		//public EnvironmentScene GetEnvironmentInstance()
-		//{
-		//	return envInstances[currentEnvironmentIndex];
-		//}
-
-		//public EnvironmentData GetLastEnvironment()
-		//{
-		//    return envData[lastEnvironment];
-		//}
-
-		//public EnvironmentScene GetLastEnvironmentInstance()
-		//{
-		//    return envInstances[lastEnvironment];
-		//}
-
-		//public EnvironmentTeleport GetTeleport()
-		//{
-		//	return GetEnvironmentInstance().teleports[currentTeleportIndex];
-		//}
-
-		//public void TeleportTo(int index)
-		//{
-		//	if (Object.HasStateAuthority)
-		//	{
-		//		UpdateWithAuthority(currentEnvironmentIndex, index);
-		//	}
-		//	else
-		//	{
-		//		Object.RequestStateAuthority();
-		//		tempTeleport = index;
-		//	}
-		//}
 
 		public void RequestRoomEnvironmentChange(int envIndex, int teleportIndex)
 		{
@@ -255,5 +192,10 @@ namespace CollabXR.Environments
 			Debug.LogError("Environment Manager has been despawned!", this);
 		}
 
+		void SetEnvironmentInstance(EnvironmentScene instance)
+		{
+			Debug.Log("Setting environment instance to " + instance.name);
+			currentEnvInstance = instance;
+		}
 	}
 }
