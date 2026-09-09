@@ -75,7 +75,7 @@ namespace CollabXR.VR
 			TriggerScenePassthroughEvents();
 		}
 
-		private void TriggerScenePassthroughEvents()
+		public void TriggerScenePassthroughEvents()
 		{
 			EnvironmentScene scene = EnvironmentManager.Instance.currentEnvInstance;
 			if (scene)
