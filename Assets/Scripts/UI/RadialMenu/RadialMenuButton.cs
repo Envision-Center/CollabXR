@@ -23,6 +23,9 @@ namespace CollabXR.UI
 		private int toolIndex;
 
 		[SerializeField]
+		private string toolName;
+
+		[SerializeField]
 		private float minAngle;
 
 		[SerializeField]
@@ -51,7 +54,7 @@ namespace CollabXR.UI
 		[SerializeField]
 		private EaseType easeType = EaseType.EaseOut;
 
-		public void OnSelected(bool isRightHand)
+		public string OnSelected(bool isRightHand)
 		{
 			ToolPalette.Get(isRightHand)?.ActivateToolPreview(toolIndex);
 
@@ -68,6 +71,8 @@ namespace CollabXR.UI
 			this.GenericTween(buttonImage, buttonImage.color, activeButtonColor.color, tweenDuration, easeType, c => buttonImage.color = c, (a, b, t) => Color.Lerp(a, b, t));
 
 			this.GenericTween(iconImage, iconImage.color, activeIconColor.color, tweenDuration, easeType, c => iconImage.color = c, (a, b, t) => Color.Lerp(a, b, t));
+
+			return toolName;
 		}
 
 		public void OnDeselected()
