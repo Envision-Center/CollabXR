@@ -10,6 +10,7 @@ using NetworkPlayer = CollabXR.Networking.NetworkPlayer;
 namespace CollabXR.Tools
 {
 	[DefaultExecutionOrder(50)]
+	[RequireComponent(typeof(OverlapTracker))]
 	public class DrawingBrush : MonoBehaviour
 	{
 		[SerializeField]
@@ -21,7 +22,14 @@ namespace CollabXR.Tools
 		[SerializeField]
 		private GameObject substrokePrefab;
 
+		private OverlapTracker overlapTracker;
+
 		public bool IsDrawing { get; set; }
+
+		private void Awake()
+		{
+			overlapTracker = GetComponent<OverlapTracker>();
+		}
 
 		public void SetIsDrawing(bool isDrawing)
 		{
@@ -85,6 +93,7 @@ namespace CollabXR.Tools
 			currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
 			currentSubStroke.SetParent(currentStrokeContainer);
 			currentSubStroke.Init(StrokeColor, baseStrokeWeight);
+			overlapTracker.ignoreObject = currentSubStroke.gameObject;
 
 			currentSubStroke.name += currentWholeStroke.Count;
 
@@ -174,6 +183,7 @@ namespace CollabXR.Tools
 			{
 				currentSubStroke.SetLastPoint(brushTipTransform.position, brushTipTransform.rotation);
 				currentSubStroke = null;
+				overlapTracker.ignoreObject = null;
 			}
 			currentWholeStroke.Clear();
 			currentStrokeContainer = null;
