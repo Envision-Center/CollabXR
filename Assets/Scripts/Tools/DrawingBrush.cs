@@ -51,7 +51,7 @@ namespace CollabXR.Tools
 		private List<BrushSubStroke> currentWholeStroke = new();
 		private NetworkObject currentStrokeContainer = null;
 
-		private CollabObject intersectedObject;
+		private SpawnableObject intersectedObject;
 
 		//[SerializeField] private float triggerWeightPower = 0.25f;
 		[SerializeField]
@@ -87,17 +87,22 @@ namespace CollabXR.Tools
 			{
 				return;
 			}
+			if (SessionManager.Instance.CanAddBrushStroke())
+			{
+				SessionManager.Instance.AddBrushStroke();
+				NetworkObject spawnedStroke = NetworkManager.Runner.Spawn(substrokePrefab, position: brushTipTransform.position);
 
-			NetworkObject spawnedStroke = NetworkManager.Runner.Spawn(substrokePrefab, position: brushTipTransform.position);
-
-			currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
-			currentSubStroke.SetParent(currentStrokeContainer);
-			currentSubStroke.Init(StrokeColor, baseStrokeWeight);
-			overlapTracker.ignoreObject = currentSubStroke.gameObject;
-
-			currentSubStroke.name += currentWholeStroke.Count;
-
-			currentWholeStroke.Add(currentSubStroke);
+				currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
+				currentSubStroke.SetParent(currentStrokeContainer);
+				currentSubStroke.Init(StrokeColor, baseStrokeWeight);
+				currentSubStroke.name += currentWholeStroke.Count;
+				currentWholeStroke.Add(currentSubStroke);
+				overlapTracker.ignoreObject = currentSubStroke.gameObject;
+			}
+			else
+			{
+				EndStroke();
+			}
 		}
 
 		private void LateUpdate()
@@ -125,7 +130,7 @@ namespace CollabXR.Tools
 		{
 			CollabObject c = obj?.GetComponentInParent<CollabObject>();
 			BrushSubStroke b = obj?.GetComponentInParent<BrushSubStroke>();
-			CollabObject bContainer = b?.GetComponentInParent<CollabObject>();
+			BrushContainer bContainer = b?.GetComponentInParent<BrushContainer>();
 			NetworkObject netObj = obj?.GetComponentInParent<NetworkObject>();
 
 			if (c != null && c.HasData) // is a valid collab object with data
@@ -148,7 +153,7 @@ namespace CollabXR.Tools
 		{
 			if (IsDrawing && intersectedObject != null && currentStrokeContainer.transform.parent == null)
 			{
-				currentStrokeContainer.GetComponent<CollabObject>().ParentToOtherCollabObject(intersectedObject);
+				currentStrokeContainer.GetComponent<SpawnableObject>().ParentToOtherSpawnableObject(intersectedObject);
 			}
 		}
 
@@ -187,6 +192,11 @@ namespace CollabXR.Tools
 			}
 			currentWholeStroke.Clear();
 			currentStrokeContainer = null;
+		}
+
+		public void MoveToTopLevelContainer()
+		{
+
 		}
 
 		private void OnDisable()
