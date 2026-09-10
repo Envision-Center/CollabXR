@@ -1013,6 +1013,7 @@ MonoBehaviour:
   brushTipTransform: {fileID: 52530009106330750}
   strokeContainerPrefab: {fileID: 4474359006974085373, guid: 91a95275f497bdc43888297c925bd4d5, type: 3}
   substrokePrefab: {fileID: 7625243161654513839, guid: aef16cd25d8e7db47bf40dde42ddbae1, type: 3}
+  brushTip: {fileID: 7645219647572970864}
   baseStrokeWeight: 0.04
 --- !u!114 &3605795711849964621
 MonoBehaviour:
@@ -5816,6 +5817,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7716568515599062254, guid: a3772fc1eb327954ba4bc31a2f78eeab, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b4249f1aabd291f459feec72e78ecaa7, type: 2}
     - target: {fileID: 919132149155446097, guid: a3772fc1eb327954ba4bc31a2f78eeab, type: 3}
       propertyPath: m_Name
       value: PaintBrush
@@ -5825,6 +5830,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a3772fc1eb327954ba4bc31a2f78eeab, type: 3}
+--- !u!23 &7645219647572970864 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7716568515599062254, guid: a3772fc1eb327954ba4bc31a2f78eeab, type: 3}
+  m_PrefabInstance: {fileID: 9146946164148250210}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8753522610480923017 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a3772fc1eb327954ba4bc31a2f78eeab, type: 3}
