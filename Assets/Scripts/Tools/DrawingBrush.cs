@@ -10,6 +10,7 @@ using NetworkPlayer = CollabXR.Networking.NetworkPlayer;
 namespace CollabXR.Tools
 {
 	[DefaultExecutionOrder(50)]
+	[RequireComponent(typeof(OverlapTracker))]
 	public class DrawingBrush : MonoBehaviour
 	{
 		[SerializeField]
