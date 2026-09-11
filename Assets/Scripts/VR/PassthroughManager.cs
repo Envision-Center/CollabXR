@@ -1,5 +1,6 @@
 using CollabXR.Desktop;
 using CollabXR.Environments;
+using CollabXR.EnvironmentExtras;
 using CollabXR.ModExtras;
 using Meta.XR.EnvironmentDepth;
 using UnityEngine;
@@ -71,6 +72,17 @@ namespace CollabXR.VR
 
 			UpdateSkyboxVisibility();
 			UpdateOcclusionSystem();
+			TriggerScenePassthroughEvents();
+		}
+
+		public void TriggerScenePassthroughEvents()
+		{
+			EnvironmentScene scene = EnvironmentManager.Instance.currentEnvInstance;
+			if (scene)
+			{
+				Debug.Log("PassthroughManager: Triggering environment passthrough change event");
+				scene.passthroughEvents.HandlePassthroughChange(PassthroughOn.Value);
+			}
 		}
 
 		public void SetSkyboxOnInPassthrough(bool b)

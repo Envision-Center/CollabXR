@@ -1,37 +1,23 @@
-using CollabXR.VR;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace CollabXR.Environments
+namespace CollabXR.EnvironmentExtras
 {
-	[RequireComponent(typeof(PassthroughEvents))]
+	[RequireComponent(typeof(EnvironmentPassthroughEvents))]
 	public class EnvironmentScene : MonoBehaviour
 	{
 		public EnvironmentData environmentData;
 		public EnvironmentTeleport[] teleports;
+		public EnvironmentPassthroughEvents passthroughEvents;
 		public bool skyboxOnInPassthrough;
 
 		private Material sceneSkyboxMaterial;
 
 		private void Awake()
 		{
-			PassthroughManager.Instance.SetSkyboxOnInPassthrough(skyboxOnInPassthrough);
-			LoadNetworkObjects();
-		}
-
-		private void OnDestroy()
-		{
-			PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
-		}
-
-		private void LoadNetworkObjects()
-		{
-			if (environmentData.networkObjects.objects.Count > 0)
-			{
-				EnvironmentManager.Instance.SpawnNetworkedObjects(environmentData.networkObjects.objects);
-			}
+			passthroughEvents = GetComponent<EnvironmentPassthroughEvents>();
 		}
 
 #if UNITY_EDITOR
