@@ -4,6 +4,7 @@ using CollabXR.ModExtras;
 using CollabXR.ModExtras.Annotation;
 using CollabXR.ModLoader;
 using CollabXR.Networking;
+using CollabXR.Objects.Linker.Network;
 using CollabXR.Objects.Linker.Sockets;
 using CollabXR.VR;
 using Cysharp.Threading.Tasks;

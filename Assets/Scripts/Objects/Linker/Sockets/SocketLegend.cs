@@ -34,8 +34,9 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// </summary>
 		private Dictionary<GameObject, ToggleableObject> toggleListeners = new Dictionary<GameObject, ToggleableObject>();
 
-		private void Awake()
+		public override void Awake()
 		{
+			base.Awake();
 			flow = SocketFlowDirection.Input;
 		}
 
@@ -58,7 +59,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			return false;
 		}
 
-		public override void OnConnect(SocketBase otherSocket)
+		protected override void OnConnect(SocketBase otherSocket)
 		{
 			base.OnConnect(otherSocket);
 
@@ -68,7 +69,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			output.pushScriptableObject.AddListener(BuildLegend);
 		}
 
-		public override void OnDisconnect(SocketBase otherSocket)
+		protected override void OnDisconnect(SocketBase otherSocket)
 		{
 			base.OnDisconnect(otherSocket);
 

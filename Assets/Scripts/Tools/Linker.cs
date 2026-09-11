@@ -1,4 +1,6 @@
+using CollabXR.Networking;
 using CollabXR.Objects;
+using CollabXR.Objects.Linker;
 using CollabXR.Objects.Linker.Sockets;
 using UnityEngine;
 
@@ -41,12 +43,14 @@ namespace CollabXR.Tools
 		{
 			Debug.Log("Linker Tool: OnEnable!!");
 			//grabber?.SetActive(false);
+			LinkerConfig.Instance.socketViewers.Value += 1;
 		}
 
 		private void OnDisable()
 		{
 			Debug.Log("Linker Tool: OnDisable!!");
 			//grabber?.SetActive(true);
+			LinkerConfig.Instance.socketViewers.Value -= 1;
 		}
 
 		bool linking = false;
@@ -91,7 +95,7 @@ namespace CollabXR.Tools
 				{
 					// TODO: request state authority
 					Debug.Log(string.Format("Linker Tool: DISCONNECTING between {0} -> {1} !", selectedEnd, selectedStart));
-					selectedStart.Disconnect(selectedEnd);
+					selectedEnd.Disconnect(selectedStart);
 				} // If both sockets can connect to each other, do so
 				else if (selectedStart.CanConnect(selectedEnd) && selectedEnd.CanConnect(selectedStart))
 				{

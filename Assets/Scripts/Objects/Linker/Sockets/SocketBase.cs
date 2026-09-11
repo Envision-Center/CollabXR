@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -7,15 +8,6 @@ using UnityEngine.Events;
 
 namespace CollabXR.Objects.Linker.Sockets
 {
-	// https://doc.photonengine.com/fusion/v2/manual/fusion-types/network-collections
-	[Serializable]
-	public struct NetworkLinkerSocketConnection : INetworkStruct
-	{
-		public ushort fromSocketIndex; // TODO: could be compressed as a byte?
-		public NetworkId toObject;
-		public ushort toSocketIndex;
-	}
-
 	/// <summary>
 	/// How data is piped through this socket.
 	/// </summary>
@@ -112,8 +104,19 @@ namespace CollabXR.Objects.Linker.Sockets
 		[NonSerialized]
 		public UnityEvent eventDisconnected = new UnityEvent();
 
+		/// <summary>
+		/// An instanced icon placed at the the socket.
+		/// </summary>
+		private GameObject icon;
+
+		/// <summary>
+		/// LineRenderer transforms representing links.
+		/// </summary>
+		//[SerializeField]
+		private List<LinkVisual> linkVisuals = new List<LinkVisual>();
+
 		// Start is called once before the first execution of Update after the MonoBehaviour is created
-		void Start()
+		public virtual void Awake()
 		{
 			if (flow == SocketFlowDirection.Input && connections.Count > 0)
 			{
@@ -144,31 +147,39 @@ namespace CollabXR.Objects.Linker.Sockets
 			collider.isTrigger = false;
 			collider.providesContacts = true;
 
-			//MeshRenderer mesh;
-			//if (!TryGetComponent(out mesh))
-			//{
-			//	mesh = gameObject.AddComponent<MeshRenderer>();
-			//}
+			// Add a preview icon
+			icon = Instantiate(LinkerConfig.Instance.prefabSocket, transform, false);
+			UpdateSocketColor(); // Set the socket color
+			SocketViewersChanged(LinkerConfig.Instance.socketViewers.Value); // Show socket immediately
 
-			//MeshFilter meshFilter;
-			//if (!TryGetComponent(out meshFilter))
-			//{
-			//	meshFilter = gameObject.AddComponent<MeshFilter>();
-			//}
-			//meshFilter.mesh = mesh.res;
-
-			GameObject primitive = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			primitive.transform.parent = transform;
-			primitive.transform.localPosition = Vector3.zero;
-			primitive.transform.localScale = new Vector3(collider.radius, collider.radius, collider.radius);
-			primitive.GetComponent<SphereCollider>().enabled = false;
+			// Bind event for viewing sockets
+			LinkerConfig.Instance.socketViewers.AddListener(SocketViewersChanged);
 		}
 
-		// Update is called once per frame
-		void Update() { }
+		protected virtual Color GetSocketColor()
+		{
+			return LinkerConfig.Instance.colorConsumer;
+		}
+
+		protected void UpdateSocketColor()
+		{
+			icon.GetComponent<MeshRenderer>().material.SetColor("_Tint", GetSocketColor());
+		}
+
+		private void SocketViewersChanged(int newViewerCount)
+		{
+			bool visible = newViewerCount > 0;
+			icon.SetActive(visible);
+			foreach (LinkVisual item in linkVisuals)
+			{
+				item.gameObject.SetActive(visible);
+			}
+		}
 
 		private void OnDestroy()
 		{
+			LinkerConfig.Instance.socketViewers.RemoveListener(SocketViewersChanged);
+
 			// If we're an input socket, disconnect all attached outputs
 			if (flow == SocketFlowDirection.Input)
 			{
@@ -198,7 +209,7 @@ namespace CollabXR.Objects.Linker.Sockets
 		{
 			if (otherSocket == null)
 			{
-				Debug.LogError("Called CanConnect with a null reference!!!!!!!");
+				Debug.LogError("Linker Tool: Called CanConnect with a null reference!");
 				return false;
 			}
 			// Make sure we support the data type,
@@ -227,11 +238,25 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// <param name="otherSocket">Socket to perform the connection to.</param>
 		public void Connect(SocketBase dataProvider)
 		{
+			if (dataProvider == null)
+			{
+				Debug.Log("Linker Tool: Connection failed, data provider was null!");
+				return;
+			}
+
 			OnConnect(dataProvider);
 			dataProvider.OnConnect(this);
 
 			connections.Add(dataProvider);
 			Debug.Log("SOCKET CONNECTED!!!");
+
+			// Create connection visual
+			GameObject visualObj = Instantiate(LinkerConfig.Instance.prefabConnection, transform, false);
+			LinkVisual visual = visualObj.GetComponent<LinkVisual>();
+			visual.pointA = transform;
+			visual.pointB = dataProvider.transform;
+			linkVisuals.Add(visual);
+			visualObj.SetActive(LinkerConfig.Instance.socketViewers.Value > 0);
 
 			eventConnected.Invoke();
 		}
@@ -252,7 +277,14 @@ namespace CollabXR.Objects.Linker.Sockets
 			dataProvider.OnDisconnect(this);
 			OnDisconnect(dataProvider);
 
-			dataProvider.connections.Remove(this);
+			dataProvider.connections.Remove(this); // Remove connection to provider
+
+			// Remove connection visual
+			int popIndex = connections.IndexOf(dataProvider);
+			Destroy(linkVisuals[popIndex].gameObject);
+			linkVisuals.RemoveAt(popIndex);
+
+			// Finally, remove actual connection
 			connections.Remove(dataProvider);
 
 			eventDisconnected.Invoke();
@@ -263,12 +295,12 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// <summary>
 		/// Emitted when this socket is connected to another.
 		/// </summary>
-		public virtual void OnConnect(SocketBase otherSocket) { }
+		protected virtual void OnConnect(SocketBase otherSocket) { }
 
 		/// <summary>
 		/// Emitted when this socket is disconnected from another.
 		/// </summary>
-		public virtual void OnDisconnect(SocketBase otherSocket) { }
+		protected virtual void OnDisconnect(SocketBase otherSocket) { }
 
 		/// <summary>
 		/// Returns the NetworkID of the parent NetworkObject, if any.

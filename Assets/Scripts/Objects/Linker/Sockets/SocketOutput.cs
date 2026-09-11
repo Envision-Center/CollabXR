@@ -41,12 +41,22 @@ namespace CollabXR.Objects.Linker.Sockets
 					);
 					break;
 			}
+			UpdateSocketColor(); // Now that we know the output data type, apply it
+		}
+
+		protected override Color GetSocketColor()
+		{
+			if (annotation != null)
+			{
+				return LinkerConfig.Instance.colorBehavior[(int)annotation.behavior];
+			}
+			return LinkerConfig.Instance.colorProvider;
 		}
 
 		/// <summary>
 		/// Emitted when connected to another socket.
 		/// </summary>
-		public override void OnConnect(SocketBase otherSocket)
+		protected override void OnConnect(SocketBase otherSocket)
 		{
 			base.OnConnect(otherSocket);
 			switch (annotation.behavior)

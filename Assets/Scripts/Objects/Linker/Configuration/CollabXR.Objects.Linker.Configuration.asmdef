@@ -1,0 +1,16 @@
+{
+    "name": "CollabXR.Objects.Linker.Configuration",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2290dbab7ee124e44aafd45297d52286"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

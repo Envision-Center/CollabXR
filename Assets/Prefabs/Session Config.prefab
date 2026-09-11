@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2389816296648665971}
   - component: {fileID: 9071411447372138597}
   - component: {fileID: 6301813383174198540}
+  - component: {fileID: 6425176744714445855}
   m_Layer: 0
   m_Name: Session Config
   m_TagString: Untagged
@@ -77,3 +78,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefs: {fileID: 0}
   buildInfo: {fileID: 0}
+--- !u!114 &6425176744714445855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9066325141542395186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4076e7e87169a7d4f8597f0e0a4caad5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefabConnection: {fileID: 8540615792202761560, guid: 55db2f296a09abd4c96a352048dc5114, type: 3}
+  prefabSocket: {fileID: 8375237250280443756, guid: f3249388a88866041aa8120ab60bf312, type: 3}
+  colorProvider: {r: 1, g: 0, b: 0.85257244, a: 0.5686275}
+  colorConsumer: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
+  colorBehavior:
+  - {r: 0.7207546, g: 0.53950197, b: 0.03127795, a: 1}
+  - {r: 0.30447128, g: 0.43387106, b: 0.5622641, a: 1}
+  - {r: 0.28393728, g: 0.7132075, b: 0.3504589, a: 1}
+  - {r: 0.7056604, g: 0.2915842, b: 0.2915842, a: 1}

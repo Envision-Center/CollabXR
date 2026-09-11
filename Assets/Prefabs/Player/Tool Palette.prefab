@@ -964,8 +964,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4603129063770350654}
-  - component: {fileID: 3585115711020815122}
-  - component: {fileID: 2416183707995831644}
   - component: {fileID: 6757280244905279485}
   - component: {fileID: 2524009479540875285}
   m_Layer: 9
@@ -990,59 +988,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1741719500645279449}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &3585115711020815122
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1320621471060477008}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &2416183707995831644
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1320621471060477008}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &6757280244905279485
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1100,6 +1045,7 @@ MonoBehaviour:
   isNotTouchingAnything:
     m_PersistentCalls:
       m_Calls: []
+  ignoreObject: {fileID: 0}
 --- !u!1 &1453886860314794380
 GameObject:
   m_ObjectHideFlags: 0
@@ -1286,6 +1232,7 @@ MonoBehaviour:
   isNotTouchingAnything:
     m_PersistentCalls:
       m_Calls: []
+  ignoreObject: {fileID: 0}
 --- !u!135 &7715268367411548033
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1429,7 +1376,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1741719500645279449}
   - component: {fileID: 8530876649461207270}
-  - component: {fileID: 3063964816104835919}
   - component: {fileID: 3218406869372579565}
   - component: {fileID: 7943201433260041765}
   - component: {fileID: 5438532826893642766}
@@ -1518,95 +1464,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnPrimaryAxis:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &3063964816104835919
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2384730315866959578}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 531bf38014791cb47a6ded2509fe3a0c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  upwardRayOffset: 0.03
-  forwardRayOffset: 0.05
-  shouldHitTriggers: 1
-  shouldTestIfStartsInsideCollider: 1
-  shouldHitLayers:
-    serializedVersion: 2
-    m_Bits: 123
-  onHitChange:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CollabXR.Tools.ContextTweaker, Assembly-CSharp
-        m_MethodName: SetTarget
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onEnterObject:
-    m_PersistentCalls:
-      m_Calls: []
-  onLeaveObject:
-    m_PersistentCalls:
-      m_Calls: []
-  onHitPoint:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CollabXR.Objects.Components.LineRendererLaser,
-          Assembly-CSharp
-        m_MethodName: SetEndPositionForFrame
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.Transform, UnityEngine
-        m_MethodName: set_position
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onHitNothing:
-    m_PersistentCalls:
-      m_Calls: []
-  onDidHitChange:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onEnable:
     m_PersistentCalls:
       m_Calls: []
 --- !u!120 &3218406869372579565
@@ -1748,7 +1605,7 @@ MonoBehaviour:
       m_Calls: []
   enableOverUI: []
   disableOverUI:
-  - {fileID: 3063964816104835919}
+  - {fileID: 0}
   - {fileID: 8530876649461207270}
   - {fileID: 0}
 --- !u!114 &8906104111497375329
@@ -3412,6 +3269,7 @@ MonoBehaviour:
   isNotTouchingAnything:
     m_PersistentCalls:
       m_Calls: []
+  ignoreObject: {fileID: 0}
 --- !u!1 &6561895575631593433
 GameObject:
   m_ObjectHideFlags: 0
