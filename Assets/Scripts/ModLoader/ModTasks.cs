@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace CollabXR.ModLoader
 {
-	internal class ModLoadTask
+	public class ModLoadTask
 	{
 		internal bool IsLoaded = false;
 
@@ -12,7 +12,7 @@ namespace CollabXR.ModLoader
 
 		private List<ModLoadTaskAwaiter> awaiters = new();
 
-		internal ModLoadTask(Guid modUuid)
+		public ModLoadTask(Guid modUuid)
 		{
 			this.modUuid = modUuid;
 
@@ -39,7 +39,7 @@ namespace CollabXR.ModLoader
 		}
 	}
 
-	internal class ModLoadTaskAwaiter : INotifyCompletion
+	public class ModLoadTaskAwaiter : INotifyCompletion
 	{
 		ModLoadTask activeModLoadTask;
 

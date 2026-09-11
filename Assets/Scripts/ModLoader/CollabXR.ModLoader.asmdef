@@ -1,0 +1,19 @@
+{
+    "name": "CollabXR.ModLoader",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:1baf1ffff1031e948b3b228ab3453251",
+        "GUID:2290dbab7ee124e44aafd45297d52286",
+        "GUID:d6e07eaf7357685428e4256c7915e8cb"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
