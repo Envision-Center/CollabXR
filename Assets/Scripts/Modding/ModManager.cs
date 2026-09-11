@@ -29,10 +29,10 @@ namespace CollabXR.ModLoader
 	/// <remarks>
 	/// Asset Pointer Table Entry -> APTE
 	/// Asset Pointer Load Tasks -> APLT
-	///
+	/// 
 	/// When a new request for an asset is made, if an APTE already exists the APLT is added to the list.
 	/// Once any of the APLT's finish, the value is passed to APTE.Value and all APLT's are notified that the asset is ready.
-	///
+	/// 
 	/// The whole pipeline for how APTEs are used can be found in ModManager.LoadAssetFromMod().
 	/// </remarks>
 	internal class AssetPointerTableEntry
@@ -227,7 +227,7 @@ namespace CollabXR.ModLoader
 		public static bool IsModDirty(Guid modUuid)
 		{
 			Debug.Assert(Instance.indexedMods.ContainsKey(modUuid), $"Mod with UUID {modUuid} not found in indexedMods");
-
+			
 			// is the mod not in the previous index? (new mod)
 			if (!Instance.prevIndexedMods.ContainsKey(modUuid))
 			{
@@ -241,13 +241,13 @@ namespace CollabXR.ModLoader
 		// Layer 1 of Abstraction
 
 		/// <summary>
-		/// Same kind of design/purpose/structure as LoadAssetFromMod,
+		/// Same kind of design/purpose/structure as LoadAssetFromMod, 
 		/// but for mods instead of assets, and instead of querying the loaded asset bundle for an asset,
 		/// queries AWS S3 for the mod asset bundle itself.
 		/// </summary>
 		/// <param name="modLoadTask"></param>
 		/// <exception cref="Exception"></exception>
-		public void LoadMod(ModLoadTask modLoadTask)
+		internal void LoadMod(ModLoadTask modLoadTask)
 		{
 			Guid modUuid = modLoadTask.modUuid;
 
@@ -311,11 +311,11 @@ namespace CollabXR.ModLoader
 		/// 1. Completely clear the mod/asset bundle from memory.
 		/// 2. Request a new load of the mod/asset bundle from the remote repository.
 		/// 3. Once the mod is loaded, update the assetPointerTable with the new asset references from the mod.
-		///
+		/// 
 		/// It does update the mod for every active instance of that mod in memory,
 		/// so existing instances of the mod will be updated to the new asset bundle (client side only).
-		///
-		/// So it is possible for the same mod instance to be different between clients
+		/// 
+		/// So it is possible for the same mod instance to be different between clients 
 		/// if one client updates the mod and the other doesn't.
 		/// </remarks>
 		internal async UniTask ReloadMod(Guid modUuid)
@@ -431,16 +431,16 @@ namespace CollabXR.ModLoader
 		/// <param name="assetPointerLoadTask">The task representing a new asset load request.</param>
 		/// <remarks>
 		/// Basically there are 3 cases being handled here:
-		///
-		/// 1. IN PROGRESS: An AssetPointerTableEntry (APTE) already exists, and the asset is NOT loaded.
+		/// 
+		/// 1. IN PROGRESS: An AssetPointerTableEntry (APTE) already exists, and the asset is NOT loaded. 
 		/// The task is added to the list of tasks waiting for the asset to be loaded.
-		///
-		/// 2. DONE LOADING: An APTE already exists, and the asset IS loaded.
+		/// 
+		/// 2. DONE LOADING: An APTE already exists, and the asset IS loaded. 
 		/// The task is immediately notified that the asset is ready.
-		///
-		/// 3. NOT STARTED: An APTE does NOT exist. Here, a new APTE is created and the mod is loaded directly.
+		/// 
+		/// 3. NOT STARTED: An APTE does NOT exist. Here, a new APTE is created and the mod is loaded directly. 
 		/// Once the mod is loaded, the asset is loaded and all tasks waiting for it are notified.
-		/// NOTE that in the 3rd case, a ModLoadTask is created, which calls ModManager.LoadMod.
+		/// NOTE that in the 3rd case, a ModLoadTask is created, which calls ModManager.LoadMod. 
 		/// That handles the remote repository -> Asset Bundle stage.
 		/// </remarks>
 		internal void LoadAssetFromMod(IAssetPointerLoadTask assetPointerLoadTask)
@@ -574,15 +574,15 @@ namespace CollabXR.ModLoader
 		/// Remember: be sure to call <c>ReleaseAsset()</c> with the <c>AssetReference</c> created by this method or the game will leak memory.
 		/// Note: Be sure to specify the correct type otherwise some silly errors can occur.
 		/// </summary>
-		///
+		/// 
 		/// <typeparam name="T">The type of the asset to load. Must match the type of the asset in the mod.</typeparam>
 		/// <param name="modUuid">The UUID of the mod/asset bundle to load the asset from.</param>
 		/// <param name="assetUuid">The UUID of the asset to load.</param>
-		///
+		/// 
 		/// <remarks>
 		/// This is the uppermost layer of abstraction for loading assets from mods, AKA the first function to be called.
 		/// Expects the newly created asset reference to return the correct type of asset when loaded.
-		///
+		/// 
 		/// newAssetReference.LoadSelf() creates an AssetPointerLoadTask which is passed to ModManager.LoadAssetFromMod.
 		/// So the immediate next lower layer of abstraction is at ModManager.LoadAssetFromMod, which should eventually pass
 		/// the actual asset back to this method through the AssetReference.
@@ -623,7 +623,7 @@ namespace CollabXR.ModLoader
 		}
 
 		/// <summary>
-		/// Clears all prefab references in the assetPointerTable and the assetBundle for a given modUuid.
+		/// Clears all prefab references in the assetPointerTable and the assetBundle for a given modUuid. 
 		/// If a mod is updated in the source repository, this should ensure that
 		/// the next spawn pulls the new asset bundle instead of the cached one.
 		/// </summary>

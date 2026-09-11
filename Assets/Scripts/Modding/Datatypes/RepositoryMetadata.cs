@@ -40,7 +40,7 @@ namespace CollabXR.ModLoader
 		{
 			rootFolderLookUp = new();
 			foreach (var url in Mods)
-			{
+			{ 
 				int delim = url.LastIndexOf('/');
 				rootFolderLookUp.Add(new(url[(delim + 1)..]), url[..(delim + 1)]);
 			}
