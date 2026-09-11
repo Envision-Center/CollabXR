@@ -191,10 +191,14 @@ namespace CollabXR.Tools
 		public void SpawnObject(CollabObjectData data, Vector3 position, Quaternion rotation)
 		{
 			if (NetworkPlayer.GetLocalRole() == NetworkPlayer.NetworkPlayerRole.Student && !NetworkPermissions.Instance.StudentsCanPlace)
+			{
 				return;
+			}
 
 			if (!data.isSimpleModel && ReferenceEquals(data.prefab, null))
+			{
 				return;
+			}
 
 			GameObject objectToSpawn = data.isSimpleModel ? simpleModelContainer : data.prefab;
 

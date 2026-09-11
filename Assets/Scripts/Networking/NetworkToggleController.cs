@@ -25,20 +25,19 @@ namespace CollabXR.Networking
 		/// <summary>
 		/// Only set to true once the object has been completely initialized and default toggles are set.
 		/// This can happen a number of ways:
-		/// 
+		///
 		/// 1. The client that spawned the object maintains state authority throughout the loading process (normal behavior).
-		/// 
+		///
 		/// 2. The client that spawned the object loses state authority midway through the loading process (ie. they leave the room).
 		///    When this happens, StateAuthorityChanged() will be called and all objects will attempt to claim state authority.
 		///    The first client to claim state authority will set the default toggles and initialize the object.
 		/// </summary>
 		[Networked]
-		public bool initialized {get; set;} = false;
+		public bool initialized { get; set; } = false;
 
 		protected override void CheckForScripts()
 		{
 			toggles = GetComponentsInChildren<ToggleController>();
-			Debug.Log($"SCRIPT CHECK STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
 				// will only run if object recieves state authority before fully loading in
@@ -50,9 +49,7 @@ namespace CollabXR.Networking
 
 		public override void Spawned()
 		{
-			Debug.Log("spawned!");
 			base.Spawned();
-			Debug.Log($"SPAWN STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
 				SetDefaultToggles();
@@ -97,7 +94,7 @@ namespace CollabXR.Networking
 		public void SetPriority(int index, int priority)
 		{
 			ToggleVariable toggled = toggleVisibility[index];
-			toggled.priority = priority;
+			toggled.priority = (ushort)priority;
 			toggleVisibility.Set(index, toggled);
 		}
 
@@ -119,7 +116,6 @@ namespace CollabXR.Networking
 
 		public void StateAuthorityChanged()
 		{
-			Debug.Log($"ON CHANGE STATE AUTH: {Object.StateAuthority}");
 			if (Object.HasStateAuthority && !initialized)
 			{
 				// will only run if object not yet initialized and recieves state authority after fully loading in
@@ -151,6 +147,6 @@ namespace CollabXR.Networking
 		/// <summary>
 		/// Sorting Group priority of the toggleable.
 		/// </summary>
-		public int priority;
+		public ushort priority;
 	}
 }
