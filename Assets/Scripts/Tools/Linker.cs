@@ -17,7 +17,6 @@ namespace CollabXR.Tools
 		private const float MAX_ATTEMPT_DURATION = 2.0f;
 
 		private LineRenderer line;
-		public GameObject grabber;
 
 		[Header("Feedback")]
 		[SerializeField]
@@ -62,35 +61,58 @@ namespace CollabXR.Tools
 
 		private void OnEnable()
 		{
-			Debug.Log("Linker Tool: OnEnable!!");
-			//grabber?.SetActive(false);
 			LinkerConfig.Instance.socketViewers.Value += 1;
-			uiErrorObject.SetActive(false);
+			uiErrorObject.SetActive(false); // Clear error value
 		}
 
 		private void OnDisable()
 		{
-			Debug.Log("Linker Tool: OnDisable!!");
-			//grabber?.SetActive(true);
+			EndConnection(); // Cut off connection if there was one
 			LinkerConfig.Instance.socketViewers.Value -= 1;
 		}
 
+		/// <summary>Whether we are actively forming a link.</summary>
 		bool linking = false;
+
+		/// <summary>Current socket we are hovering over.</summary>
 		SocketBase hovered;
+
+		/// <summary>
+		/// The first socket a connection starts from.
+		/// While ending a connection, this is rearranged to be the data provider.
+		/// </summary>
 		SocketBase selectedStart;
+
+		/// <summary>
+		/// The socket a connection ends on.
+		/// While ending a connection, this is rearranged to be the data consumer.
+		/// </summary>
 		SocketBase selectedEnd;
 
+		/// <summary>
+		/// User presses trigger and begins extending a link from the given socket.
+		/// </summary>
 		public void StartConnection()
 		{
 			if (hovered != null)
 			{
 				selectedStart = hovered;
 				linking = true;
-				Debug.Log(string.Format("Linker Tool: StartConnection called with {0}", hovered));
+				//Debug.Log(string.Format("Linker Tool: StartConnection called with {0}", hovered));
 			}
 		}
 
-		// TODO: abstract into a class? Except generic C# classes don't have coroutine access...
+		/// <summary>
+		/// Waits up to a specified amount of time, trying to take state authority of an object.
+		/// If state authority cannot be obtained by the time it ends, it exits the routine.
+		/// </summary>
+		/// <param name="connectionOwner"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="connect"></param>
+		/// <returns></returns>
+		// TODO: abstract into a class?
+		// Except generic C# classes don't have coroutine access...
 		private IEnumerator DeferredLinkChange(NetworkObject connectionOwner, SocketBase start, SocketBase end, bool connect)
 		{
 			float startTime = Time.time; // When the request started
@@ -136,7 +158,7 @@ namespace CollabXR.Tools
 			if (selectedStart != null && selectedEnd != null)
 			{
 				// Ensure flow is always going from pipe out > pipe in
-				if (selectedEnd.flow == SocketFlowDirection.Output)
+				if (selectedEnd.flow == SocketFlowDirection.Provider)
 				{
 					var swap = selectedEnd;
 					selectedEnd = selectedStart;
@@ -192,28 +214,34 @@ namespace CollabXR.Tools
 			selectedEnd = null;
 		}
 
+		/// <summary>
+		/// Called when Linker tool collider overlaps a socket.
+		/// </summary>
+		/// <param name="g">GameObject of the overlapping socket</param>
 		public void SetTarget(GameObject g)
 		{
 			// If the game object exists, attempt to set our hovering value to the socket on it
-			if (g != null && g.TryGetComponent<SocketBase>(out hovered))
+			if (g != null && g.TryGetComponent(out hovered))
 			{
-				//Debug.Log("Hovered is " + hovered.ToString());
 				// no-op
 			}
 			else
 			{
 				hovered = null; // Otherwise, clear hover status
-				//Debug.Log("Hovered is null");
 			}
 		}
 
+		/// <summary>
+		/// Displays an error and plays a notification sound, telling the user what went wrong.
+		/// </summary>
+		/// <param name="reason"></param>
 		public void DisplayError(string reason)
 		{
 			uiErrorGroup.alpha = 1.0f;
 			uiErrorText.text = reason;
 			uiErrorObject.SetActive(true);
 			uiErrorSound.Play();
-			UiTweens.GenericTween(this, uiErrorGroup.alpha, 1.0f, 0.0f, 4.0f, EaseType.EaseOut, c => uiErrorGroup.alpha = c, (a, b, t) => Mathf.Lerp(a, b, t), () => uiErrorObject.SetActive(false));
+			UiTweens.GenericTween(this, uiErrorGroup, 1.0f, 0.0f, 4.0f, EaseType.EaseOut, c => uiErrorGroup.alpha = c, (a, b, t) => Mathf.Lerp(a, b, t), () => uiErrorObject.SetActive(false));
 		}
 	}
 }

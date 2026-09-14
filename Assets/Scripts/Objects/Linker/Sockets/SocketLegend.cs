@@ -37,7 +37,7 @@ namespace CollabXR.Objects.Linker.Sockets
 		public override void Awake()
 		{
 			base.Awake();
-			flow = SocketFlowDirection.Input;
+			flow = SocketFlowDirection.Consumer;
 		}
 
 		public override bool CanConnect(SocketBase otherSocket)
@@ -52,7 +52,7 @@ namespace CollabXR.Objects.Linker.Sockets
 				}
 
 				// Ensure scriptable object is legend metadata
-				Debug.Log(string.Format("Legend CanConnect: {0}, {1}", output.behavior == SocketBehavior.ScriptableObject, output.UsesScriptableObjectType<LegendMetadata>()));
+				//Debug.Log(string.Format("Legend CanConnect: {0}, {1}", output.behavior == SocketBehavior.ScriptableObject, output.UsesScriptableObjectType<LegendMetadata>()));
 				return output.behavior == SocketBehavior.ScriptableObject && output.UsesScriptableObjectType<LegendMetadata>();
 			}
 
@@ -97,7 +97,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			}
 			else
 			{
-				Debug.LogError("Socket: Passed ScriptableObject was not a legend!");
+				Debug.LogError("Socket Legend: Passed ScriptableObject was not a legend!");
 				return;
 			}
 
@@ -118,7 +118,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			// Check if there's a toggle controller
 			if (pointOfReference != null && pointOfReference.TryGetComponent(out toggleController))
 			{
-				Debug.Log("Found ToggleController for SocketLegend");
+				Debug.Log("Socket Legend: Found ToggleController for SocketLegend");
 			}
 
 			// Instantiate a new variable list

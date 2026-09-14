@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Fusion;
 using Unity.XR.CoreUtils;
 using UnityEngine;
@@ -16,12 +15,12 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// <summary>
 		/// Data is pushed OUT of this socket. Can only be connected to inputs.
 		/// </summary>
-		Output = 0,
+		Provider = 0,
 
 		/// <summary>
 		/// Data is pushed INTO this socket. Can only be connected to outputs.
 		/// </summary>
-		Input = 1,
+		Consumer = 1,
 	}
 
 	///// <summary>
@@ -88,7 +87,15 @@ namespace CollabXR.Objects.Linker.Sockets
 	public class SocketBase : MonoBehaviour
 	{
 		[Tooltip("The direction that data flows through this socket. Most mods will require data to flow outward, rather than inward.")]
-		public SocketFlowDirection flow = SocketFlowDirection.Output;
+		public SocketFlowDirection flow = SocketFlowDirection.Provider;
+
+		/// <summary>
+		/// If true, the socket can only be connected to one thing at a time.
+		/// Adding a new connection will clear existing ones.
+		/// This is only properly supported for Data Consumers.
+		/// </summary>
+		[SerializeField]
+		protected bool singleConnectionOnly = false;
 
 		/// <summary>
 		/// List of sockets we are connected to.
@@ -118,7 +125,7 @@ namespace CollabXR.Objects.Linker.Sockets
 		// Start is called once before the first execution of Update after the MonoBehaviour is created
 		public virtual void Awake()
 		{
-			if (flow == SocketFlowDirection.Input && connections.Count > 0)
+			if (flow == SocketFlowDirection.Consumer && connections.Count > 0)
 			{
 				// Swap out connection list so it does not appear that we have any connections initially
 				List<SocketBase> oldConnections = connections;
@@ -179,24 +186,29 @@ namespace CollabXR.Objects.Linker.Sockets
 		private void OnDestroy()
 		{
 			LinkerConfig.Instance.socketViewers.RemoveListener(SocketViewersChanged);
+			DisconnectAll();
+		}
 
+		/// <summary>
+		/// Disconnects all connected sockets.
+		/// </summary>
+		protected void DisconnectAll()
+		{
 			// If we're an input socket, disconnect all attached outputs
-			if (flow == SocketFlowDirection.Input)
+			if (flow == SocketFlowDirection.Consumer)
 			{
-				foreach (SocketBase connection in connections)
+				for (int i = connections.Count - 1; i >= 0; i--)
 				{
-					Disconnect(connection);
+					Disconnect(connections[i]);
 				}
-			}
-			else
-			{ // If we're an output, just disconnect ourselves from our inputs
-				foreach (SocketBase input in connections)
-				{
-					input.Disconnect(this);
-				}
+				return;
 			}
 
-			Debug.Log("SOCKET BASE: OnDestroy finished");
+			// If we're a data provider, just disconnect ourselves from our inputs
+			for (int i = connections.Count - 1; i >= 0; i--)
+			{
+				connections[i].Disconnect(this);
+			}
 		}
 
 		/// <summary>
@@ -231,6 +243,7 @@ namespace CollabXR.Objects.Linker.Sockets
 
 		/// <summary>
 		/// Attempts to connect the output socket to this input one.
+		/// Should only be called on Data Consumers.
 		/// <br/>
 		/// THIS DOES NOT VALIDATE WHETHER THE SOCKETS ARE CONNECTABLE BEFOREHAND.
 		/// Please call CanConnectTo beforehand to determine whether this connection attempt should even be permitted.
@@ -242,6 +255,12 @@ namespace CollabXR.Objects.Linker.Sockets
 			{
 				Debug.Log("Linker Tool: Connection failed, data provider was null!");
 				return;
+			}
+
+			if (singleConnectionOnly)
+			{
+				// Only one provider/consumer relationship is permitted for the legend
+				DisconnectAll();
 			}
 
 			OnConnect(dataProvider);
@@ -263,6 +282,7 @@ namespace CollabXR.Objects.Linker.Sockets
 
 		/// <summary>
 		/// Disconnects this socket from the other one.
+		/// Should only be called on Data Consumers.
 		/// </summary>
 		/// <param name="dataProvider"></param>
 		/// <returns></returns>
