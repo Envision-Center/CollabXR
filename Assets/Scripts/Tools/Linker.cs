@@ -1,6 +1,4 @@
 using System.Collections;
-using CollabXR.Networking;
-using CollabXR.Objects;
 using CollabXR.Objects.Linker;
 using CollabXR.Objects.Linker.Sockets;
 using Fusion;
@@ -48,14 +46,7 @@ namespace CollabXR.Tools
 				{
 					line.SetPosition(0, selectedStart.transform.position);
 				}
-				if (selectedEnd != null)
-				{
-					line.SetPosition(1, selectedEnd.transform.position);
-				}
-				else
-				{
-					line.SetPosition(1, transform.position);
-				}
+				line.SetPosition(1, transform.position);
 			}
 		}
 
@@ -84,12 +75,6 @@ namespace CollabXR.Tools
 		SocketBase selectedStart;
 
 		/// <summary>
-		/// The socket a connection ends on.
-		/// While ending a connection, this is rearranged to be the data consumer.
-		/// </summary>
-		SocketBase selectedEnd;
-
-		/// <summary>
 		/// User presses trigger and begins extending a link from the given socket.
 		/// </summary>
 		public void StartConnection()
@@ -115,6 +100,7 @@ namespace CollabXR.Tools
 		// Except generic C# classes don't have coroutine access...
 		private IEnumerator DeferredLinkChange(NetworkObject connectionOwner, SocketBase start, SocketBase end, bool connect)
 		{
+			connectionOwner.RequestStateAuthority();
 			float startTime = Time.time; // When the request started
 
 			// Wait until we either have state authority,
@@ -129,11 +115,11 @@ namespace CollabXR.Tools
 			{
 				if (connect)
 				{
-					end.Connect(start);
+					Connect(start, end);
 				}
 				else
 				{
-					end.Disconnect(start);
+					Disconnect(start, end);
 				}
 			}
 			else
@@ -149,69 +135,53 @@ namespace CollabXR.Tools
 			{
 				return;
 			}
-
-			if (hovered != null)
-			{
-				selectedEnd = hovered;
-			}
-
-			if (selectedStart != null && selectedEnd != null)
-			{
-				// Ensure flow is always going from pipe out > pipe in
-				if (selectedEnd.flow == SocketFlowDirection.Provider)
-				{
-					var swap = selectedEnd;
-					selectedEnd = selectedStart;
-					selectedStart = swap;
-				}
-
-				// If either socket is connected, disconnect them
-				if (selectedStart.IsConnected(selectedEnd) || selectedEnd.IsConnected(selectedStart))
-				{
-					NetworkObject connectionOwner = selectedEnd.GetNetworkObject();
-					connectionOwner.RequestStateAuthority();
-
-					//Debug.Log(string.Format("Linker Tool: DISCONNECTING between {0} -> {1} !", selectedEnd, selectedStart));
-					if (connectionOwner.HasStateAuthority)
-					{
-						selectedEnd.Disconnect(selectedStart);
-						connectionOwner.ReleaseStateAuthority();
-					}
-					else
-					{
-						StartCoroutine(DeferredLinkChange(connectionOwner, selectedStart, selectedEnd, false));
-					}
-				} // If both sockets can connect to each other, do so
-				else if (selectedStart.CanConnect(selectedEnd) && selectedEnd.CanConnect(selectedStart))
-				{
-					NetworkObject connectionOwner = selectedEnd.GetNetworkObject();
-					connectionOwner.RequestStateAuthority();
-
-					//Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
-					if (connectionOwner.HasStateAuthority)
-					{
-						selectedEnd.Connect(selectedStart);
-						connectionOwner.ReleaseStateAuthority();
-					}
-					else
-					{
-						StartCoroutine(DeferredLinkChange(connectionOwner, selectedStart, selectedEnd, true));
-					}
-				}
-				else
-				{
-					DisplayError("Incompatible Sockets");
-				}
-			}
-			else
-			{
-				Debug.Log(string.Format("Linker Tool: Invalid link targets {0} -> {1} !", selectedStart, selectedEnd));
-				DisplayError("Needs 2 Sockets");
-			}
-
 			linking = false;
-			selectedStart = null;
-			selectedEnd = null;
+			line.enabled = false;
+
+			if (selectedStart == null)
+			{
+				DisplayError("Missing Socket");
+			}
+
+			SocketBase selectedEnd = hovered;
+			if (selectedEnd == null)
+			{
+				switch (selectedStart.flow)
+				{
+					case SocketFlowDirection.Consumer:
+						DisplayError("Missing Provider");
+						return;
+					case SocketFlowDirection.Provider:
+						DisplayError("Missing Consumer");
+						return;
+				}
+			}
+
+			// Ensure flow is always going from provider > consumer
+			if (selectedEnd.flow == SocketFlowDirection.Provider)
+			{
+				var swap = selectedEnd;
+				selectedEnd = selectedStart;
+				selectedStart = swap;
+			}
+
+			NetworkObject connectionOwner = selectedEnd.GetNetworkObject();
+
+			// If either socket is connected, disconnect them
+			if (selectedStart.IsConnected(selectedEnd) || selectedEnd.IsConnected(selectedStart))
+			{
+				StartCoroutine(DeferredLinkChange(connectionOwner, selectedStart, selectedEnd, false));
+				return;
+			}
+
+			// If both sockets can connect to each other, do so
+			if (selectedStart.CanConnect(selectedEnd) && selectedEnd.CanConnect(selectedStart))
+			{
+				StartCoroutine(DeferredLinkChange(connectionOwner, selectedStart, selectedEnd, true));
+				return;
+			}
+
+			DisplayError("Incompatible");
 		}
 
 		/// <summary>
@@ -235,13 +205,39 @@ namespace CollabXR.Tools
 		/// Displays an error and plays a notification sound, telling the user what went wrong.
 		/// </summary>
 		/// <param name="reason"></param>
-		public void DisplayError(string reason)
+		private void DisplayError(string reason)
 		{
 			uiErrorGroup.alpha = 1.0f;
 			uiErrorText.text = reason;
 			uiErrorObject.SetActive(true);
 			uiErrorSound.Play();
 			UiTweens.GenericTween(this, uiErrorGroup, 1.0f, 0.0f, 4.0f, EaseType.EaseOut, c => uiErrorGroup.alpha = c, (a, b, t) => Mathf.Lerp(a, b, t), () => uiErrorObject.SetActive(false));
+		}
+
+		/// <summary>
+		/// Forms a connection between two sockets.
+		/// </summary>
+		/// <param name="from">Data Provider</param>
+		/// <param name="to">Data Consumer</param>
+		private void Connect(SocketBase from, SocketBase to)
+		{
+			to.Connect(from);
+			uiErrorObject.SetActive(false);
+			// TODO: Play sound
+			// TODO: Visual particles or something
+		}
+
+		/// <summary>
+		/// Removes a connection between two sockets.
+		/// </summary>
+		/// <param name="from">Data Provider</param>
+		/// <param name="to">Data Consumer</param>
+		private void Disconnect(SocketBase from, SocketBase to)
+		{
+			to.Disconnect(from);
+			uiErrorObject.SetActive(false);
+			// TODO: Play sound
+			// TODO: Visual particles or something
 		}
 	}
 }

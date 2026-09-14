@@ -26,6 +26,12 @@ namespace CollabXR.Objects
 
 	public class CollabObject : SpawnableObject
 	{
+		/// <summary>
+		/// Maximum number of replicated socket connections an object can have.
+		/// Note that the data consumer owns the connection!
+		/// </summary>
+		private const int SOCKET_CAPACITY = 4;
+
 		public CollabObjectData Data { get; private set; }
 
 		/// <summary>
@@ -50,10 +56,9 @@ namespace CollabXR.Objects
 		[ShowInInspector]
 		private SocketBase[] sockets = null;
 
-		private const int SOCKET_CAPACITY = 4;
-
 		[Networked, Capacity(SOCKET_CAPACITY), OnChangedRender(nameof(SetSocketLinks)), ShowInInspector]
 		public NetworkLinkedList<NetworkLinkerSocketConnection> socketLinks => default;
+		private List<Coroutine> socketAwaitingLoad = new List<Coroutine>();
 
 		private GameObject dataRoot;
 		private AssetReference<GameObject> prefabReference;
@@ -248,9 +253,8 @@ namespace CollabXR.Objects
 				// Whenever a socket gets connected/disconnected, propogate updates to network peers
 				socket.eventConnected.AddListener(UpdateSocketLinks);
 				socket.eventDisconnected.AddListener(UpdateSocketLinks);
-				Debug.Log("Added a socket listener " + socket.name);
 			}
-			Debug.Log($"Sockets enumerated ({sockets.Length}): {sockets}");
+			//Debug.Log($"Sockets enumerated ({sockets.Length}): {sockets}");
 		}
 
 		/// <summary>
@@ -258,12 +262,18 @@ namespace CollabXR.Objects
 		/// </summary>
 		private void SetSocketLinks()
 		{
-			Debug.Log("SETTING socket links.");
 			// Do nothing if we have state authority, or no sockets
 			if (HasStateAuthority || sockets.Length == 0)
 			{
 				return;
 			}
+
+			// Stop all existing coroutines so we do not double-up
+			foreach (Coroutine routine in socketAwaitingLoad)
+			{
+				StopCoroutine(routine);
+			}
+			socketAwaitingLoad.Clear();
 
 			// Prune existing connections
 			for (int i = 0; i < sockets.Length; i++)
@@ -298,7 +308,7 @@ namespace CollabXR.Objects
 					if (!connectionDesired)
 					{ // If we found no link indicating a desired connection, prune the actual connection
 						fromSocket.Disconnect(toSocket);
-						Debug.Log(string.Format("Pruned link {0}:{1} -> {2}", Id, i, toObject?.Id));
+						//Debug.Log(string.Format("Pruned link {0}:{1} -> {2}", Id, i, toObject?.Id));
 					}
 				}
 			}
@@ -306,24 +316,50 @@ namespace CollabXR.Objects
 			// Form new connections as necessary
 			foreach (NetworkLinkerSocketConnection link in socketLinks)
 			{
-				SocketBase fromSocket = sockets[link.fromSocketIndex];
-
-				CollabObject toObject = FindCollabObject(link.toObject);
-				// Skip object if data is invalid
-				if (toObject == null || toObject.sockets.Length <= link.toSocketIndex)
-				{
-					continue;
-				}
-				SocketBase toSocket = toObject.sockets[link.toSocketIndex];
-
-				if (!fromSocket.IsConnected(toSocket) && fromSocket.CanConnect(toSocket))
-				{
-					Debug.Log(string.Format("Created link {0}:{1} -> {2}:{3}", Id, link.fromSocketIndex, link.toObject, link.toSocketIndex));
-					fromSocket.Connect(toSocket);
-				}
+				socketAwaitingLoad.Add(StartCoroutine(CreateSocketLink(link)));
 			}
 
 			Debug.Log(socketLinks);
+		}
+
+		/// <summary>
+		/// Synchronizes a single link, waiting for objects to load via coroutines.
+		/// </summary>
+		/// <param name="link">Link to create if it does not already exist</param>
+		/// <returns></returns>
+		private System.Collections.IEnumerator CreateSocketLink(NetworkLinkerSocketConnection link)
+		{
+			// Wait indefinitely for CollabXR object to spawn.
+			// The Coroutine can be cancelled during this time.
+			CollabObject toObject = FindCollabObject(link.toObject);
+			while (toObject == null)
+			{
+				yield return null;
+			}
+
+			// Wait indefinitely for CollabXR sockets to load.
+			// The Coroutine can be cancelled during this time.
+
+			// TODO: I think this would be tons better as an event variable, but that requires other refactoring
+			while (toObject != null && toObject.sockets.Length < link.toSocketIndex)
+			{
+				yield return null;
+			}
+			if (toObject == null)
+			{
+				yield break; // Goal object was destroyed, exit coroutine
+			}
+
+			// FINALLY, sockets!
+			SocketBase fromSocket = sockets[link.fromSocketIndex];
+			SocketBase toSocket = toObject.sockets[link.toSocketIndex];
+
+			// Form connection if possible
+			if (!fromSocket.IsConnected(toSocket) && fromSocket.CanConnect(toSocket))
+			{
+				//Debug.Log(string.Format("Created link {0}:{1} -> {2}:{3}", Id, link.fromSocketIndex, link.toObject, link.toSocketIndex));
+				fromSocket.Connect(toSocket);
+			}
 		}
 
 		/// <summary>
