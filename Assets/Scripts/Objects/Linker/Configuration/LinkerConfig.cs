@@ -15,6 +15,7 @@ namespace CollabXR.Objects.Linker
 		[Header("Prefabs")]
 		public GameObject prefabConnection;
 		public GameObject prefabSocket;
+		public GameObject prefabSocketSparksConnection;
 
 		[Header("Colors")]
 		public Color colorProvider;

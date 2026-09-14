@@ -116,6 +116,8 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// </summary>
 		private GameObject icon;
 
+		private ParticleSystem sparks;
+
 		/// <summary>
 		/// LineRenderer transforms representing links.
 		/// </summary>
@@ -154,6 +156,10 @@ namespace CollabXR.Objects.Linker.Sockets
 			collider.isTrigger = false;
 			collider.providesContacts = true;
 
+			// Add connection sparks
+			GameObject sparksObj = Instantiate(LinkerConfig.Instance.prefabSocketSparksConnection, transform, false);
+			sparks = sparksObj.GetComponent<ParticleSystem>();
+
 			// Add a preview icon
 			icon = Instantiate(LinkerConfig.Instance.prefabSocket, transform, false);
 			UpdateSocketColor(); // Set the socket color
@@ -171,6 +177,8 @@ namespace CollabXR.Objects.Linker.Sockets
 		protected void UpdateSocketColor()
 		{
 			icon.GetComponent<MeshRenderer>().material.SetColor("_Tint", GetSocketColor());
+			var sparksMain = sparks.main;
+			sparksMain.startColor = GetSocketColor();
 		}
 
 		private void SocketViewersChanged(int newViewerCount)
@@ -315,12 +323,18 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// <summary>
 		/// Emitted when this socket is connected to another.
 		/// </summary>
-		protected virtual void OnConnect(SocketBase otherSocket) { }
+		protected virtual void OnConnect(SocketBase otherSocket)
+		{
+			sparks.Play();
+		}
 
 		/// <summary>
 		/// Emitted when this socket is disconnected from another.
 		/// </summary>
-		protected virtual void OnDisconnect(SocketBase otherSocket) { }
+		protected virtual void OnDisconnect(SocketBase otherSocket)
+		{
+			sparks.Play();
+		}
 
 		/// <summary>
 		/// Returns the NetworkID of the parent NetworkObject, if any.

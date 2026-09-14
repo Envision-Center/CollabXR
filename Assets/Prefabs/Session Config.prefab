@@ -92,6 +92,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabConnection: {fileID: 8540615792202761560, guid: 55db2f296a09abd4c96a352048dc5114, type: 3}
   prefabSocket: {fileID: 8375237250280443756, guid: f3249388a88866041aa8120ab60bf312, type: 3}
+  prefabSocketSparksConnection: {fileID: 4552678034998545901, guid: 1fdb773d7e362e6499b413ae38a17ee0, type: 3}
   colorProvider: {r: 1, g: 0, b: 0.85257244, a: 0.5686275}
   colorConsumer: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
   colorBehavior:
