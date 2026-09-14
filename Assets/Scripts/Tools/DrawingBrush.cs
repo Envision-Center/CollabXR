@@ -105,7 +105,7 @@ namespace CollabXR.Tools
 
 			currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
 			currentSubStroke.SetParent(currentStrokeContainer);
-			currentSubStroke.Init(StrokeColor, baseStrokeWeight);
+			currentSubStroke.Init(baseStrokeWeight);
 
 			currentSubStroke.name += currentWholeStroke.Count;
 
@@ -171,7 +171,7 @@ namespace CollabXR.Tools
 				return;
 			}
 
-			currentSubStroke.AddStrokePoint(brushTipTransform.position, brushTipTransform.rotation);
+			currentSubStroke.AddStrokePoint(brushTipTransform.position, brushTipTransform.rotation, StrokeColor);
 
 			if (currentSubStroke.GetCapacityRemaining() == 0)
 			{
