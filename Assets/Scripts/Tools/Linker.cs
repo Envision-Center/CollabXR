@@ -1,15 +1,36 @@
+using System.Collections;
 using CollabXR.Networking;
 using CollabXR.Objects;
 using CollabXR.Objects.Linker;
 using CollabXR.Objects.Linker.Sockets;
+using Fusion;
+using TMPro;
 using UnityEngine;
 
 namespace CollabXR.Tools
 {
 	public class Linker : MonoBehaviour
 	{
+		/// <summary>
+		/// Maximum amount of time to request state authority before performing the requested action.
+		/// </summary>
+		private const float MAX_ATTEMPT_DURATION = 2.0f;
+
 		private LineRenderer line;
 		public GameObject grabber;
+
+		[Header("Feedback")]
+		[SerializeField]
+		private GameObject uiErrorObject;
+
+		[SerializeField]
+		private CanvasGroup uiErrorGroup;
+
+		[SerializeField]
+		private TextMeshProUGUI uiErrorText;
+
+		[SerializeField]
+		private AudioSource uiErrorSound;
 
 		// Start is called once before the first execution of Update after the MonoBehaviour is created
 		void Start()
@@ -44,6 +65,7 @@ namespace CollabXR.Tools
 			Debug.Log("Linker Tool: OnEnable!!");
 			//grabber?.SetActive(false);
 			LinkerConfig.Instance.socketViewers.Value += 1;
+			uiErrorObject.SetActive(false);
 		}
 
 		private void OnDisable()
@@ -66,6 +88,37 @@ namespace CollabXR.Tools
 				linking = true;
 				Debug.Log(string.Format("Linker Tool: StartConnection called with {0}", hovered));
 			}
+		}
+
+		// TODO: abstract into a class? Except generic C# classes don't have coroutine access...
+		private IEnumerator DeferredLinkChange(NetworkObject connectionOwner, SocketBase start, SocketBase end, bool connect)
+		{
+			float startTime = Time.time; // When the request started
+
+			// Wait until we either have state authority,
+			// or our request times out
+			while ((!connectionOwner.HasStateAuthority) && (Time.time < startTime + MAX_ATTEMPT_DURATION))
+			{
+				yield return null;
+			}
+
+			// Perform action immediately if we have state authority
+			if (connectionOwner.HasStateAuthority)
+			{
+				if (connect)
+				{
+					end.Connect(start);
+				}
+				else
+				{
+					end.Disconnect(start);
+				}
+			}
+			else
+			{
+				DisplayError("No Authority");
+			}
+			connectionOwner.ReleaseStateAuthority();
 		}
 
 		public void EndConnection()
@@ -93,20 +146,45 @@ namespace CollabXR.Tools
 				// If either socket is connected, disconnect them
 				if (selectedStart.IsConnected(selectedEnd) || selectedEnd.IsConnected(selectedStart))
 				{
-					// TODO: request state authority
-					Debug.Log(string.Format("Linker Tool: DISCONNECTING between {0} -> {1} !", selectedEnd, selectedStart));
-					selectedEnd.Disconnect(selectedStart);
+					NetworkObject connectionOwner = selectedEnd.GetNetworkObject();
+					connectionOwner.RequestStateAuthority();
+
+					//Debug.Log(string.Format("Linker Tool: DISCONNECTING between {0} -> {1} !", selectedEnd, selectedStart));
+					if (connectionOwner.HasStateAuthority)
+					{
+						selectedEnd.Disconnect(selectedStart);
+						connectionOwner.ReleaseStateAuthority();
+					}
+					else
+					{
+						StartCoroutine(DeferredLinkChange(connectionOwner, selectedStart, selectedEnd, false));
+					}
 				} // If both sockets can connect to each other, do so
 				else if (selectedStart.CanConnect(selectedEnd) && selectedEnd.CanConnect(selectedStart))
 				{
-					// TODO: request state authority
-					Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
-					selectedEnd.Connect(selectedStart);
+					NetworkObject connectionOwner = selectedEnd.GetNetworkObject();
+					connectionOwner.RequestStateAuthority();
+
+					//Debug.Log(string.Format("Linker Tool: Forming connection between {0} -> {1} !", selectedEnd, selectedStart));
+					if (connectionOwner.HasStateAuthority)
+					{
+						selectedEnd.Connect(selectedStart);
+						connectionOwner.ReleaseStateAuthority();
+					}
+					else
+					{
+						StartCoroutine(DeferredLinkChange(connectionOwner, selectedStart, selectedEnd, true));
+					}
+				}
+				else
+				{
+					DisplayError("Incompatible Sockets");
 				}
 			}
 			else
 			{
 				Debug.Log(string.Format("Linker Tool: Invalid link targets {0} -> {1} !", selectedStart, selectedEnd));
+				DisplayError("Needs 2 Sockets");
 			}
 
 			linking = false;
@@ -127,6 +205,15 @@ namespace CollabXR.Tools
 				hovered = null; // Otherwise, clear hover status
 				//Debug.Log("Hovered is null");
 			}
+		}
+
+		public void DisplayError(string reason)
+		{
+			uiErrorGroup.alpha = 1.0f;
+			uiErrorText.text = reason;
+			uiErrorObject.SetActive(true);
+			uiErrorSound.Play();
+			UiTweens.GenericTween(this, uiErrorGroup.alpha, 1.0f, 0.0f, 4.0f, EaseType.EaseOut, c => uiErrorGroup.alpha = c, (a, b, t) => Mathf.Lerp(a, b, t), () => uiErrorObject.SetActive(false));
 		}
 	}
 }
