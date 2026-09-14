@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace CollabXR.ModLoader
 {
-	internal enum ModLoadStatus
+	internal enum TaskLoadStatus
 	{
 		Pending,
 		Failed,
@@ -13,7 +13,7 @@ namespace CollabXR.ModLoader
 
 	internal class ModLoadTask
 	{
-		internal ModLoadStatus status;
+		internal TaskLoadStatus status;
 
 		internal Guid modUuid { get; set; }
 
@@ -23,14 +23,14 @@ namespace CollabXR.ModLoader
 		{
 			this.modUuid = modUuid;
 
-			status = ModLoadStatus.Pending;
+			status = TaskLoadStatus.Pending;
 
 			ModManager.Instance.LoadMod(this);
 		}
 
 		internal void NotifyModReady()
 		{
-			status = ModLoadStatus.Completed;
+			status = TaskLoadStatus.Completed;
 
 			foreach (ModLoadTaskAwaiter awaiter in awaiters)
 			{
@@ -38,16 +38,19 @@ namespace CollabXR.ModLoader
 			}
 		}
 
-		internal void NotifyModFailedToLoad()
+		internal void NotifyModFailedToLoad(Exception ex)
 		{
-			status = ModLoadStatus.Failed;
+			status = TaskLoadStatus.Failed;
 
-			awaiters.Clear();
+			foreach (ModLoadTaskAwaiter awaiter in awaiters)
+			{
+				awaiter.NotifyModFailed(ex);
+			}
 		}
 
 		public ModLoadTaskAwaiter GetAwaiter()
 		{
-			ModLoadTaskAwaiter newAwaiter = new ModLoadTaskAwaiter(this);
+			ModLoadTaskAwaiter newAwaiter = new(this);
 
 			awaiters.Add(newAwaiter);
 
@@ -58,14 +61,14 @@ namespace CollabXR.ModLoader
 	internal class ModLoadTaskAwaiter : INotifyCompletion
 	{
 		ModLoadTask activeModLoadTask;
-
+		List<Exception> exceptions;
 		Action continuationAction;
 
 		public ModLoadTaskAwaiter(ModLoadTask activeModLoadTask)
 		{
 			this.activeModLoadTask = activeModLoadTask;
-
-			this.IsCompleted = this.activeModLoadTask.status == ModLoadStatus.Completed;
+			exceptions = new();
+			this.IsCompleted = this.activeModLoadTask.status == TaskLoadStatus.Completed;
 			this.continuationAction = null;
 		}
 
@@ -76,7 +79,21 @@ namespace CollabXR.ModLoader
 			this.continuationAction?.Invoke();
 		}
 
-		public Guid GetResult() => this.activeModLoadTask.modUuid;
+		internal void NotifyModFailed(Exception ex)
+		{
+			this.IsCompleted = false;
+
+			exceptions.Add(ex);
+		}
+
+		public Guid GetResult()
+		{
+			if (exceptions.Count > 0)
+			{
+				throw new AggregateException($"Errors occured while loading mod {activeModLoadTask}.", exceptions);
+			}
+			return this.activeModLoadTask.modUuid;
+		}
 
 		public bool IsCompleted { get; internal set; }
 
@@ -100,7 +117,7 @@ namespace CollabXR.ModLoader
 
 	internal class AssetPointerLoadTask<T> : IAssetPointerLoadTask
 	{
-		internal bool IsLoaded = false;
+		internal TaskLoadStatus status;
 
 		public IAssetReference assetReference { get; set; }
 
@@ -115,7 +132,7 @@ namespace CollabXR.ModLoader
 
 		public void NotifyAssetReady()
 		{
-			IsLoaded = true;
+			status = TaskLoadStatus.Completed;
 
 			foreach (AssetPointerLoadTaskAwaiter<T> awaiter in awaiters)
 			{
@@ -125,7 +142,7 @@ namespace CollabXR.ModLoader
 
 		public void NotifyAssetFailedToLoad()
 		{
-			IsLoaded = true;
+			status = TaskLoadStatus.Failed;
 
 			awaiters.Clear();
 		}
@@ -150,7 +167,7 @@ namespace CollabXR.ModLoader
 		{
 			this.activeAssetPointerLoadTask = activeAssetPointerLoadTask;
 
-			this.IsCompleted = this.activeAssetPointerLoadTask.IsLoaded;
+			this.IsCompleted = this.activeAssetPointerLoadTask.status == TaskLoadStatus.Completed;
 			this.continuationAction = null;
 		}
 

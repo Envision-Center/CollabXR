@@ -27,7 +27,7 @@ namespace CollabXR.ModLoader
 		/// <summary>
 		/// Status of the entire entry. While pending, there is an active load task, and other load tasks can be batched
 		/// </summary>
-		internal ModLoadStatus status;
+		internal TaskLoadStatus status = TaskLoadStatus.Pending;
 
 		internal AssetBundle AssetBundle = null;
 		internal List<ModLoadTask> ModLoadTasks = new();
@@ -48,6 +48,11 @@ namespace CollabXR.ModLoader
 	/// </remarks>
 	internal class AssetPointerTableEntry
 	{
+		/// <summary>
+		/// Status of the entire entry. While pending, there is an active load task, and other load tasks can be batched
+		/// </summary>
+		internal TaskLoadStatus status = TaskLoadStatus.Pending;
+
 		/// <summary>
 		/// The loaded asset in memory. Is null if asset still loading, otherwise contains the loaded asset.
 		/// Once Value is set, it is never changed.
@@ -271,7 +276,7 @@ namespace CollabXR.ModLoader
 			Uri uri = GetAssetBundleURI(repoData, modUuid);
 
 			// Ensure mod exists and 
-			if (Instance.loadedMods.TryGetValue(modUuid, out var modsTableEntry) && modsTableEntry.status != ModLoadStatus.Failed)
+			if (Instance.loadedMods.TryGetValue(modUuid, out var modsTableEntry) && modsTableEntry.status != TaskLoadStatus.Failed)
 			{
 				if (modsTableEntry.AssetBundle == null)
 				{
@@ -286,7 +291,8 @@ namespace CollabXR.ModLoader
 			}
 			else
 			{
-				Instance.loadedMods.Add(modUuid, new LoadedModsTableEntry());
+				Instance.loadedMods.TryAdd(modUuid, new LoadedModsTableEntry());
+				Instance.loadedMods[modUuid].status = TaskLoadStatus.Pending;
 				Instance.loadedMods[modUuid].ModLoadTasks.Add(modLoadTask);
 
 				// Create new request
@@ -312,6 +318,8 @@ namespace CollabXR.ModLoader
 						{
 							loadTask.NotifyModReady();
 						}
+
+						Instance.loadedMods[modUuid].status = TaskLoadStatus.Completed;
 					}
 					catch (Exception ex)
 					{
@@ -325,10 +333,10 @@ namespace CollabXR.ModLoader
 
 						foreach (ModLoadTask loadTask in copy)
 						{
-							loadTask.NotifyModFailedToLoad();
+							loadTask.NotifyModFailedToLoad(ex);
 						}
 
-						Instance.loadedMods[modUuid].status = ModLoadStatus.Failed;
+						Instance.loadedMods[modUuid].status = TaskLoadStatus.Failed;
 					}
 					finally
 					{
@@ -495,9 +503,9 @@ namespace CollabXR.ModLoader
 				throw new Exception($"Asset with UUID {assetUuid} not found on Mod with UUID {modUuid}");
 			}
 
-			if (Instance.assetPointerTable.ContainsKey(assetUuid))
+			if (Instance.assetPointerTable.TryGetValue(assetUuid, out var assetPointerTableEntry) && assetPointerTableEntry.status != TaskLoadStatus.Failed)
 			{
-				if (Instance.assetPointerTable[assetUuid].Value == null)
+				if (assetPointerTableEntry.Value == null)
 				{
 					// Batch pending requests
 					Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Add(assetPointerLoadTask);
@@ -520,14 +528,15 @@ namespace CollabXR.ModLoader
 				}
 
 				// Create new request
-				Instance.assetPointerTable.Add(assetUuid, new AssetPointerTableEntry());
+				Instance.assetPointerTable.TryAdd(assetUuid, new AssetPointerTableEntry());
+				Instance.assetPointerTable[assetUuid].status = TaskLoadStatus.Pending;
 				Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Add(assetPointerLoadTask);
 
 				Task.Run(async () =>
 				{
 					try
 					{
-						ModLoadTask modLoadTask = new ModLoadTask(modUuid);
+						ModLoadTask modLoadTask = new(modUuid);
 						Guid loadedModGuid = await modLoadTask;
 
 						await UniTask.SwitchToMainThread();
@@ -536,26 +545,33 @@ namespace CollabXR.ModLoader
 
 						Debug.Log($"{DEBUG_LOG_HEADER} Loaded Asset {assetUuid} from Mod {modUuid} in to memory.");
 
-						foreach (IAssetPointerLoadTask loadTask in Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks)
+						var copy = Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.ToArray();
+						var value = Instance.assetPointerTable[assetUuid].Value;
+						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
+
+						foreach (IAssetPointerLoadTask loadTask in copy)
 						{
-							loadTask.assetReference.value = Instance.assetPointerTable[assetUuid].Value;
+							loadTask.assetReference.value = value;
 
 							loadTask.NotifyAssetReady();
 						}
 
-						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
+						Instance.assetPointerTable[assetUuid].status = TaskLoadStatus.Completed;
 					}
-					catch (Exception ex) // if fails to load mod, remove asset from pointer table so as to not batch future requests
+					catch (Exception ex) // if fails to load mod, mark load task as failed so future load request reload instead of batch
 					{
-						Instance.assetPointerTable.Remove(assetUuid);
-
 						Debug.Log($"{DEBUG_LOG_HEADER} Failed to load asset {assetUuid}");
 						Debug.Log(ex);
-						foreach (IAssetPointerLoadTask loadTask in Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks)
+
+						var copy = Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.ToArray();
+						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
+
+						foreach (IAssetPointerLoadTask loadTask in copy)
 						{
 							loadTask.NotifyAssetFailedToLoad();
 						}
-						return;
+
+						Instance.assetPointerTable[assetUuid].status = TaskLoadStatus.Failed;
 					}
 				});
 			}

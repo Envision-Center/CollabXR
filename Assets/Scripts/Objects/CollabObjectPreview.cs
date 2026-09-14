@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using CollabXR.ModLoader;
 using CollabXR.Tools;
 using Cysharp.Threading.Tasks;
@@ -80,6 +77,11 @@ namespace CollabXR.Objects
 		private bool RequestExists(out UnityWebRequest request)
 		{
 			request = ModManager.Instance.TryGetUnityWebRequest(data.modGUID);
+			//if (request == null)
+			//{
+			//	ModLoadTask task = new(data.modGUID);
+			//	ModManager.Instance.LoadMod(task);
+			//}
 			return request != null;
 		}
 
