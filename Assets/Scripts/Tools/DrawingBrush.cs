@@ -25,6 +25,9 @@ namespace CollabXR.Tools
 		private Renderer brushTip;
 		private MaterialPropertyBlock brushTipPropertyBlock;
 
+		[SerializeField]
+		private Transform radialIndicator;
+
 		public bool IsDrawing { get; set; }
 
 		public void SetIsDrawing(bool isDrawing)
@@ -53,6 +56,9 @@ namespace CollabXR.Tools
 		[SerializeField]
 		private float baseStrokeWeight = 0.02f;
 
+		[SerializeField]
+		private float radialIndicatorOffset = 0.43f;
+
 		public void SetHueFromColorWheelDirection(Vector2 direction)
 		{
 			if (direction.magnitude < 0.8f)
@@ -61,7 +67,19 @@ namespace CollabXR.Tools
 			float hue = Mathf.Atan2(-direction.x, -direction.y) / (2 * Mathf.PI) + 0.5f;
 			StrokeColor = Color.HSVToRGB(hue, 1, 1);
 
+			MoveRadialIndicator(direction);
+
 			SetBrushTipColor();
+		}
+
+		private void MoveRadialIndicator(Vector2 direction)
+		{
+			if (radialIndicator == null)
+				return;
+
+			direction = direction.normalized * radialIndicatorOffset;
+			Vector3 radialDirection = new(direction.x, direction.y, radialIndicator.localPosition.z);
+			radialIndicator.localPosition = radialDirection;
 		}
 
 		private void SetBrushTipColor()
