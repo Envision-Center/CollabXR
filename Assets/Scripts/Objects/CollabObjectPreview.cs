@@ -54,15 +54,14 @@ namespace CollabXR.Objects
 			EnableLoadingAnimation(true, true);
 			loadingBar.fillAmount = 0;
 
-			await UniTask.WaitUntil(() => ModManager.Instance.indexedMods.ContainsKey(data.modGUID));
+			var token = this.GetCancellationTokenOnDestroy();
+
+			await UniTask.WaitUntil(() => ModManager.Instance.indexedMods.ContainsKey(data.modGUID), cancellationToken: token, cancelImmediately: true);
 			
-			while (state == PreviewState.Loading && loadingVisual.activeSelf)
+			while (state == PreviewState.Loading)
 			{
-				if (!RequestExists(out UnityWebRequest request))
-				{
-					await UniTask.Yield(this.GetCancellationTokenOnDestroy(), true);
-					continue;
-				}
+				UnityWebRequest request = null;
+				await UniTask.WaitUntil(() => RequestExists(out request), cancellationToken: token, cancelImmediately: true);
 
 				if (request.result == UnityWebRequest.Result.Success || request.result == UnityWebRequest.Result.InProgress)
 				{
@@ -81,15 +80,7 @@ namespace CollabXR.Objects
 		private bool RequestExists(out UnityWebRequest request)
 		{
 			request = ModManager.Instance.TryGetUnityWebRequest(data.modGUID);
-			if (request == null)
-			{
-				ModLoadTask task = new(data.modGUID);
-				ModManager.Instance.LoadMod(task);
-
-				return false;
-			}
-
-			return true;
+			return request != null;
 		}
 
 		public async UniTaskVoid LoadPrefab(CollabObjectData data)

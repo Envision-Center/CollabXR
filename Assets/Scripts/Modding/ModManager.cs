@@ -1,23 +1,34 @@
-// using dotnow.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using CollabXR.ModPackager;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using NUnit;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace CollabXR.ModLoader
 {
+	/// <summary>
+	/// Stores a mod that is currently loading or is loaded and a list of tasks waiting for the mod to load.
+	/// </summary>
+	/// <remarks>
+	/// Created in ModManager.LoadMod(). Call to load mod can be done in 3 contexts:
+	/// 
+	/// On loading a new mod, a new table entry is created and a load task that actively waits on a web request to finish.
+	/// On loading a mod that is already loaded, no load task is added and the load call is immediately notified.
+	/// On loading a mod that is in progress, a load task is added that waits on the initial request
+	/// </remarks>
 	internal class LoadedModsTableEntry
 	{
+		/// <summary>
+		/// Status of the entire entry. While pending, there is an active load task, and other load tasks can be batched
+		/// </summary>
+		internal ModLoadStatus status;
+
 		internal AssetBundle AssetBundle = null;
 		internal List<ModLoadTask> ModLoadTasks = new();
 		internal Dictionary<Guid, Dictionary<string, Type>> ScriptRehydrationMap = new();
@@ -259,9 +270,10 @@ namespace CollabXR.ModLoader
 			RepositoryMetadata repoData = RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2];
 			Uri uri = GetAssetBundleURI(repoData, modUuid);
 
-			if (Instance.loadedMods.ContainsKey(modUuid) || modLoadingRequests.ContainsKey(uri))
+			// Ensure mod exists and 
+			if (Instance.loadedMods.TryGetValue(modUuid, out var modsTableEntry) && modsTableEntry.status != ModLoadStatus.Failed)
 			{
-				if (Instance.loadedMods.TryGetValue(modUuid, out var modsTableEntry) && modsTableEntry.AssetBundle == null)
+				if (modsTableEntry.AssetBundle == null)
 				{
 					// Batch pending requests
 					Instance.loadedMods[modUuid].ModLoadTasks.Add(modLoadTask);
@@ -274,6 +286,9 @@ namespace CollabXR.ModLoader
 			}
 			else
 			{
+				Instance.loadedMods.Add(modUuid, new LoadedModsTableEntry());
+				Instance.loadedMods[modUuid].ModLoadTasks.Add(modLoadTask);
+
 				// Create new request
 				Task.Run(async () =>
 				{
@@ -286,30 +301,38 @@ namespace CollabXR.ModLoader
 					{
 						await request.SendWebRequest();
 
-						Instance.loadedMods.Add(modUuid, new LoadedModsTableEntry());
-						Instance.loadedMods[modUuid].ModLoadTasks.Add(modLoadTask);
 						Instance.loadedMods[modUuid].AssetBundle = DownloadHandlerAssetBundle.GetContent(request);
 
 						Debug.Log($"{DEBUG_LOG_HEADER} Loaded Mod {modUuid} in to memory.");
 
-						foreach (ModLoadTask loadTask in Instance.loadedMods[modUuid].ModLoadTasks)
+						var copy = Instance.loadedMods[modUuid].ModLoadTasks.ToArray();
+						Instance.loadedMods[modUuid].ModLoadTasks.Clear();
+
+						foreach (ModLoadTask loadTask in copy)
 						{
 							loadTask.NotifyModReady();
 						}
-						Instance.loadedMods[modUuid].ModLoadTasks.Clear();
 					}
 					catch (Exception ex)
 					{
-						Instance.loadedMods.Remove(modUuid);
 						request.Dispose();
-						Instance.modLoadingRequests.Remove(uri);
 
 						Debug.Log($"{DEBUG_LOG_HEADER} Failed web request when loading Mod {modUuid}, please rejoin the room to reload");
-						Debug.Log(ex);
-						foreach (ModLoadTask loadTask in Instance.loadedMods[modUuid].ModLoadTasks)
+						Debug.Log(ex.Message);
+
+						var copy = Instance.loadedMods[modUuid].ModLoadTasks.ToArray();
+						Instance.loadedMods[modUuid].ModLoadTasks.Clear();
+
+						foreach (ModLoadTask loadTask in copy)
 						{
 							loadTask.NotifyModFailedToLoad();
 						}
+
+						Instance.loadedMods[modUuid].status = ModLoadStatus.Failed;
+					}
+					finally
+					{
+						Instance.modLoadingRequests.Remove(uri);
 					}
 				});
 			}
@@ -497,16 +520,30 @@ namespace CollabXR.ModLoader
 				}
 
 				// Create new request
+				Instance.assetPointerTable.Add(assetUuid, new AssetPointerTableEntry());
+				Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Add(assetPointerLoadTask);
+
 				Task.Run(async () =>
 				{
 					try
 					{
 						ModLoadTask modLoadTask = new ModLoadTask(modUuid);
 						Guid loadedModGuid = await modLoadTask;
+
 						await UniTask.SwitchToMainThread();
-						Instance.assetPointerTable.Add(assetUuid, new AssetPointerTableEntry());
-						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Add(assetPointerLoadTask);
+
 						Instance.assetPointerTable[assetUuid].Value = await loadedMods[loadedModGuid].AssetBundle.LoadAssetWithSubAssetsAsync(indexedMods[loadedModGuid].Item1.AssetMap[assetUuid]);
+
+						Debug.Log($"{DEBUG_LOG_HEADER} Loaded Asset {assetUuid} from Mod {modUuid} in to memory.");
+
+						foreach (IAssetPointerLoadTask loadTask in Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks)
+						{
+							loadTask.assetReference.value = Instance.assetPointerTable[assetUuid].Value;
+
+							loadTask.NotifyAssetReady();
+						}
+
+						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
 					}
 					catch (Exception ex) // if fails to load mod, remove asset from pointer table so as to not batch future requests
 					{
@@ -520,17 +557,6 @@ namespace CollabXR.ModLoader
 						}
 						return;
 					}
-
-					Debug.Log($"{DEBUG_LOG_HEADER} Loaded Asset {assetUuid} from Mod {modUuid} in to memory.");
-
-					foreach (IAssetPointerLoadTask loadTask in Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks)
-					{
-						loadTask.assetReference.value = Instance.assetPointerTable[assetUuid].Value;
-
-						loadTask.NotifyAssetReady();
-					}
-
-					Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
 				});
 			}
 		}

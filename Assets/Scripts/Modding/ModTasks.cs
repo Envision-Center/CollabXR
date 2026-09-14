@@ -23,12 +23,14 @@ namespace CollabXR.ModLoader
 		{
 			this.modUuid = modUuid;
 
+			status = ModLoadStatus.Pending;
+
 			ModManager.Instance.LoadMod(this);
 		}
 
 		internal void NotifyModReady()
 		{
-			IsLoaded = true;
+			status = ModLoadStatus.Completed;
 
 			foreach (ModLoadTaskAwaiter awaiter in awaiters)
 			{
@@ -38,7 +40,7 @@ namespace CollabXR.ModLoader
 
 		internal void NotifyModFailedToLoad()
 		{
-			IsLoaded = false;
+			status = ModLoadStatus.Failed;
 
 			awaiters.Clear();
 		}
@@ -63,7 +65,7 @@ namespace CollabXR.ModLoader
 		{
 			this.activeModLoadTask = activeModLoadTask;
 
-			this.IsCompleted = this.activeModLoadTask.IsLoaded;
+			this.IsCompleted = this.activeModLoadTask.status == ModLoadStatus.Completed;
 			this.continuationAction = null;
 		}
 
