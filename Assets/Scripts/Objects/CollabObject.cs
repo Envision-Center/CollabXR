@@ -338,6 +338,7 @@ namespace CollabXR.Objects
 			while (toObject == null)
 			{
 				yield return null;
+				toObject = FindCollabObject(link.toObject);
 			}
 
 			// Wait indefinitely for CollabXR sockets to load.
