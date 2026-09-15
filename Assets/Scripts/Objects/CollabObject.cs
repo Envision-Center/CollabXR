@@ -271,7 +271,10 @@ namespace CollabXR.Objects
 			// Stop all existing coroutines so we do not double-up
 			foreach (Coroutine routine in socketAwaitingLoad)
 			{
-				StopCoroutine(routine);
+				if (routine != null)
+				{
+					StopCoroutine(routine);
+				}
 			}
 			socketAwaitingLoad.Clear();
 
