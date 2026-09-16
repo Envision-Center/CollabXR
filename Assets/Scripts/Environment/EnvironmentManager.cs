@@ -86,6 +86,7 @@ namespace CollabXR.Environments
 			if (!currentEnvSceneName.Equals(""))
 			{
 				SceneManager.UnloadSceneAsync(currentEnvSceneName);
+				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 				currentEnvInstance = null;
 			}
 
@@ -139,8 +140,8 @@ namespace CollabXR.Environments
 			SetEnvironmentInstance(sceneScript);
 			
 			Debug.Log($"EnvironmentManager: Setting skybox in passthrough to {currentEnvInstance.skyboxOnInPassthrough}");
-			PassthroughManager.Instance.TriggerScenePassthroughEvents();
 			PassthroughManager.Instance.SetSkyboxOnInPassthrough(currentEnvInstance.skyboxOnInPassthrough);
+			PassthroughManager.Instance.TriggerScenePassthroughEvents();
 			
 			Teleport();
 			OnEnvironmentLoadComplete.Invoke();			
