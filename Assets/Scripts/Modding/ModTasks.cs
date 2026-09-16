@@ -81,9 +81,12 @@ namespace CollabXR.ModLoader
 
 		internal void NotifyModFailed(Exception ex)
 		{
-			this.IsCompleted = false;
+			this.IsCompleted = true;
 
 			exceptions.Add(ex);
+
+			this.continuationAction?.Invoke();
+
 		}
 
 		public Guid GetResult()
@@ -100,9 +103,6 @@ namespace CollabXR.ModLoader
 		public void OnCompleted(Action continuation)
 		{
 			this.continuationAction = continuation;
-
-			if (this.IsCompleted)
-				this.continuationAction?.Invoke();
 		}
 	}
 

@@ -328,14 +328,13 @@ namespace CollabXR.ModLoader
 						Debug.Log($"{DEBUG_LOG_HEADER} Failed web request when loading Mod {modUuid}, please rejoin the room to reload");
 						Debug.Log(ex.Message);
 
-						var copy = Instance.loadedMods[modUuid].ModLoadTasks.ToArray();
-						Instance.loadedMods[modUuid].ModLoadTasks.Clear();
+						//var copy = Instance.loadedMods[modUuid].ModLoadTasks.ToArray();
 
-						foreach (ModLoadTask loadTask in copy)
+						foreach (ModLoadTask loadTask in Instance.loadedMods[modUuid].ModLoadTasks)
 						{
 							loadTask.NotifyModFailedToLoad(ex);
 						}
-
+						Instance.loadedMods[modUuid].ModLoadTasks.Clear();
 						Instance.loadedMods[modUuid].status = TaskLoadStatus.Failed;
 					}
 					finally
@@ -563,14 +562,14 @@ namespace CollabXR.ModLoader
 						Debug.Log($"{DEBUG_LOG_HEADER} Failed to load asset {assetUuid}");
 						Debug.Log(ex);
 
-						var copy = Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.ToArray();
-						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
+						//var copy = Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.ToArray();
 
-						foreach (IAssetPointerLoadTask loadTask in copy)
+						foreach (IAssetPointerLoadTask loadTask in Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks)
 						{
 							loadTask.NotifyAssetFailedToLoad();
 						}
 
+						Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.Clear();
 						Instance.assetPointerTable[assetUuid].status = TaskLoadStatus.Failed;
 					}
 				});
