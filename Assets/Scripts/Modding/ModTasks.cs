@@ -11,6 +11,12 @@ namespace CollabXR.ModLoader
 		Completed
 	}
 
+	/// <summary>
+	/// Responsible for loading a specified mod, use await ModLoadTask to wait for mod load
+	/// </summary>
+	/// <remarks>
+	///	ModLoadTask calls ModManager.LoadMod which can fail, always use in try catch block
+	/// </remarks>
 	internal class ModLoadTask
 	{
 		internal TaskLoadStatus status;
@@ -38,6 +44,10 @@ namespace CollabXR.ModLoader
 			}
 		}
 
+		/// <summary>
+		/// Notify the awaiters and suspend any asset load requests waiting on this mod via an exception
+		/// </summary>
+		/// <param name="ex"></param>
 		internal void NotifyModFailedToLoad(Exception ex)
 		{
 			status = TaskLoadStatus.Failed;
@@ -72,6 +82,9 @@ namespace CollabXR.ModLoader
 			this.continuationAction = null;
 		}
 
+		/// <summary>
+		/// Continues the code past the await ModLoadTask
+		/// </summary>
 		internal void NotifyModReady()
 		{
 			this.IsCompleted = true;
@@ -79,16 +92,19 @@ namespace CollabXR.ModLoader
 			this.continuationAction?.Invoke();
 		}
 
+		/// <summary>
+		/// Continues the code past the await ModLoadTask, but immediately throws the encountered error
+		/// </summary>
+		/// <param name="ex"></param>
 		internal void NotifyModFailed(Exception ex)
 		{
 			this.IsCompleted = true;
-
 			exceptions.Add(ex);
 
 			this.continuationAction?.Invoke();
-
 		}
 
+		// Required by Inotifycompletion, called when continuationAction is invoked
 		public Guid GetResult()
 		{
 			if (exceptions.Count > 0)

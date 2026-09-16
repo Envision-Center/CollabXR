@@ -95,7 +95,6 @@ namespace CollabXR.ModLoader
 
 		/// <summary>
 		/// Maintains a list of all UnityWebRequests that are currently loading asset bundles from remote repositories.
-		/// Doesn't seem like they get removed from the list even when finished, could this cause bugs?
 		/// </summary>
 		private Dictionary<Uri, UnityWebRequest> modLoadingRequests = new();
 
@@ -257,7 +256,7 @@ namespace CollabXR.ModLoader
 		// Layer 1 of Abstraction
 
 		/// <summary>
-		/// Same kind of design/purpose/structure as LoadAssetFromMod, 
+		/// Called by LoadAssetFromMod. Same kind of design/purpose/structure as LoadAssetFromMod, 
 		/// but for mods instead of assets, and instead of querying the loaded asset bundle for an asset,
 		/// queries AWS S3 for the mod asset bundle itself.
 		/// </summary>
@@ -275,27 +274,27 @@ namespace CollabXR.ModLoader
 			RepositoryMetadata repoData = RepositoryManager.Instance.loadedRepositories[indexedMods[modUuid].Item2];
 			Uri uri = GetAssetBundleURI(repoData, modUuid);
 
-			// Ensure mod exists and 
+			// Ensure mod exists and a previous load attempt was successful or still pending
 			if (Instance.loadedMods.TryGetValue(modUuid, out var modsTableEntry) && modsTableEntry.status != TaskLoadStatus.Failed)
 			{
 				if (modsTableEntry.AssetBundle == null)
 				{
-					// Batch pending requests
+					// If a previous load attempt is still pending, batch pending requests
 					Instance.loadedMods[modUuid].ModLoadTasks.Add(modLoadTask);
 				}
-				else
+				else 
 				{
-					// Immediately confirm it's ready
+					// If a previous load attempt was sucessful, immediately confirm it's ready
 					modLoadTask.NotifyModReady();
 				}
 			}
 			else
 			{
+				// If a previous load attempt did not exist or had failed, create a new request
 				Instance.loadedMods.TryAdd(modUuid, new LoadedModsTableEntry());
 				Instance.loadedMods[modUuid].status = TaskLoadStatus.Pending;
 				Instance.loadedMods[modUuid].ModLoadTasks.Add(modLoadTask);
 
-				// Create new request
 				Task.Run(async () =>
 				{
 					await UniTask.SwitchToMainThread();
@@ -327,8 +326,6 @@ namespace CollabXR.ModLoader
 
 						Debug.Log($"{DEBUG_LOG_HEADER} Failed web request when loading Mod {modUuid}, please rejoin the room to reload");
 						Debug.Log(ex.Message);
-
-						//var copy = Instance.loadedMods[modUuid].ModLoadTasks.ToArray();
 
 						foreach (ModLoadTask loadTask in Instance.loadedMods[modUuid].ModLoadTasks)
 						{
@@ -474,7 +471,7 @@ namespace CollabXR.ModLoader
 		/// </summary>
 		/// <param name="assetPointerLoadTask">The task representing a new asset load request.</param>
 		/// <remarks>
-		/// Basically there are 3 cases being handled here:
+		/// Basically there are 4 cases being handled here:
 		/// 
 		/// 1. IN PROGRESS: An AssetPointerTableEntry (APTE) already exists, and the asset is NOT loaded. 
 		/// The task is added to the list of tasks waiting for the asset to be loaded.
@@ -486,6 +483,9 @@ namespace CollabXR.ModLoader
 		/// Once the mod is loaded, the asset is loaded and all tasks waiting for it are notified.
 		/// NOTE that in the 3rd case, a ModLoadTask is created, which calls ModManager.LoadMod. 
 		/// That handles the remote repository -> Asset Bundle stage.
+		///
+		/// 4. FAILED: An APTE does exist but has FAILED.  We set the load status back to pending and retry
+		/// a load like above.
 		/// </remarks>
 		internal void LoadAssetFromMod(IAssetPointerLoadTask assetPointerLoadTask)
 		{
@@ -561,8 +561,6 @@ namespace CollabXR.ModLoader
 					{
 						Debug.Log($"{DEBUG_LOG_HEADER} Failed to load asset {assetUuid}");
 						Debug.Log(ex);
-
-						//var copy = Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks.ToArray();
 
 						foreach (IAssetPointerLoadTask loadTask in Instance.assetPointerTable[assetUuid].AssetPointerLoadTasks)
 						{
