@@ -162,8 +162,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  translationLerp: 0.5
-  rotationLerp: 0.5
+  translationLerp: 1
+  rotationLerp: 1
   localOffset:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
@@ -203,7 +203,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: -7976968300782819046}
         m_TargetAssemblyTypeName: CollabXR.Objects.NetworkScalable, Assembly-CSharp
-        m_MethodName: UniformScale
+        m_MethodName: AddUniformScaleJoystick
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -286,7 +286,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d8ffcfdb6529d4989ec63162922682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uniformNetworkScale: {x: 1, y: 1, z: 1}
+  _baseNetworkScale: {x: 1, y: 1, z: 1}
+  _uniformNetworkScale: 1
   _nonUniformNetworkScale: {x: 0, y: 0, z: 0}
 --- !u!114 &4537318578294879936
 MonoBehaviour:
