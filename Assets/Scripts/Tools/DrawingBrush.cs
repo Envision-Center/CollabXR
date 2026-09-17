@@ -49,13 +49,13 @@ namespace CollabXR.Tools
 		private BrushSubStroke currentSubStroke;
 
 		private List<BrushSubStroke> currentWholeStroke = new();
-		private NetworkObject currentStrokeContainer = null;
-
-		private SpawnableObject intersectedObject;
+		private BrushContainer currentStrokeContainer = null;
 
 		//[SerializeField] private float triggerWeightPower = 0.25f;
 		[SerializeField]
 		private float baseStrokeWeight = 0.02f;
+
+		private SpawnableObject lastOverlap;
 
 		public void SetHueFromColorWheelDirection(Vector2 direction)
 		{
@@ -75,8 +75,7 @@ namespace CollabXR.Tools
 			}
 			IsDrawing = true;
 
-			currentStrokeContainer = NetworkManager.Runner.Spawn(strokeContainerPrefab, brushTipTransform.position);
-			CheckOverlaps();
+			currentStrokeContainer = NetworkManager.Runner.Spawn(strokeContainerPrefab, brushTipTransform.position).GetComponent<BrushContainer>();
 
 			CreateSubstroke();
 		}
@@ -93,7 +92,7 @@ namespace CollabXR.Tools
 				NetworkObject spawnedStroke = NetworkManager.Runner.Spawn(substrokePrefab, position: brushTipTransform.position);
 
 				currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
-				currentSubStroke.SetParent(currentStrokeContainer);
+				currentSubStroke.SetParent(currentStrokeContainer.Object);
 				currentSubStroke.Init(StrokeColor, baseStrokeWeight);
 				currentSubStroke.name += currentWholeStroke.Count;
 				currentWholeStroke.Add(currentSubStroke);
@@ -114,7 +113,6 @@ namespace CollabXR.Tools
 
 			if (IsDrawing)
 			{
-				CheckOverlaps();
 				if (Vector3.Distance(lastStrokePointPos, brushTipTransform.position) >= 0.01f || Quaternion.Angle(lastStrokePointRot, brushTipTransform.rotation) >= 5f)
 				{
 					ContinueStroke();
@@ -135,25 +133,48 @@ namespace CollabXR.Tools
 
 			if (c != null && c.HasData) // is a valid collab object with data
 			{
-				intersectedObject = c;
-				CheckOverlaps();
+				CheckShouldParent(c);
 			}
 			else if(b != null && bContainer != null) // is a valid brush stroke with a container
 			{
-				intersectedObject = bContainer;
-				CheckOverlaps();
+				CheckShouldParent(bContainer);
 			}
-			else if (obj == null)
+			else
 			{
-				intersectedObject = null;
+				lastOverlap = null;
 			}
 		}
 
-		private void CheckOverlaps()
+		private void CheckShouldParent(SpawnableObject obj)
 		{
-			if (IsDrawing && intersectedObject != null && currentStrokeContainer.transform.parent == null)
+			lastOverlap = obj;
+			if (IsDrawing) // brush tool is active
 			{
-				currentStrokeContainer.GetComponent<SpawnableObject>().ParentToOtherSpawnableObject(intersectedObject);
+				if (currentStrokeContainer != null) // have already created a brush container
+				{
+					if (lastOverlap != null && currentStrokeContainer.transform.parent == null) // intersected with something while drawing and container isn't already parented
+					{
+						if (lastOverlap.GetType() == typeof(CollabObject)) // is collab object
+						{
+							currentStrokeContainer.ParentToOtherSpawnableObject(lastOverlap);
+						}
+						else if (lastOverlap.GetType() == typeof(BrushContainer) && currentStrokeContainer != lastOverlap) // is a different container
+						{
+							foreach (BrushSubStroke stroke in currentWholeStroke)
+							{
+								stroke.SetParent(lastOverlap.Object);
+							}
+							currentStrokeContainer.MarkForDeletionWhenEmpty();
+						}
+					}
+				}
+				else // haven't created a brush container
+				{
+					if (lastOverlap.GetType() == typeof(CollabObject)) // is collab object
+					{
+						currentStrokeContainer.ParentToOtherSpawnableObject(lastOverlap);
+					}
+				}
 			}
 		}
 
