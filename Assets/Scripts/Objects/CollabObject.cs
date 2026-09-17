@@ -133,6 +133,14 @@ namespace CollabXR.Objects
 				{
 					Debug.Log("no-op because no category or data name");
 					EnumerateSockets();
+					if (HasStateAuthority)
+					{
+						UpdateSocketLinks();
+					}
+					else
+					{
+						SetSocketLinks(); // Initial socket link state before other changes are replicated
+					}
 				}
 				return;
 			}
@@ -262,6 +270,7 @@ namespace CollabXR.Objects
 		/// </summary>
 		private void SetSocketLinks()
 		{
+			Debug.Log($"Set Socket Links on {name}, authority {HasStateAuthority}, sockets #{sockets.Length}, links #{socketLinks.Count}");
 			// Do nothing if we have state authority, or no sockets
 			if (HasStateAuthority || sockets.Length == 0)
 			{
@@ -338,6 +347,7 @@ namespace CollabXR.Objects
 			while (toObject == null)
 			{
 				yield return null;
+				Debug.Log("...still attempting to load object for socket");
 				toObject = FindCollabObject(link.toObject);
 			}
 
@@ -345,12 +355,14 @@ namespace CollabXR.Objects
 			// The Coroutine can be cancelled during this time.
 
 			// TODO: I think this would be tons better as an event variable, but that requires other refactoring
-			while (toObject != null && toObject.sockets.Length < link.toSocketIndex)
+			while (toObject != null && (toObject.sockets == null || toObject.sockets.Length < link.toSocketIndex))
 			{
 				yield return null;
+				Debug.Log("...waiting for object sockets to load");
 			}
 			if (toObject == null)
 			{
+				Debug.Log("object destroyed before sockets were loaded");
 				yield break; // Goal object was destroyed, exit coroutine
 			}
 
@@ -361,8 +373,12 @@ namespace CollabXR.Objects
 			// Form connection if possible
 			if (!fromSocket.IsConnected(toSocket) && fromSocket.CanConnect(toSocket))
 			{
-				//Debug.Log(string.Format("Created link {0}:{1} -> {2}:{3}", Id, link.fromSocketIndex, link.toObject, link.toSocketIndex));
+				Debug.Log(string.Format("Created socket link {0}:{1} -> {2}:{3}", Id, link.fromSocketIndex, link.toObject, link.toSocketIndex));
 				fromSocket.Connect(toSocket);
+			}
+			else
+			{
+				Debug.Log("unable to create socket link");
 			}
 		}
 

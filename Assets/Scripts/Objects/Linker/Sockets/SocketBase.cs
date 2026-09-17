@@ -325,7 +325,10 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// </summary>
 		protected virtual void OnConnect(SocketBase otherSocket)
 		{
-			sparks.Play();
+			if (sparks != null)
+			{
+				sparks.Play();
+			}
 		}
 
 		/// <summary>
@@ -333,7 +336,10 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// </summary>
 		protected virtual void OnDisconnect(SocketBase otherSocket)
 		{
-			sparks.Play();
+			if (sparks != null)
+			{
+				sparks.Play();
+			}
 		}
 
 		/// <summary>
