@@ -224,7 +224,6 @@ namespace CollabXR.Tools
 			to.Connect(from);
 			uiErrorObject.SetActive(false);
 			// TODO: Play sound
-			// TODO: Visual particles or something
 		}
 
 		/// <summary>
@@ -237,7 +236,6 @@ namespace CollabXR.Tools
 			to.Disconnect(from);
 			uiErrorObject.SetActive(false);
 			// TODO: Play sound
-			// TODO: Visual particles or something
 		}
 	}
 }

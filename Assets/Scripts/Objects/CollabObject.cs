@@ -294,8 +294,10 @@ namespace CollabXR.Objects
 				SocketBase fromSocket = sockets[i];
 
 				// For each connected socket it is connected TO...
-				foreach (SocketBase toSocket in fromSocket.connections)
+				// Iterate backwards so enumeration does not fail due to changing base array
+				for (int j = fromSocket.connections.Count - 1; j >= 0; j--)
 				{
+					SocketBase toSocket = fromSocket.connections[j];
 					bool connectionDesired = false;
 
 					// Find the respective socket owner and CollabObject...
@@ -309,6 +311,7 @@ namespace CollabXR.Objects
 						// ...and validate that we want the connection.
 						foreach (NetworkLinkerSocketConnection link in socketLinks)
 						{
+							// Link is still synchronized over network, do not drop it
 							if ((int)link.fromSocketIndex == i && link.toObject == toObject.Id && (int)link.toSocketIndex == toSocketId)
 							{
 								connectionDesired = true;
@@ -428,8 +431,10 @@ namespace CollabXR.Objects
 			}
 
 			// Remove any connections that disappeared
-			foreach (NetworkLinkerSocketConnection link in socketLinks)
+			// Iterate backwards so enumeration does not fail due to change
+			for (int i = socketLinks.Count - 1; i >= 0; i--)
 			{
+				NetworkLinkerSocketConnection link = socketLinks[i];
 				if (!connectionList.Contains(link))
 				{
 					socketLinks.Remove(link);
