@@ -1620,6 +1620,9 @@ MonoBehaviour:
   - locationName: Smithsonian
     latitude: 38.8912
     longitude: -77.0259
+  - locationName: Point du Hoc
+    latitude: 49.3964
+    longitude: -0.9889
   locationsDropdown: {fileID: 4182045804050306358}
   zoomText: {fileID: 5088250160449524850}
   exaggerationText: {fileID: 3595069832536730131}
