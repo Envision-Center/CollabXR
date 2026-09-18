@@ -34,7 +34,7 @@ namespace CollabXR.Objects.Linker.Sockets
 		/// </summary>
 		private Dictionary<GameObject, ToggleableObject> toggleListeners = new Dictionary<GameObject, ToggleableObject>();
 
-		public override void Awake()
+		protected override void Awake()
 		{
 			base.Awake();
 			flow = SocketFlowDirection.Consumer;

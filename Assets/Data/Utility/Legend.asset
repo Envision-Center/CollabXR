@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startingScale: {x: 1, y: 1, z: 1}
   minScale: {x: 0.5, y: 0.5, z: 0.5}
-  maxScale: {x: 2, y: 2, z: 2}
+  maxScale: {x: 3, y: 3, z: 3}
   startingOffset: {x: 0, y: 0, z: 0}
   prefab: {fileID: 7825334759644448384, guid: 149332a69a771c14185d9dba662f87aa, type: 3}
   attribution: 
   contextPrefab: {fileID: 0}
   isSimpleModel: 0
   formattedName: Legend
-  category: 
-  assetName: 
+  category: Utility
+  assetName: Legend.asset
   thumbnail: {fileID: 21300000, guid: be646758111cf7c48ad098bf9570888e, type: 3}
   availableOnThisPlatform: 1
   creators: []

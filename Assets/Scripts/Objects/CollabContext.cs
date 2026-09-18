@@ -7,9 +7,15 @@ namespace CollabXR.Objects
 {
 	public class CollabContext : MonoBehaviour
 	{
+		/// <summary>
+		/// The CollabObject associated with this menu.
+		/// </summary>
 		protected CollabObject dataObj;
 		protected CollabContextMenu menuRef;
 
+		/// <summary>
+		/// The icon that represents the context tab.
+		/// </summary>
 		public Sprite menuIcon;
 
 		protected virtual void Update()

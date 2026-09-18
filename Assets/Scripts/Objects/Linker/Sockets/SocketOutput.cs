@@ -5,13 +5,26 @@ using UnityEngine.Events;
 namespace CollabXR.Objects.Linker.Sockets
 {
 	[CreateAssetMenu(fileName = "SocketOutput", menuName = "CollabXR/Sockets/Socket Output")]
+	//[RequireComponent(typeof(SocketAnnotation))] // Throws errors from object previews
 	public class SocketOutput : SocketBase
 	{
 		private SocketAnnotation annotation;
 
+		[SerializeField, Tooltip("Whether to automatically initialize. Only use for built-in prefabs.")]
+		private bool autoInitialize;
+
 		public SocketBehavior behavior
 		{
 			get { return annotation.behavior; }
+		}
+
+		protected override void Awake()
+		{
+			base.Awake();
+			if (autoInitialize)
+			{
+				Initialize(GetComponent<SocketAnnotation>());
+			}
 		}
 
 		/// <summary>
@@ -24,19 +37,19 @@ namespace CollabXR.Objects.Linker.Sockets
 			// Bind to on-change events
 			switch (annotation.behavior)
 			{
-				case SocketBehavior.StaticImage:
-					annotation.c_imageTexture.AddListener(
-						(Texture2D texture) =>
+				case SocketBehavior.Texture:
+					annotation.c_texture.AddListener(
+						(Texture texture) =>
 						{
 							pushTexture.Invoke(texture);
 						}
 					);
 					break;
 				case SocketBehavior.Volumetric:
-					annotation.c_volumeTexture.AddListener(
-						(Texture3D texture) =>
+					annotation.c_texture.AddListener(
+						(Texture texture) =>
 						{
-							pushVolumetric.Invoke(texture, annotation.pointOfReference);
+							pushVolumetric.Invoke(texture as Texture3D, annotation.pointOfReference);
 						}
 					);
 					break;
@@ -64,13 +77,20 @@ namespace CollabXR.Objects.Linker.Sockets
 				case SocketBehavior.ScriptableObject:
 					pushScriptableObject.Invoke(annotation.scriptableObject, annotation.pointOfReference);
 					break;
-				case SocketBehavior.StaticImage:
-					pushTexture.Invoke(annotation.imageTexture);
+				case SocketBehavior.Texture:
+					pushTexture.Invoke(annotation.texture);
 					break;
 				case SocketBehavior.Volumetric:
-					pushVolumetric.Invoke(annotation.volumeTexture, annotation.pointOfReference);
+					pushVolumetric.Invoke(annotation.texture as Texture3D, annotation.pointOfReference);
 					break;
 			}
+			eventConnected.Invoke();
+		}
+
+		protected override void OnDisconnect(SocketBase otherSocket)
+		{
+			base.OnDisconnect(otherSocket);
+			eventDisconnected.Invoke();
 		}
 
 		// TODO: Polling is bad
@@ -84,7 +104,7 @@ namespace CollabXR.Objects.Linker.Sockets
 
 		public UnityEvent<ScriptableObject, Transform> pushScriptableObject = new UnityEvent<ScriptableObject, Transform>();
 		public UnityEvent<float> pushFloat = new UnityEvent<float>();
-		public UnityEvent<Texture2D> pushTexture = new UnityEvent<Texture2D>();
+		public UnityEvent<Texture> pushTexture = new UnityEvent<Texture>();
 		public UnityEvent<Texture3D, Transform> pushVolumetric = new UnityEvent<Texture3D, Transform>();
 
 		private void OnDestroy()

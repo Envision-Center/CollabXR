@@ -105,10 +105,14 @@ namespace CollabXR.Objects.Linker.Sockets
 		[Tooltip("List of sockets we are connected to. Can be preset to connect at startup.")]
 		public List<SocketBase> connections = new List<SocketBase>();
 
-		[NonSerialized]
+		/// <summary>
+		/// Fired upon creating a new connection.
+		/// </summary>
 		public UnityEvent eventConnected = new UnityEvent();
 
-		[NonSerialized]
+		/// <summary>
+		/// Fired upon a connection being removed.
+		/// </summary>
 		public UnityEvent eventDisconnected = new UnityEvent();
 
 		/// <summary>
@@ -125,7 +129,7 @@ namespace CollabXR.Objects.Linker.Sockets
 		private List<LinkVisual> linkVisuals = new List<LinkVisual>();
 
 		// Start is called once before the first execution of Update after the MonoBehaviour is created
-		public virtual void Awake()
+		protected virtual void Awake()
 		{
 			if (flow == SocketFlowDirection.Consumer && connections.Count > 0)
 			{
