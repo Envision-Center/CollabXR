@@ -48,8 +48,7 @@ namespace CollabXR.Objects
 
 			// do binary search based on formattedName
 			int lo = 0;
-			int hi = objectData.Count - 1;
-			int insertIndex = -1;
+			int hi = objectData.Count;
 			while (lo < hi)
 			{
 				int mid = lo + (hi - lo) / 2;
@@ -60,19 +59,10 @@ namespace CollabXR.Objects
 				}
 				else
 				{
-					insertIndex = mid;
 					hi = mid;
 				}
 			}
-
-			if (insertIndex == -1)
-			{
-				objectData.Add(newdata);
-			}
-			else
-			{
-				objectData.Insert(insertIndex, newdata);
-			}
+			objectData.Insert(lo, newdata);
 		}
 	}
 
