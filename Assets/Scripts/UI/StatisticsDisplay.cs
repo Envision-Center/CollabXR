@@ -36,6 +36,7 @@ namespace CollabXR.UI
 				statsStr += $"Bandwith Out: {snapshot.OutBandwidth}\n";
 				statsStr += $"Network Objects: {NetworkManager.networkObjectCount}\n";
 				statsStr += $"Players: {NetworkManager.playerCount}\n";
+				statsStr += $"Brush Strokes: {SessionManager.Instance.brushSubStrokeCount}";
 				statisticsInfo.text = statsStr;
 				lastUpdate = Time.time;
 			}

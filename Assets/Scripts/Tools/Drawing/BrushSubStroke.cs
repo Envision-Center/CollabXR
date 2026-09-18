@@ -122,8 +122,16 @@ namespace CollabXR.Tools.Drawing
 		public override void MarkForDeletion()
 		{
 			base.MarkForDeletion();
-			SpawnableObject parentContainer = transform.parent.GetComponent<SpawnableObject>();
+			SpawnableObject parentContainer = transform.parent?.GetComponent<SpawnableObject>();
 			parentContainer?.MarkForDeletion();
 		}
+
+		public override void OnFirstMarkedForDeletion()
+		{
+			base.OnFirstMarkedForDeletion();
+			SessionManager.Instance.RemoveBrushStroke();
+		}
+
+
 	}
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using CollabXR.Networking;
 using Fusion;
 using UnityEngine;
@@ -35,6 +36,14 @@ namespace CollabXR.Objects
 			if (state == ObjectState.Alive)
 			{
 				state = ObjectState.ShouldBeDeleted;
+				OnFirstMarkedForDeletion();
+			}
+		}
+
+		public virtual void OnFirstMarkedForDeletion() {
+			foreach (SpawnableObject nestedSpawnable in transform.GetComponentsInChildren<SpawnableObject>())
+			{
+				nestedSpawnable?.MarkForDeletion();
 			}
 		}
 
@@ -52,7 +61,7 @@ namespace CollabXR.Objects
 			NetworkManager.Runner.Despawn(Object);
 		}
 
-		public void ParentToOtherCollabObject(CollabObject obj) // for attaching brush containers to objects
+		public void ParentToOtherSpawnableObject(SpawnableObject obj) // for attaching brush containers to objects
 		{
 			myParent = obj;
 			if (Object.IsValid)
