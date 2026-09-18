@@ -46,10 +46,25 @@ namespace CollabXR.Objects
 				return;
 			}
 
-			// finds the first index where the new data should be inserted to maintain sorted order
-			int insertIndex = objectData.FindIndex(
-				d => string.Compare(d.assetName, newdata.assetName, StringComparison.Ordinal) > 0
-			);
+			// do binary search based on formattedName
+			int lo = 0;
+			int hi = objectData.Count - 1;
+			int insertIndex = -1;
+			while (lo < hi)
+			{
+				int mid = lo + (hi - lo) / 2;
+				int cmp = string.Compare(objectData[mid].formattedName, newdata.formattedName, StringComparison.Ordinal);
+				if (cmp < 0)
+				{
+					lo = mid + 1;
+				}
+				else
+				{
+					insertIndex = mid;
+					hi = mid;
+				}
+			}
+
 			if (insertIndex == -1)
 			{
 				objectData.Add(newdata);
