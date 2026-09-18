@@ -33,6 +33,32 @@ namespace CollabXR.Objects
 
 		public string name;
 		public List<CollabObjectData> objectData;
+		
+		/// <summary>
+		/// Add data to the objectData list in sorted position. Assumes objectData is already sorted.
+		/// </summary>
+		/// <param name="data"></param>
+		public void AddSorted(CollabObjectData newdata)
+		{
+			if (objectData.Count == 0)
+			{
+				objectData.Add(newdata);
+				return;
+			}
+
+			// finds the first index where the new data should be inserted to maintain sorted order
+			int insertIndex = objectData.FindIndex(
+				d => string.Compare(d.assetName, newdata.assetName, StringComparison.Ordinal) > 0
+			);
+			if (insertIndex == -1)
+			{
+				objectData.Add(newdata);
+			}
+			else
+			{
+				objectData.Insert(insertIndex, newdata);
+			}
+		}
 	}
 
 #if UNITY_EDITOR
@@ -83,7 +109,7 @@ namespace CollabXR.Objects
 				foreach (string dataFilePath in dataFileNames)
 				{
 					CollabObjectData objectData = BuildData(dataFilePath);
-					objectCategory.objectData.Add(objectData);
+					objectCategory.AddSorted(objectData);
 					EditorUtility.SetDirty(objectData);
 				}
 
