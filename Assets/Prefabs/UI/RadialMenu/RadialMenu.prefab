@@ -1041,13 +1041,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4556255258606080259}
-  m_LocalRotation: {x: 0, y: 0, z: 0.38268343, w: 0.92387956}
+  m_LocalRotation: {x: -0, y: -0, z: 0.9238723, w: 0.38270098}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.53, y: 0.53, z: 0.53}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 557370340218584126}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 45}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 134.998}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 9.21, y: 0}
@@ -1074,14 +1074,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 27f889dcba1d16e4382107e471321a38, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1514,7 +1514,7 @@ MonoBehaviour:
   buttonTransform: {fileID: 557370340218584126}
   buttonImage: {fileID: 3155293054095713243}
   iconImage: {fileID: 5822464020904533714}
-  toolIndex: 0
+  toolIndex: 8
   minAngle: 202.5
   maxAngle: 247.5
   activeButtonColor: {fileID: 11400000, guid: 93c54ff393a90d741ae28805ee65ad00, type: 2}
@@ -1691,6 +1691,7 @@ MonoBehaviour:
   - {fileID: 4689868947358220988}
   - {fileID: 3441572244229050508}
   - {fileID: 1558679207671467405}
+  - {fileID: 6430227039093348422}
   - {fileID: 6898622715668580618}
   - {fileID: 5025774169457372727}
   defaultButton: {fileID: 8571880947701961866}

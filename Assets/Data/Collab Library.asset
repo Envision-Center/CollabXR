@@ -34,7 +34,7 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 0bed972511fc3314787e2ce87085a438, type: 2}
       - {fileID: 11400000, guid: 4070bba0238b5c545ab08a7994cef427, type: 2}
       - {fileID: 11400000, guid: e8babac65414ee048a9d0e18972ccd34, type: 2}
-    - name: Primitives
+    - name: primitives
       objectData:
       - {fileID: 11400000, guid: de954db99c0916a49a853a7b97d7598b, type: 2}
       - {fileID: 11400000, guid: b0ffe646a659ede4ea1706baed31d805, type: 2}
@@ -43,4 +43,7 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 554af3b2ac7dade4b901ca5fed34ca17, type: 2}
     - name: Utility
       objectData:
+      - {fileID: 11400000, guid: aefbda8e96cff324ca3ad9a0c3f95bf9, type: 2}
       - {fileID: 11400000, guid: 67bda9c68fd59b845963fa81832d0519, type: 2}
+      - {fileID: 11400000, guid: c5d5df7b9046c934ebf40fbf351f97f0, type: 2}
+      - {fileID: 11400000, guid: 7fa58e51dc385be4eb296d5b74365673, type: 2}
