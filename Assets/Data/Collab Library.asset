@@ -34,7 +34,7 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 0bed972511fc3314787e2ce87085a438, type: 2}
       - {fileID: 11400000, guid: 4070bba0238b5c545ab08a7994cef427, type: 2}
       - {fileID: 11400000, guid: e8babac65414ee048a9d0e18972ccd34, type: 2}
-    - name: primitives
+    - name: Primitives
       objectData:
       - {fileID: 11400000, guid: de954db99c0916a49a853a7b97d7598b, type: 2}
       - {fileID: 11400000, guid: b0ffe646a659ede4ea1706baed31d805, type: 2}

@@ -116,42 +116,32 @@ namespace CollabXR.Objects
 
 		private void InitializePrefab()
 		{
-			Debug.Log("Called InitializePrefab");
 			Data = FindDataset();
 
-			// This is a built-in object??
+			// Object is not built-in and has not been previously loaded
 			if (Data == null)
 			{
-				Debug.Log(string.Format("InitializePrefab: data was null ({0}:{1})", Category, DataName.Value));
-				// only spawn placeholder if this Object has Data (aka isn't a drawing)
+				// Only spawn placeholder box if this Object has Data (aka isn't a drawing)
 				if (!Category.ToString().IsNullOrEmpty() && DataName.Value.ToString().IsNullOrEmpty())
 				{
+					// Wait for the object to load before finalizing prefab
 					MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
-					FinalizeModPrefab(MainLibraryRef.Instance.placeholderPrefab);
 				}
 				else
 				{
-					Debug.Log("no-op because no category or data name");
-					EnumerateSockets();
-					if (HasStateAuthority)
-					{
-						UpdateSocketLinks();
-					}
-					else
-					{
-						SetSocketLinks(); // Initial socket link state before other changes are replicated
-					}
+					// This is not a mod prefab, likely a brush stroke.
+					// Do not initialize sockets.
 				}
 				return;
 			}
 
 			if (Data.prefab == null) // This is a mod, data must be streamed in
 			{
-				Debug.Log("InitializePrefab: prefab was null");
 				dataRoot = Instantiate(MainLibraryRef.Instance.placeholderPrefab, transform);
 				dataRoot.name = MainLibraryRef.Instance.placeholderPrefab.name;
 				CollabObjectPreview preview = dataRoot.GetComponent<CollabObjectPreview>();
 				preview.LoadData(Data);
+
 				dataRoot.GetComponent<CollabObjectPreview>()?.EnableLoadingAnimation(true, Data.availableOnThisPlatform);
 				dataRoot.GetComponent<CollabObjectPreview>()?.SpawnWithCollider();
 				LoadModPrefab().Forget(); // Finalizes mod as soon as it finishes loading
@@ -159,21 +149,22 @@ namespace CollabXR.Objects
 			}
 
 			// This is a built-in object
-			Debug.Log("InitializePrefab: fallback");
-			FinalizeModPrefab(prefabReference.Value);
+			FinalizeModPrefab(prefabReference?.Value);
 		}
 
 		private async UniTaskVoid LoadModPrefab()
 		{
-			Debug.Log("load mod prefab async");
 			// If this is a mod and not a built-in CollabXR object...
 			if (Data.modGUID != null)
 			{
 				// Waits for mod data to finish loading
 				prefabReference = await ModManager.LoadAsset<GameObject>(Data.modGUID, Data.assetGUID);
+
 				// End the loading animation
 				dataRoot.GetComponent<CollabObjectPreview>()?.EnableLoadingAnimation(false, Data.availableOnThisPlatform);
 				GameObject.Destroy(dataRoot);
+
+				// Perform any final setup as necessary
 				FinalizeModPrefab(prefabReference.Value);
 			}
 		}
@@ -184,16 +175,21 @@ namespace CollabXR.Objects
 		/// <param name="prefab"></param>
 		private void FinalizeModPrefab(GameObject prefab)
 		{
-			Debug.Log("finalize mod prefab: " + prefab.name);
+			Debug.Log("finalize mod prefab: " + prefab?.name);
 			if (prefab != null)
 			{
 				dataRoot = Instantiate(prefab, transform);
 				dataRoot.name = prefab.name;
 				BuildSockets(dataRoot);
 			}
+			// Built-in mods should not need to build sockets at runtime
 
 			EnumerateSockets();
-			if (!HasStateAuthority)
+			if (HasStateAuthority)
+			{
+				UpdateSocketLinks(); // Replicate current socket state to other clients
+			}
+			else
 			{
 				SetSocketLinks(); // Initial socket link state before other changes are replicated
 			}

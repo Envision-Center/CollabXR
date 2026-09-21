@@ -78,6 +78,7 @@ namespace CollabXR.Tools
 			typeof(Animator),
 			typeof(Collider),
 			typeof(Rigidbody),
+			typeof(Camera),
 		};
 
 		private static GameObject InstantiateObjectAsPreview(CollabObjectData data)
