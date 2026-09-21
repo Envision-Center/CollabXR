@@ -23,6 +23,6 @@ MonoBehaviour:
   formattedName: Legend
   category: Utility
   assetName: Legend.asset
-  thumbnail: {fileID: 21300000, guid: be646758111cf7c48ad098bf9570888e, type: 3}
+  thumbnail: {fileID: 21300000, guid: de906ad2facfa1d4391c1626f22fe779, type: 3}
   availableOnThisPlatform: 1
   creators: []
