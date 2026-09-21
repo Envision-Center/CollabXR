@@ -68,7 +68,7 @@ MonoBehaviour:
   m_text: Legend
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 50cc55a9b40b11b4cb9a85d3d17a0f5c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -92,10 +92,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42
-  m_fontSizeBase: 42
+  m_fontSize: 72
+  m_fontSizeBase: 48
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -169,8 +169,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4204814487115600498}
-  - {fileID: 461647090077067454}
   - {fileID: 5935747214163657096}
+  - {fileID: 461647090077067454}
   m_Father: {fileID: 8916752143205439348}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -240,7 +240,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 247
 --- !u!1 &1753392453940579641
 GameObject:
   m_ObjectHideFlags: 0
@@ -289,6 +289,12 @@ MonoBehaviour:
   flow: 1
   singleConnectionOnly: 1
   connections: []
+  eventConnected:
+    m_PersistentCalls:
+      m_Calls: []
+  eventDisconnected:
+    m_PersistentCalls:
+      m_Calls: []
   title: {fileID: 3456002833325345308}
   variableList: {fileID: 5935747214163657096}
   variablePrefab: {fileID: 8810696113982043519, guid: f3a7373a41289364d8e35e5f831e4e99, type: 3}
@@ -326,6 +332,7 @@ GameObject:
   - component: {fileID: 4204814487115600498}
   - component: {fileID: 2053704778883170765}
   - component: {fileID: 7236635415115816428}
+  - component: {fileID: 2074838893627803316}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -372,8 +379,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.30098248, g: 0.32626516, b: 0.3735848, a: 1}
+  m_Material: {fileID: -876546973899608171, guid: 48d01c7ab893e0446997934af09abe7c, type: 3}
+  m_Color: {r: 0.38095403, g: 0.40868634, b: 0.4641509, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -390,6 +397,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2074838893627803316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1985985192777867047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &3507391542127485822
 GameObject:
   m_ObjectHideFlags: 0
@@ -695,7 +716,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5935747214163657096}
   - component: {fileID: 5306941426334459016}
-  m_Layer: 0
+  - component: {fileID: 8737984383911498101}
+  m_Layer: 5
   m_Name: VariableList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -748,6 +770,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &8737984383911498101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8035025012851324602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &8510623088977176423
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,7 +819,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 100}
+  m_SizeDelta: {x: 0, y: 81.62}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6504888338211751562
 CanvasRenderer:
@@ -813,10 +849,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Connect a socket to this using the Linker Tool to view legend information.
+  m_text: 'Connect a data provider to this using the
+
+    Linker Tool to view legend
+    information.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: a35e130ae5d8e9e4583323ea24df7914, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

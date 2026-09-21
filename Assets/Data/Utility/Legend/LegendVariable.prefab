@@ -158,10 +158,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Variable Name
+  m_text: Variable Name That Progressively Gets Longer The More You Write
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: a35e130ae5d8e9e4583323ea24df7914, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -245,9 +245,9 @@ MonoBehaviour:
   m_IgnoreLayout: 0
   m_MinWidth: 120
   m_MinHeight: -1
-  m_PreferredWidth: -1
+  m_PreferredWidth: 240
   m_PreferredHeight: -1
-  m_FlexibleWidth: 0.9
+  m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
 --- !u!1 &8810696113982043519
@@ -260,7 +260,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8008029602708191559}
   - component: {fileID: 6996190255936835125}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: LegendVariable
   m_TagString: Untagged
   m_Icon: {fileID: 0}
