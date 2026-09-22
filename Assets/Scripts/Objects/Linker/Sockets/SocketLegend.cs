@@ -91,7 +91,7 @@ namespace CollabXR.Objects.Linker.Sockets
 
 		private string StringifyNumber(LegendMetadata.Variable legendVariable, float number)
 		{
-			if (legendVariable.precision.Length > 0)
+			if (legendVariable.precision != null && legendVariable.precision.Length > 0)
 			{
 				return number.ToString(legendVariable.precision);
 			}
@@ -170,11 +170,11 @@ namespace CollabXR.Objects.Linker.Sockets
 					GameObject colorObj = Instantiate(variableColorPrefab, variableColors, false);
 					colorObj.GetComponent<Image>().color = color;
 
-					if (useThresholds)
+					if (useThresholds && variable.thresholds.Count > i)
 					{
 						GameObject thresholdLabelObj = Instantiate(variableRangePrefab, colorObj.transform, false);
 						TextMeshProUGUI thresholdLabel = thresholdLabelObj.GetComponent<TextMeshProUGUI>();
-						thresholdLabel.text = $"{StringifyNumber(variable, variable.rangeMaximum)}\n{variable.unit}";
+						thresholdLabel.text = $"{StringifyNumber(variable, variable.thresholds[i])}\n{variable.unit}";
 					}
 				}
 
