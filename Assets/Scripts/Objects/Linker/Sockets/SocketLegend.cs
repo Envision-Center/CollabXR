@@ -89,6 +89,20 @@ namespace CollabXR.Objects.Linker.Sockets
 			toggleListeners.Clear();
 		}
 
+		private string StringifyNumber(LegendMetadata.Variable legendVariable, float number)
+		{
+			if (legendVariable.precision.Length > 0)
+			{
+				return number.ToString(legendVariable.precision);
+			}
+
+			// TODO: automatic could be more intelligent, like using up to 4 sig-figs
+			// However, that kind of sucks to program
+
+			// For now, just use what's provided
+			return $"{number}";
+		}
+
 		public void BuildLegend(ScriptableObject legendObject, Transform pointOfReference)
 		{
 			if (legendObject is LegendMetadata)
@@ -134,30 +148,43 @@ namespace CollabXR.Objects.Linker.Sockets
 				variableLabel.GetComponent<TextMeshProUGUI>().text = variable.name;
 				variableLabel.SetActive(variable.displayLabel);
 
+				// Favor thresholds over ranges if they are provided
+				bool useThresholds = variable.displayValues && variable.thresholds != null && variable.thresholds.Count > 0;
+				// Otherwise, only use ranges
+				bool useRanges = variable.displayValues && !useThresholds;
+
 				// Show range start
-				if (variable.displayValues)
+				if (useRanges)
 				{
-					var rangeLabelObj = Instantiate(variableRangePrefab, variableColors, false);
+					GameObject rangeLabelObj = Instantiate(variableRangePrefab, variableColors, false);
 
 					TextMeshProUGUI rangeLabel = rangeLabelObj.GetComponent<TextMeshProUGUI>();
-					rangeLabel.text = string.Format("{0}{1}", variable.rangeMinimum, variable.unit);
+					rangeLabel.text = StringifyNumber(variable, variable.rangeMinimum) + variable.unit;
 					rangeLabel.alignment = TextAlignmentOptions.MidlineRight;
 				}
 
 				// Construct color list
-				foreach (var color in variable.colors)
+				for (int i = 0; i < variable.colors.Count; i++)
 				{
-					var colorObj = Instantiate(variableColorPrefab, variableColors, false);
+					var color = variable.colors[i];
+					GameObject colorObj = Instantiate(variableColorPrefab, variableColors, false);
 					colorObj.GetComponent<Image>().color = color;
+
+					if (useThresholds)
+					{
+						GameObject thresholdLabelObj = Instantiate(variableRangePrefab, colorObj.transform, false);
+						TextMeshProUGUI thresholdLabel = thresholdLabelObj.GetComponent<TextMeshProUGUI>();
+						thresholdLabel.text = $"{StringifyNumber(variable, variable.rangeMaximum)}\n{variable.unit}";
+					}
 				}
 
 				// Show range end
-				if (variable.displayValues)
+				if (useRanges)
 				{
 					var rangeLabelObj = Instantiate(variableRangePrefab, variableColors, false);
 
 					TextMeshProUGUI rangeLabel = rangeLabelObj.GetComponent<TextMeshProUGUI>();
-					rangeLabel.text = string.Format("{0}{1}", variable.rangeMaximum, variable.unit);
+					rangeLabel.text = StringifyNumber(variable, variable.rangeMaximum) + variable.unit;
 					rangeLabel.alignment = TextAlignmentOptions.MidlineLeft;
 				}
 
