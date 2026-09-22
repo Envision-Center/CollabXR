@@ -1623,6 +1623,9 @@ MonoBehaviour:
   - locationName: Point du Hoc
     latitude: 49.3964
     longitude: -0.9889
+  - locationName: Niagara Falls
+    latitude: 43.0854
+    longitude: -79.0722
   locationsDropdown: {fileID: 4182045804050306358}
   zoomText: {fileID: 5088250160449524850}
   exaggerationText: {fileID: 3595069832536730131}
