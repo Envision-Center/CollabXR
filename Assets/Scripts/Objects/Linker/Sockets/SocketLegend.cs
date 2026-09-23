@@ -144,14 +144,27 @@ namespace CollabXR.Objects.Linker.Sockets
 				GameObject variableLabel = display.transform.GetChild(1).gameObject;
 				Transform variableColors = display.transform.GetChild(0);
 
-				// Set variable name
-				variableLabel.GetComponent<TextMeshProUGUI>().text = variable.name;
-				variableLabel.SetActive(variable.displayLabel);
-
 				// Favor thresholds over ranges if they are provided
 				bool useThresholds = variable.displayValues && variable.thresholds != null && variable.thresholds.Count > 0;
 				// Otherwise, only use ranges
 				bool useRanges = variable.displayValues && !useThresholds;
+
+				// Set variable name
+				TextMeshProUGUI variableTitle = variableLabel.GetComponent<TextMeshProUGUI>();
+
+				// If we're using thresholds, or have no displayed range values, but a unit was specified,
+				// show the unit on the label.
+				if ((useThresholds || !useRanges) && variable.unit != null && variable.unit.Length > 0)
+				{
+					variableTitle.text = $"{variable.name} ({variable.unit})";
+				}
+				else
+				{
+					// Otherwise, unit is either displayed with the ranges, or irrelevant,
+					// so do not display anything.
+					variableTitle.text = variable.name;
+				}
+				variableLabel.SetActive(variable.displayLabel);
 
 				// Show range start
 				if (useRanges)
@@ -174,7 +187,7 @@ namespace CollabXR.Objects.Linker.Sockets
 					{
 						GameObject thresholdLabelObj = Instantiate(variableRangePrefab, colorObj.transform, false);
 						TextMeshProUGUI thresholdLabel = thresholdLabelObj.GetComponent<TextMeshProUGUI>();
-						thresholdLabel.text = $"{StringifyNumber(variable, variable.thresholds[i])}\n{variable.unit}";
+						thresholdLabel.text = StringifyNumber(variable, variable.thresholds[i]);
 					}
 				}
 
