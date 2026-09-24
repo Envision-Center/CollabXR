@@ -1,8 +1,8 @@
 using System;
-using CollabXR.Objects;
-using CollabXR.Tools;
 using CollabXR.ModLoader;
 using CollabXR.ModPackager;
+using CollabXR.Objects;
+using CollabXR.Tools;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -142,13 +142,13 @@ namespace CollabXR.UI
 			if (entered)
 			{
 				CollabObjectData objData = activeCategory.objectData[dataIndex];
-				
+
 				string repositoryName;
 				string version;
 				if (!ModManager.Instance.indexedMods.ContainsKey(objData.modGUID))
-				{
-					Debug.LogError($"Mod with GUID {objData.modGUID} not found in indexed mods. Cannot display info panel.");
-					repositoryName = "Unknown";
+				{ // This prefab is built-in, it has no GUID
+					//Debug.LogError($"Mod with GUID {objData.modGUID} not found in indexed mods. Cannot display info panel.");
+					repositoryName = "CollabXR";
 					version = "Unknown";
 				}
 				else

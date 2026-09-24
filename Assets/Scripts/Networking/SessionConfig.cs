@@ -1,16 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using CollabXR.Environments;
 using CollabXR.ModLoader;
-using CollabXR.Networking;
 using CollabXR.Scriptables;
 using Fusion;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
 using static CollabXR.Networking.NetworkPlayer;
-using static Unity.Collections.Unicode;
 
 namespace CollabXR.Networking
 {
@@ -46,6 +41,7 @@ namespace CollabXR.Networking
 
 		[SerializeField]
 		private ScriptableInt role;
+
 		[SerializeField]
 		private LoadingPopup popupPrefab;
 		private LoadingPopup popup;
@@ -65,13 +61,13 @@ namespace CollabXR.Networking
 		{
 			if (NetworkManager.Instance == null) // waiting for disconnected game
 			{
-				SessionConfig.Instance.ChangeConnectionState(ConnectionState.Lobby);
+				ChangeConnectionState(ConnectionState.Lobby);
 			}
 		}
 
 		public void OnSessionReady(bool ready)
 		{
-			if(ready)
+			if (ready)
 			{
 				onSessionReady.Invoke();
 				onSessionReady.RemoveAllListeners();
@@ -80,7 +76,7 @@ namespace CollabXR.Networking
 
 				if (popup != null)
 				{
-					GameObject.Destroy(popup.gameObject);
+					Destroy(popup.gameObject);
 				}
 			}
 		}
@@ -92,7 +88,7 @@ namespace CollabXR.Networking
 			state = newState;
 			if (statePrefabInstance != null)
 			{
-				GameObject.Destroy(statePrefabInstance);
+				Destroy(statePrefabInstance);
 			}
 			if (state == ConnectionState.Lobby)
 			{
@@ -108,7 +104,7 @@ namespace CollabXR.Networking
 					sessionManagerInstance = NetworkManager.Runner.Spawn(sessionManager);
 				}
 
-				if(!sessionReady)
+				if (!sessionReady)
 				{
 					popup = Instantiate(popupPrefab);
 				}
