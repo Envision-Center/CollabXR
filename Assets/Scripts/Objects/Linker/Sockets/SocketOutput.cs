@@ -107,14 +107,15 @@ namespace CollabXR.Objects.Linker.Sockets
 		public UnityEvent<Texture> pushTexture = new UnityEvent<Texture>();
 		public UnityEvent<Texture3D, Transform> pushVolumetric = new UnityEvent<Texture3D, Transform>();
 
-		private void OnDestroy()
+		protected override void OnDestroy()
 		{
+			base.OnDestroy();
+
+			// Unbind socket annotation listeners
 			pushScriptableObject.RemoveAllListeners();
 			pushFloat.RemoveAllListeners();
 			pushTexture.RemoveAllListeners();
 			pushVolumetric.RemoveAllListeners();
-
-			Debug.Log("SOCKET OUTPUT: OnDestroy finished");
 		}
 
 		/// <typeparam name="T"></typeparam>

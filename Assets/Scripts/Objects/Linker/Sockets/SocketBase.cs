@@ -116,6 +116,11 @@ namespace CollabXR.Objects.Linker.Sockets
 		public UnityEvent eventDisconnected = new UnityEvent();
 
 		/// <summary>
+		/// Fired upon a socket being destroyed.
+		/// </summary>
+		public UnityEvent<SocketBase> eventDestroyed = new UnityEvent<SocketBase>();
+
+		/// <summary>
 		/// An instanced icon placed at the the socket.
 		/// </summary>
 		private GameObject icon;
@@ -195,9 +200,10 @@ namespace CollabXR.Objects.Linker.Sockets
 			}
 		}
 
-		private void OnDestroy()
+		protected virtual void OnDestroy()
 		{
 			LinkerConfig.Instance.socketViewers.RemoveListener(SocketViewersChanged);
+			eventDestroyed.Invoke(this); // Notify other sockets that we've been destroyed
 			DisconnectAll();
 		}
 
@@ -217,6 +223,8 @@ namespace CollabXR.Objects.Linker.Sockets
 			}
 
 			// If we're a data provider, just disconnect ourselves from our inputs
+			// Note: A provider may not be aware of its actual connection list,
+			// due to how connection hiearchy is handled.
 			for (int i = connections.Count - 1; i >= 0; i--)
 			{
 				connections[i].Disconnect(this);
@@ -279,7 +287,6 @@ namespace CollabXR.Objects.Linker.Sockets
 			dataProvider.OnConnect(this);
 
 			connections.Add(dataProvider);
-			Debug.Log("SOCKET CONNECTED!!!");
 
 			// Create connection visual
 			GameObject visualObj = Instantiate(LinkerConfig.Instance.prefabConnection, transform, false);
@@ -289,7 +296,19 @@ namespace CollabXR.Objects.Linker.Sockets
 			linkVisuals.Add(visual);
 			visualObj.SetActive(LinkerConfig.Instance.socketViewers.Value > 0);
 
+			dataProvider.eventDestroyed.AddListener(DisconnectWithoutResponse);
+
 			eventConnected.Invoke();
+		}
+
+		/// <summary>
+		/// Internal use only. Literally just Disconnect but with a void return type.
+		/// Used for automatically disconnecting data providers when they are destroyed.
+		/// </summary>
+		/// <param name="dataProvider"></param>
+		private void DisconnectWithoutResponse(SocketBase dataProvider)
+		{
+			Disconnect(dataProvider);
 		}
 
 		/// <summary>
@@ -310,6 +329,8 @@ namespace CollabXR.Objects.Linker.Sockets
 			OnDisconnect(dataProvider);
 
 			dataProvider.connections.Remove(this); // Remove connection to provider
+			// Remove listener for destruction event
+			dataProvider.eventDestroyed.RemoveListener(DisconnectWithoutResponse);
 
 			// Remove connection visual
 			int popIndex = connections.IndexOf(dataProvider);
