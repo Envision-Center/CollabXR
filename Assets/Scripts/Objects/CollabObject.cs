@@ -175,7 +175,6 @@ namespace CollabXR.Objects
 		/// <param name="prefab"></param>
 		private void FinalizeModPrefab(GameObject prefab)
 		{
-			Debug.Log("finalize mod prefab: " + prefab?.name);
 			if (prefab != null)
 			{
 				dataRoot = Instantiate(prefab, transform);
@@ -258,7 +257,6 @@ namespace CollabXR.Objects
 				socket.eventConnected.AddListener(UpdateSocketLinks);
 				socket.eventDisconnected.AddListener(UpdateSocketLinks);
 			}
-			//Debug.Log($"Sockets enumerated ({sockets.Length}): {sockets}");
 		}
 
 		/// <summary>
@@ -346,7 +344,7 @@ namespace CollabXR.Objects
 			while (toObject == null)
 			{
 				yield return null;
-				Debug.Log("...still attempting to load object for socket");
+				//Debug.Log("...still attempting to load object for socket");
 				toObject = FindCollabObject(link.toObject);
 			}
 
@@ -357,11 +355,11 @@ namespace CollabXR.Objects
 			while (toObject != null && (toObject.sockets == null || toObject.sockets.Length < link.toSocketIndex))
 			{
 				yield return null;
-				Debug.Log("...waiting for object sockets to load");
+				//Debug.Log("...waiting for object sockets to load");
 			}
 			if (toObject == null)
 			{
-				Debug.Log("object destroyed before sockets were loaded");
+				//Debug.Log("object destroyed before sockets were loaded");
 				yield break; // Goal object was destroyed, exit coroutine
 			}
 
