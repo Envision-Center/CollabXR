@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using CollabXR.Tools;
 using CollabXR.VR;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR;
 
 namespace CollabXR.UI
@@ -19,6 +21,13 @@ namespace CollabXR.UI
 
 		[SerializeField]
 		private RectTransform cursorTransform;
+
+		[SerializeField]
+		private TextMeshProUGUI toolTipText;
+
+		[SerializeField]
+		private RectTransform toolTipMask;
+		private Image toolTipImage;
 
 		[Header("Timing")]
 		[SerializeField]
@@ -54,6 +63,9 @@ namespace CollabXR.UI
 		private float pressStartTime;
 		private Vector3 openScale;
 
+		private float openToolTipX;
+		private float originalPPUMultiplier;
+
 		private RadialMenuButton selectedButton;
 		private Vector3 startHandPosition;
 		private Vector3 startMenuGlobalPosition;
@@ -65,7 +77,10 @@ namespace CollabXR.UI
 		private void Awake()
 		{
 			openScale = transform.localScale;
+			openToolTipX = toolTipMask.sizeDelta.x;
 			transform.localScale = Vector3.zero;
+			toolTipImage = toolTipMask.GetComponent<Image>();
+			originalPPUMultiplier = toolTipImage.pixelsPerUnitMultiplier;
 
 			handRef = this.GetRigHandRef();
 			handRef.Hand.AddListenerAndCheck(SubscribeToHand);
@@ -239,7 +254,7 @@ namespace CollabXR.UI
 			{
 				selectedButton?.OnDeselected();
 				selectedButton = newSelection;
-				selectedButton.OnSelected(hand.isRight);
+				toolTipText.text = selectedButton.OnSelected(hand.isRight);
 			}
 		}
 
@@ -283,8 +298,28 @@ namespace CollabXR.UI
 				return;
 			}
 
+			toolTipMask.sizeDelta = new Vector2(0, toolTipMask.sizeDelta.y);
+
 			openAnimFinished = true;
-			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));
+			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t), OpenTooltip);
+		}
+
+		private void OpenTooltip()
+		{
+			this.GenericTween(
+				toolTipMask,
+				0f,
+				openToolTipX,
+				openCloseTweenDuration,
+				openCloseEaseType,
+				x =>
+				{
+					toolTipMask.sizeDelta = new Vector2(x, toolTipMask.sizeDelta.y);
+					toolTipImage.pixelsPerUnitMultiplier = originalPPUMultiplier;
+					toolTipImage.SetAllDirty();
+				},
+				(a, b, t) => Mathf.Lerp(a, b, t)
+			);
 		}
 
 		private void OnMenuClose()
