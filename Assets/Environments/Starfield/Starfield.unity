@@ -298,9 +298,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1420286677}
-  - component: {fileID: 1420286679}
   - component: {fileID: 1420286678}
   - component: {fileID: 1420286680}
+  - component: {fileID: 1420286681}
   m_Layer: 0
   m_Name: env
   m_TagString: Untagged
@@ -341,31 +341,8 @@ MonoBehaviour:
     info:
       name: Starfield
       thumbnail: {fileID: 21300000, guid: 0f19eca42cef70e42b9563b9d72fa4c8, type: 3}
+  passthroughEvents: {fileID: 0}
   skyboxOnInPassthrough: 1
---- !u!114 &1420286679
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1420286676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47c3d8fff41da5f46af6037ed538bf20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  disabledInPassthrough:
-  - {fileID: 566782203}
-  enabledInPassthrough: []
-  onPassthroughChange:
-    m_PersistentCalls:
-      m_Calls: []
-  onPassthroughEnabled:
-    m_PersistentCalls:
-      m_Calls: []
-  onPassthroughDisabled:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &1420286680
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -380,6 +357,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lightingConfig: {fileID: 11400000, guid: 23753e020f6920b41b3d342d06d05013, type: 2}
   activateOnEnable: 1
+--- !u!114 &1420286681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1420286676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb47c44f246b0644e8ff81df424b136f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disabledInPassthrough:
+  - {fileID: 566782203}
+  enabledInPassthrough: []
+  onPassthroughChange:
+    m_PersistentCalls:
+      m_Calls: []
+  onPassthroughEnabled:
+    m_PersistentCalls:
+      m_Calls: []
+  onPassthroughDisabled:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1950706261
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,9 +487,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b92bea0bae76aef46b0ce9eac6e18dab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OnMeshDestroyed:
-    m_PersistentCalls:
-      m_Calls: []
   filters:
   - {fileID: 3699400095374481561}
 --- !u!1660057539 &9223372036854775807
