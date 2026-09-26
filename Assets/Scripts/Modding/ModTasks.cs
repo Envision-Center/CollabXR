@@ -4,9 +4,22 @@ using System.Runtime.CompilerServices;
 
 namespace CollabXR.ModLoader
 {
+	internal enum TaskLoadStatus
+	{
+		Pending,
+		Failed,
+		Completed
+	}
+
+	/// <summary>
+	/// Responsible for loading a specified mod, use await ModLoadTask to wait for mod load
+	/// </summary>
+	/// <remarks>
+	///	ModLoadTask calls ModManager.LoadMod which can fail, always use in try catch block
+	/// </remarks>
 	internal class ModLoadTask
 	{
-		internal bool IsLoaded = false;
+		internal TaskLoadStatus status;
 
 		internal Guid modUuid { get; set; }
 
@@ -16,12 +29,14 @@ namespace CollabXR.ModLoader
 		{
 			this.modUuid = modUuid;
 
+			status = TaskLoadStatus.Pending;
+
 			ModManager.Instance.LoadMod(this);
 		}
 
 		internal void NotifyModReady()
 		{
-			IsLoaded = true;
+			status = TaskLoadStatus.Completed;
 
 			foreach (ModLoadTaskAwaiter awaiter in awaiters)
 			{
@@ -29,9 +44,23 @@ namespace CollabXR.ModLoader
 			}
 		}
 
+		/// <summary>
+		/// Notify the awaiters and suspend any asset load requests waiting on this mod via an exception
+		/// </summary>
+		/// <param name="ex"></param>
+		internal void NotifyModFailedToLoad(Exception ex)
+		{
+			status = TaskLoadStatus.Failed;
+
+			foreach (ModLoadTaskAwaiter awaiter in awaiters)
+			{
+				awaiter.NotifyModFailed(ex);
+			}
+		}
+
 		public ModLoadTaskAwaiter GetAwaiter()
 		{
-			ModLoadTaskAwaiter newAwaiter = new ModLoadTaskAwaiter(this);
+			ModLoadTaskAwaiter newAwaiter = new(this);
 
 			awaiters.Add(newAwaiter);
 
@@ -42,17 +71,20 @@ namespace CollabXR.ModLoader
 	internal class ModLoadTaskAwaiter : INotifyCompletion
 	{
 		ModLoadTask activeModLoadTask;
-
+		List<Exception> exceptions;
 		Action continuationAction;
 
 		public ModLoadTaskAwaiter(ModLoadTask activeModLoadTask)
 		{
 			this.activeModLoadTask = activeModLoadTask;
-
-			this.IsCompleted = this.activeModLoadTask.IsLoaded;
+			exceptions = new();
+			this.IsCompleted = this.activeModLoadTask.status == TaskLoadStatus.Completed;
 			this.continuationAction = null;
 		}
 
+		/// <summary>
+		/// Continues the code past the await ModLoadTask
+		/// </summary>
 		internal void NotifyModReady()
 		{
 			this.IsCompleted = true;
@@ -60,16 +92,33 @@ namespace CollabXR.ModLoader
 			this.continuationAction?.Invoke();
 		}
 
-		public Guid GetResult() => this.activeModLoadTask.modUuid;
+		/// <summary>
+		/// Continues the code past the await ModLoadTask, but immediately throws the encountered error
+		/// </summary>
+		/// <param name="ex"></param>
+		internal void NotifyModFailed(Exception ex)
+		{
+			this.IsCompleted = true;
+			exceptions.Add(ex);
+
+			this.continuationAction?.Invoke();
+		}
+
+		// Required by Inotifycompletion, called when continuationAction is invoked
+		public Guid GetResult()
+		{
+			if (exceptions.Count > 0)
+			{
+				throw new AggregateException($"Errors occured while loading mod {activeModLoadTask}.", exceptions);
+			}
+			return this.activeModLoadTask.modUuid;
+		}
 
 		public bool IsCompleted { get; internal set; }
 
 		public void OnCompleted(Action continuation)
 		{
 			this.continuationAction = continuation;
-
-			if (this.IsCompleted)
-				this.continuationAction?.Invoke();
 		}
 	}
 
@@ -78,11 +127,13 @@ namespace CollabXR.ModLoader
 		IAssetReference assetReference { get; set; }
 
 		void NotifyAssetReady();
+
+		void NotifyAssetFailedToLoad();
 	}
 
 	internal class AssetPointerLoadTask<T> : IAssetPointerLoadTask
 	{
-		internal bool IsLoaded = false;
+		internal TaskLoadStatus status;
 
 		public IAssetReference assetReference { get; set; }
 
@@ -97,12 +148,19 @@ namespace CollabXR.ModLoader
 
 		public void NotifyAssetReady()
 		{
-			IsLoaded = true;
+			status = TaskLoadStatus.Completed;
 
 			foreach (AssetPointerLoadTaskAwaiter<T> awaiter in awaiters)
 			{
 				awaiter.NotifyAssetReady();
 			}
+		}
+
+		public void NotifyAssetFailedToLoad()
+		{
+			status = TaskLoadStatus.Failed;
+
+			awaiters.Clear();
 		}
 
 		public AssetPointerLoadTaskAwaiter<T> GetAwaiter()
@@ -125,7 +183,7 @@ namespace CollabXR.ModLoader
 		{
 			this.activeAssetPointerLoadTask = activeAssetPointerLoadTask;
 
-			this.IsCompleted = this.activeAssetPointerLoadTask.IsLoaded;
+			this.IsCompleted = this.activeAssetPointerLoadTask.status == TaskLoadStatus.Completed;
 			this.continuationAction = null;
 		}
 
