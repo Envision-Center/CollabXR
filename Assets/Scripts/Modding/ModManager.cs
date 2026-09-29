@@ -691,13 +691,19 @@ namespace CollabXR.ModLoader
 		/// If a mod is updated in the source repository, this should ensure that
 		/// the next spawn pulls the new asset bundle instead of the cached one.
 		/// </summary>
-		/// <param name="modUuid"></param>
+		/// <param name="clearLoadedMods">Specify if should remove mod from loaded mods, useful when you need to clear mod
+		/// cache but cannot immediately reload it</param>
 		/// <exception cref="Exception"></exception>
-		public static void ClearModAssetCache(Guid modUuid)
+		public static void ClearModAssetCache(Guid modUuid, bool clearLoadedMods = false)
 		{
 			if (!Instance.indexedMods.ContainsKey(modUuid))
 			{
 				throw new Exception($"Mod with UUID ${modUuid} not found");
+			}
+
+			if (clearLoadedMods)
+			{
+				Instance.loadedMods.Remove(modUuid);
 			}
 
 			foreach (Guid assetUuid in Instance.indexedMods[modUuid].Item1.AssetMap.Keys)
