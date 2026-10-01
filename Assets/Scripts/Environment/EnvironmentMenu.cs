@@ -2,6 +2,7 @@ using CollabXR.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using CollabXR.EnvironmentExtras;
 
 namespace CollabXR.Environments
 {
