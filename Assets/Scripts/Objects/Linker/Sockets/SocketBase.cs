@@ -1,0 +1,401 @@
+using System;
+using System.Collections.Generic;
+using Fusion;
+using Unity.XR.CoreUtils;
+using UnityEngine;
+using UnityEngine.Events;
+
+namespace CollabXR.Objects.Linker.Sockets
+{
+	/// <summary>
+	/// How data is piped through this socket.
+	/// </summary>
+	public enum SocketFlowDirection
+	{
+		/// <summary>
+		/// Data is pushed OUT of this socket. Can only be connected to inputs.
+		/// </summary>
+		Provider = 0,
+
+		/// <summary>
+		/// Data is pushed INTO this socket. Can only be connected to outputs.
+		/// </summary>
+		Consumer = 1,
+	}
+
+	///// <summary>
+	///// What kind of data is being passed through this socket.
+	///// </summary>
+	//public enum SocketDataType
+	//{
+	//	/// <summary>
+	//	/// Used for real-time graphing, describing states.
+	//	/// Placeholder.
+	//	/// </summary>
+	//	Integer = 0,
+
+	//	/// <summary>
+	//	/// Used for real-time graphing, processing, etc.
+	//	/// Placeholder.
+	//	/// </summary>
+	//	Float = 1,
+
+	//	/// <summary>
+	//	/// Pass a 3D vector. Useful for 3D computation.
+	//	/// Placeholder.
+	//	/// </summary>
+	//	Vector3 = 2,
+
+	//	/// <summary>
+	//	/// Pass a world-space 4x4 transformation matrix. Useful for handheld tools.
+	//	/// Placeholder.
+	//	/// </summary>
+	//	Matrix = 3,
+
+	//	/// <summary>
+	//	/// Used for static images, video feeds, etc.
+	//	/// Placeholder.
+	//	/// </summary>
+	//	Texture2D = 4,
+
+	//	/// <summary>
+	//	/// Used for volumetric data visualization, like volume slicing.
+	//	/// We may want to pass additional data with this, like a transform and volume boundaries.
+	//	/// Placeholder.
+	//	/// </summary>
+	//	Texture3D = 5,
+
+	//	/// <summary>
+	//	/// Used for real-time audio data (that can maybe be processed?).
+	//	/// Placeholder.
+	//	/// </summary>
+	//	AudioStream = 6,
+
+	//	/// <summary>
+	//	/// Pass a generic data structure, such as metadata.
+	//	/// </summary>
+	//	ScriptableObject = 7,
+	//}
+
+	/// <summary>
+	/// Base class for sockets.
+	/// A socket is used to pipe data from one Prefab to another, or within a single prefab.
+	/// Sockets can be connected via the Linker tool.
+	///
+	/// Most often, the base socket will need to be inherited by another socket to add functionality.
+	/// </summary>
+	public class SocketBase : MonoBehaviour
+	{
+		[Tooltip("The direction that data flows through this socket. Most mods will require data to flow outward, rather than inward.")]
+		public SocketFlowDirection flow = SocketFlowDirection.Provider;
+
+		/// <summary>
+		/// If true, the socket can only be connected to one thing at a time.
+		/// Adding a new connection will clear existing ones.
+		/// This is only properly supported for Data Consumers.
+		/// </summary>
+		[SerializeField]
+		protected bool singleConnectionOnly = false;
+
+		/// <summary>
+		/// List of sockets we are connected to.
+		/// If this list is populated before startup, and this is an input socket,
+		/// the socket will automatically attempt to form those connections.
+		/// </summary>
+		[Tooltip("List of sockets we are connected to. Can be preset to connect at startup.")]
+		public List<SocketBase> connections = new List<SocketBase>();
+
+		/// <summary>
+		/// Fired upon creating a new connection.
+		/// </summary>
+		public UnityEvent eventConnected = new UnityEvent();
+
+		/// <summary>
+		/// Fired upon a connection being removed.
+		/// </summary>
+		public UnityEvent eventDisconnected = new UnityEvent();
+
+		/// <summary>
+		/// Fired upon a socket being destroyed.
+		/// </summary>
+		public UnityEvent<SocketBase> eventDestroyed = new UnityEvent<SocketBase>();
+
+		/// <summary>
+		/// An instanced icon placed at the the socket.
+		/// </summary>
+		private GameObject icon;
+
+		private ParticleSystem sparks;
+
+		/// <summary>
+		/// LineRenderer transforms representing links.
+		/// </summary>
+		//[SerializeField]
+		private List<LinkVisual> linkVisuals = new List<LinkVisual>();
+
+		// Start is called once before the first execution of Update after the MonoBehaviour is created
+		protected virtual void Awake()
+		{
+			if (flow == SocketFlowDirection.Consumer && connections.Count > 0)
+			{
+				// Swap out connection list so it does not appear that we have any connections initially
+				List<SocketBase> oldConnections = connections;
+				connections = new List<SocketBase>();
+
+				// Now attempt to connect to each socket
+				foreach (SocketBase socket in connections)
+				{
+					if (CanConnect(socket))
+					{
+						Connect(socket);
+					}
+				}
+			}
+
+			// Ensure sockets are on the correct layer
+			gameObject.SetLayerRecursively(LayerMask.NameToLayer("LinkSocket"));
+
+			// Ensure sockets have a corresponding collider for linking with
+			SphereCollider collider;
+			if (!TryGetComponent(out collider))
+			{
+				collider = gameObject.AddComponent<SphereCollider>();
+			}
+			collider.radius = 0.2f;
+			collider.isTrigger = false;
+			collider.providesContacts = true;
+
+			// Add connection sparks
+			GameObject sparksObj = Instantiate(LinkerConfig.Instance.prefabSocketSparksConnection, transform, false);
+			sparks = sparksObj.GetComponent<ParticleSystem>();
+
+			// Add a preview icon
+			icon = Instantiate(LinkerConfig.Instance.prefabSocket, transform, false);
+			UpdateSocketColor(); // Set the socket color
+			SocketViewersChanged(LinkerConfig.Instance.socketViewers.Value); // Show socket immediately
+
+			// Bind event for viewing sockets
+			LinkerConfig.Instance.socketViewers.AddListener(SocketViewersChanged);
+		}
+
+		protected virtual Color GetSocketColor()
+		{
+			return LinkerConfig.Instance.colorConsumer;
+		}
+
+		protected void UpdateSocketColor()
+		{
+			icon.GetComponent<MeshRenderer>().material.SetColor("_Tint", GetSocketColor());
+			var sparksMain = sparks.main;
+			sparksMain.startColor = GetSocketColor();
+		}
+
+		private void SocketViewersChanged(int newViewerCount)
+		{
+			bool visible = newViewerCount > 0;
+			icon.SetActive(visible);
+			foreach (LinkVisual item in linkVisuals)
+			{
+				item.gameObject.SetActive(visible);
+			}
+		}
+
+		protected virtual void OnDestroy()
+		{
+			LinkerConfig.Instance.socketViewers.RemoveListener(SocketViewersChanged);
+			eventDestroyed.Invoke(this); // Notify other sockets that we've been destroyed
+			DisconnectAll();
+		}
+
+		/// <summary>
+		/// Disconnects all connected sockets.
+		/// </summary>
+		protected void DisconnectAll()
+		{
+			// If we're an input socket, disconnect all attached outputs
+			if (flow == SocketFlowDirection.Consumer)
+			{
+				for (int i = connections.Count - 1; i >= 0; i--)
+				{
+					Disconnect(connections[i]);
+				}
+				return;
+			}
+
+			// If we're a data provider, just disconnect ourselves from our inputs
+			// Note: A provider may not be aware of its actual connection list,
+			// due to how connection hiearchy is handled.
+			for (int i = connections.Count - 1; i >= 0; i--)
+			{
+				connections[i].Disconnect(this);
+			}
+		}
+
+		/// <summary>
+		/// Determines whether this socket can accept input from the given socket.
+		/// This can be overridden for subclasses like monitors.
+		/// </summary>
+		/// <param name="otherSocket">The socket to test against.</param>
+		/// <returns>Whether or not this socket can receive data from the other socket.</returns>
+		public virtual bool CanConnect(SocketBase otherSocket)
+		{
+			if (otherSocket == null)
+			{
+				Debug.LogError("Linker Tool: Called CanConnect with a null reference!");
+				return false;
+			}
+			// Make sure we support the data type,
+			// that the data flows in the right direction,
+			// and that the connection does not already exist
+			//Debug.Log(string.Format("CanConnect: {0}, {1}, {2}", otherSocket != null, otherSocket?.flow != flow, !connections.Contains(otherSocket)));
+			return otherSocket != null && otherSocket.flow != flow && !connections.Contains(otherSocket);
+		}
+
+		/// <summary>
+		/// Determines whether this socket is connected to the other one.
+		/// </summary>
+		/// <param name="otherSocket"></param>
+		/// <returns>True if outputting to that socket.</returns>
+		public bool IsConnected(SocketBase otherSocket)
+		{
+			return connections.Contains(otherSocket);
+		}
+
+		/// <summary>
+		/// Attempts to connect the output socket to this input one.
+		/// Should only be called on Data Consumers.
+		/// <br/>
+		/// THIS DOES NOT VALIDATE WHETHER THE SOCKETS ARE CONNECTABLE BEFOREHAND.
+		/// Please call CanConnectTo beforehand to determine whether this connection attempt should even be permitted.
+		/// </summary>
+		/// <param name="otherSocket">Socket to perform the connection to.</param>
+		public void Connect(SocketBase dataProvider)
+		{
+			if (dataProvider == null)
+			{
+				Debug.Log("Linker Tool: Connection failed, data provider was null!");
+				return;
+			}
+
+			if (singleConnectionOnly)
+			{
+				// Only one provider/consumer relationship is permitted for the legend
+				DisconnectAll();
+			}
+
+			OnConnect(dataProvider);
+			dataProvider.OnConnect(this);
+
+			connections.Add(dataProvider);
+
+			// Create connection visual
+			GameObject visualObj = Instantiate(LinkerConfig.Instance.prefabConnection, transform, false);
+			LinkVisual visual = visualObj.GetComponent<LinkVisual>();
+			visual.pointA = transform;
+			visual.pointB = dataProvider.transform;
+			linkVisuals.Add(visual);
+			visualObj.SetActive(LinkerConfig.Instance.socketViewers.Value > 0);
+
+			dataProvider.eventDestroyed.AddListener(DisconnectWithoutResponse);
+
+			eventConnected.Invoke();
+		}
+
+		/// <summary>
+		/// Internal use only. Literally just Disconnect but with a void return type.
+		/// Used for automatically disconnecting data providers when they are destroyed.
+		/// </summary>
+		/// <param name="dataProvider"></param>
+		private void DisconnectWithoutResponse(SocketBase dataProvider)
+		{
+			Disconnect(dataProvider);
+		}
+
+		/// <summary>
+		/// Disconnects this socket from the other one.
+		/// Should only be called on Data Consumers.
+		/// </summary>
+		/// <param name="dataProvider"></param>
+		/// <returns></returns>
+		public bool Disconnect(SocketBase dataProvider)
+		{
+			// Ensure it was not already connected
+			if (!connections.Contains(dataProvider))
+			{
+				return false;
+			}
+
+			dataProvider.OnDisconnect(this);
+			OnDisconnect(dataProvider);
+
+			dataProvider.connections.Remove(this); // Remove connection to provider
+			// Remove listener for destruction event
+			dataProvider.eventDestroyed.RemoveListener(DisconnectWithoutResponse);
+
+			// Remove connection visual
+			int popIndex = connections.IndexOf(dataProvider);
+			Destroy(linkVisuals[popIndex].gameObject);
+			linkVisuals.RemoveAt(popIndex);
+
+			// Finally, remove actual connection
+			connections.Remove(dataProvider);
+
+			eventDisconnected.Invoke();
+
+			return true;
+		}
+
+		/// <summary>
+		/// Emitted when this socket is connected to another.
+		/// </summary>
+		protected virtual void OnConnect(SocketBase otherSocket)
+		{
+			if (sparks != null)
+			{
+				sparks.Play();
+			}
+		}
+
+		/// <summary>
+		/// Emitted when this socket is disconnected from another.
+		/// </summary>
+		protected virtual void OnDisconnect(SocketBase otherSocket)
+		{
+			if (sparks != null)
+			{
+				sparks.Play();
+			}
+		}
+
+		/// <summary>
+		/// Returns the NetworkID of the parent NetworkObject, if any.
+		/// </summary>
+		/// <returns></returns>
+		public NetworkObject GetNetworkObject()
+		{
+			return _GetNetworkObject(transform);
+		}
+
+		/// <summary>
+		/// Slowly walks up the chain of transforms to find the NetworkId.
+		/// </summary>
+		/// <param name="from"></param>
+		/// <returns>The NetworkId of the ancestor NetworkObject, or a blank NetworkId</returns>
+		private NetworkObject _GetNetworkObject(Transform from)
+		{
+			if (from == null)
+			{
+				// Invalid network ID
+				Debug.LogError("No network object found for the given socket!");
+				return null;
+			}
+
+			NetworkObject obj;
+			if (from.TryGetComponent(out obj))
+			{
+				return obj;
+			}
+			return _GetNetworkObject(from.parent);
+		}
+	}
+}

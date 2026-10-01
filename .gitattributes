@@ -1,6 +1,6 @@
-/Assets/Data/Veterinary/Raw/HeadSeg.obj filter=lfs diff=lfs merge=lfs -text
-/Assets/Data/Veterinary/Raw/SkullSeg.obj filter=lfs diff=lfs merge=lfs -text
-*.obj filter=lfs diff=lfs merge=lfs -text
 *.exr filter=lfs diff=lfs merge=lfs -text
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.tga filter=lfs diff=lfs merge=lfs -text
+
+# Very simple .obj files do not need to be tracked with LFS. They are ASCII anyway.
+# If a large OBJ file is imported, use the exact filepath instead.
