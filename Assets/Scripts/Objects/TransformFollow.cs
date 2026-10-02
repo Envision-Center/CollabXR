@@ -29,10 +29,10 @@ namespace CollabXR.Objects
 
 		private void LateUpdate()
 		{
-			Vector3 targetPos = transform.TransformPoint(transform.InverseTransformPoint(target.position) - localOffset.position);
-			transform.position = Vector3.Lerp(transform.position, targetPos, translationLerp);
 			Quaternion targetRot = target.rotation * localOffset.rotation;
 			transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, rotationLerp);
+			Vector3 targetPos = transform.TransformPoint(transform.InverseTransformPoint(target.position) - localOffset.position);
+			transform.position = Vector3.Lerp(transform.position, targetPos, translationLerp);
 		}
 
 		private void OnEnable()

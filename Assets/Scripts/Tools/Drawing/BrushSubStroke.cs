@@ -10,17 +10,17 @@ namespace CollabXR.Tools.Drawing
 	{
 		private RibbonMesh strokeMesh;
 
-		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(32)]
+		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(128)]
 		private NetworkLinkedList<Vector3> ribbonPoints => default;
 
-		[Networked, Capacity(32)]
+		[Networked, Capacity(128)]
 		private NetworkLinkedList<Vector3> ribbonEulerAngles => default;
 
 		[Networked]
 		private float ribbonWeight { get; set; }
 
-		[Networked]
-		private Color32 ribbonColor { get; set; }
+		[Networked, Capacity(128)]
+		private NetworkLinkedList<Color32> ribbonColors => default;
 
 		private NetworkObject intendedParent;
 
@@ -56,13 +56,19 @@ namespace CollabXR.Tools.Drawing
 			int verts = ribbonPoints.Count;
 			for (int i = strokeMesh.PointCount; i < verts; i++)
 			{
-				strokeMesh.AddRibbonPoint(ribbonPoints[i], Quaternion.Euler(ribbonEulerAngles[i]), ribbonWeight, ribbonColor);
+				strokeMesh.AddRibbonPoint(ribbonPoints[i], Quaternion.Euler(ribbonEulerAngles[i]), ribbonWeight, ribbonColors[i]);
 			}
+			strokeMesh.UpdateGeometry();
+
 			if (verts < 1)
+			{
 				return;
+			}
 
 			if (intendedParent != null)
+			{
 				transform.parent = intendedParent.transform;
+			}
 		}
 
 		public int GetCapacityRemaining()
@@ -70,26 +76,25 @@ namespace CollabXR.Tools.Drawing
 			return ribbonPoints.Capacity - ribbonPoints.Count;
 		}
 
-		public void Init(Color32 color, float weight)
+		public void Init(float weight)
 		{
 			if (!Object.HasStateAuthority)
 			{
 				return;
 			}
 
-			ribbonColor = color;
 			ribbonWeight = weight;
 		}
 
-		public bool AddStrokePoint(Vector3 point, Quaternion rotation)
+		public void AddStrokePoint(Vector3 point, Quaternion rotation, Color color)
 		{
 			Vector3 localPoint = transform.InverseTransformPoint(point);
 			ribbonPoints.Add(localPoint);
 			ribbonEulerAngles.Add(rotation.eulerAngles);
+			ribbonColors.Add(color);
 
 			//SetDirty();
 			UpdateStrokeRenderer();
-			return true;
 		}
 
 		public void SetLastPoint(Vector3 point, Quaternion rotation)

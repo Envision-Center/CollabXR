@@ -175,8 +175,8 @@ GameObject:
   m_Component:
   - component: {fileID: 301029487184452376}
   - component: {fileID: 5700465014286447280}
-  - component: {fileID: 5700465014286447281}
   - component: {fileID: 5700465014286447282}
+  - component: {fileID: 5700465014286447283}
   m_Layer: 0
   m_Name: env
   m_TagString: Untagged
@@ -6904,30 +6904,8 @@ MonoBehaviour:
     info:
       name: Statue
       thumbnail: {fileID: 21300000, guid: c3b294c55ab052c43a4a6095d6ff6c85, type: 3}
+  passthroughEvents: {fileID: 0}
   skyboxOnInPassthrough: 0
---- !u!114 &5700465014286447281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 253023841177342797}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47c3d8fff41da5f46af6037ed538bf20, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  disabledInPassthrough: []
-  enabledInPassthrough: []
-  onPassthroughChange:
-    m_PersistentCalls:
-      m_Calls: []
-  onPassthroughEnabled:
-    m_PersistentCalls:
-      m_Calls: []
-  onPassthroughDisabled:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &5700465014286447282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6942,6 +6920,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lightingConfig: {fileID: 11400000, guid: 23753e020f6920b41b3d342d06d05013, type: 2}
   activateOnEnable: 1
+--- !u!114 &5700465014286447283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 253023841177342797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb47c44f246b0644e8ff81df424b136f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  disabledInPassthrough: []
+  enabledInPassthrough: []
+  onPassthroughChange:
+    m_PersistentCalls:
+      m_Calls: []
+  onPassthroughEnabled:
+    m_PersistentCalls:
+      m_Calls: []
+  onPassthroughDisabled:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &6137606169994283670
 GameObject:
   m_ObjectHideFlags: 0

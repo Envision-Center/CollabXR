@@ -19,9 +19,6 @@ inputs:
 
 # https://docs.github.com/en/actions/tutorials/create-actions/create-a-composite-action#creating-an-action-metadata-file
 outputs:
-  os:
-    description: "What operating system this action is currently running on."
-    value: ${{ steps.sys-info.outputs.os-name }}
   unity:
     description: "Install path of Unity"
     value: ${{ steps.get-unity-path.outputs.UNITY_PATH }}
@@ -42,13 +39,6 @@ runs:
       shell: bash
       run: cp -r ~/Photon ${{ inputs.photon-install-path }}
 
-    # Figure out which OS we're running without having to pass it down a chain
-    # This allows us to run on Windows, Linux or Mac without much interruption
-    # https://github.com/marketplace/actions/os-information#-usage-examples
-    - name: Collect System Information
-      uses: lexbritvin/os-info-action@v1
-      id: sys-info
-
     - name: Install Unity Editor
       shell: bash
       run: ${{ inputs.unity-hub }} -- --headless install --version ${{ inputs.unity-version }} || echo "Unity already installed"
@@ -57,16 +47,8 @@ runs:
       shell: bash
       run: ${{ inputs.unity-hub }} -- --headless install-modules --version ${{ inputs.unity-version }} --module windows-mono mac-mono android --childModules || echo "Unity modules already installed"
 
-    # - name: Get Unity Editor Executable Paths for Windows
-    #   if: ${{ steps.sys-info.outputs.os-name == 'Windows' }}
-    #   id: get-unity-path
-    #   shell: pwsh
-    #   run: |
-    #     echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-    #     echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
     - name: Get Unity Editor Executable Paths for MacOS
-      # if: ${{ steps.sys-info.outputs.os-name == 'macOS' }}
+      # if: ${{ runner.os == 'macOS' }}
       id: get-unity-path
       shell: bash
       run: |
@@ -75,8 +57,17 @@ runs:
         export ANDROID_SDKMANAGER_PATH="$(${{ inputs.unity-hub }} -- --headless install-path)/${{ inputs.unity-version }}/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager"
         echo "ANDROID_SDKMANAGER_PATH=${ANDROID_SDKMANAGER_PATH}" >> "$GITHUB_OUTPUT"
 
+    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-variables#detecting-the-operating-system
+    # - name: Get Unity Editor Executable Paths for Windows
+    #   if: ${{ runner.os == 'Windows' }}
+    #   id: get-unity-path
+    #   shell: pwsh
+    #   run: |
+    #     echo "UNITY_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Unity.exe\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+    #     echo "ANDROID_SDKMANAGER_PATH=\"C:/Program Files/Unity/Hub/Editor/${{ inputs.unity-version }}/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/cmdline-tools/16.0/bin/sdkmanager.bat\"" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
     # - name: Get Unity Editor Executable Paths for Linux
-    #   if: ${{ steps.sys-info.outputs.os-name == 'Linux' }}
+    #   if: ${{ runner.os == 'Linux' }}
     #   id: get-unity-path
     #   shell: bash
     #   run: |

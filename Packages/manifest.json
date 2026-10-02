@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "com.adamgryu.inspectorhistory": "https://github.com/adamgryu/InspectorHistory-Unity.git",
-    "com.atteneder.gltfast": "6.15.0",
-    "com.cesium.unity": "1.21.0",
+    "com.atteneder.gltfast": "6.20.0",
+    "com.cesium.unity": "1.26.0",
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.meta.xr.depthapi": "https://github.com/oculus-samples/Unity-DepthAPI.git?path=/Packages/com.meta.xr.depthapi",
     "com.meta.xr.depthapi.urp": "https://github.com/oculus-samples/Unity-DepthAPI.git?path=/Packages/com.meta.xr.depthapi.urp",

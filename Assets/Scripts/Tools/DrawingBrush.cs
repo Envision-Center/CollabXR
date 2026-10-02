@@ -10,6 +10,7 @@ using NetworkPlayer = CollabXR.Networking.NetworkPlayer;
 namespace CollabXR.Tools
 {
 	[DefaultExecutionOrder(50)]
+	[RequireComponent(typeof(OverlapTracker))]
 	public class DrawingBrush : MonoBehaviour
 	{
 		[SerializeField]
@@ -21,7 +22,20 @@ namespace CollabXR.Tools
 		[SerializeField]
 		private GameObject substrokePrefab;
 
+		[SerializeField]
+		private Renderer brushTip;
+		private MaterialPropertyBlock brushTipPropertyBlock;
+
+		[SerializeField]
+		private Transform radialIndicator;
+		private OverlapTracker overlapTracker;
+
 		public bool IsDrawing { get; set; }
+
+		private void Awake()
+		{
+			overlapTracker = GetComponent<OverlapTracker>();
+		}
 
 		public void SetIsDrawing(bool isDrawing)
 		{
@@ -49,6 +63,9 @@ namespace CollabXR.Tools
 		[SerializeField]
 		private float baseStrokeWeight = 0.02f;
 
+		[SerializeField]
+		private float radialIndicatorOffset = 0.43f;
+
 		public void SetHueFromColorWheelDirection(Vector2 direction)
 		{
 			if (direction.magnitude < 0.8f)
@@ -56,6 +73,35 @@ namespace CollabXR.Tools
 
 			float hue = Mathf.Atan2(-direction.x, -direction.y) / (2 * Mathf.PI) + 0.5f;
 			StrokeColor = Color.HSVToRGB(hue, 1, 1);
+
+			MoveRadialIndicator(direction);
+
+			SetBrushTipColor();
+		}
+
+		private void MoveRadialIndicator(Vector2 direction)
+		{
+			if (radialIndicator == null)
+				return;
+
+			direction = direction.normalized * radialIndicatorOffset;
+			Vector3 radialDirection = new(direction.x, direction.y, radialIndicator.localPosition.z);
+			radialIndicator.localPosition = radialDirection;
+		}
+
+		private void SetBrushTipColor()
+		{
+			if (brushTip == null)
+				return;
+
+			brushTipPropertyBlock ??= new MaterialPropertyBlock();
+			brushTipPropertyBlock.SetColor("_BaseColor", StrokeColor);
+			brushTip.SetPropertyBlock(brushTipPropertyBlock);
+		}
+
+		private void OnEnable()
+		{
+			SetBrushTipColor();
 		}
 
 		public void BeginStroke()
@@ -84,7 +130,8 @@ namespace CollabXR.Tools
 
 			currentSubStroke = spawnedStroke.GetComponent<BrushSubStroke>();
 			currentSubStroke.SetParent(currentStrokeContainer);
-			currentSubStroke.Init(StrokeColor, baseStrokeWeight);
+			currentSubStroke.Init(baseStrokeWeight);
+			overlapTracker.ignoreObject = currentSubStroke.gameObject;
 
 			currentSubStroke.name += currentWholeStroke.Count;
 
@@ -115,11 +162,18 @@ namespace CollabXR.Tools
 		public void SetStrokeParentFromObject(GameObject obj)
 		{
 			CollabObject c = obj?.GetComponentInParent<CollabObject>();
+			BrushSubStroke b = obj?.GetComponentInParent<BrushSubStroke>();
+			CollabObject bContainer = b?.GetComponentInParent<CollabObject>();
 			NetworkObject netObj = obj?.GetComponentInParent<NetworkObject>();
 
 			if (c != null && c.HasData) // is a valid collab object with data
 			{
 				intersectedObject = c;
+				CheckOverlaps();
+			}
+			else if (b != null && bContainer != null) // is a valid brush stroke with a container
+			{
+				intersectedObject = bContainer;
 				CheckOverlaps();
 			}
 			else if (obj == null)
@@ -143,7 +197,7 @@ namespace CollabXR.Tools
 				return;
 			}
 
-			currentSubStroke.AddStrokePoint(brushTipTransform.position, brushTipTransform.rotation);
+			currentSubStroke.AddStrokePoint(brushTipTransform.position, brushTipTransform.rotation, StrokeColor);
 
 			if (currentSubStroke.GetCapacityRemaining() == 0)
 			{
@@ -167,6 +221,7 @@ namespace CollabXR.Tools
 			{
 				currentSubStroke.SetLastPoint(brushTipTransform.position, brushTipTransform.rotation);
 				currentSubStroke = null;
+				overlapTracker.ignoreObject = null;
 			}
 			currentWholeStroke.Clear();
 			currentStrokeContainer = null;

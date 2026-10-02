@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using CollabXR.Tools;
 using CollabXR.VR;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR;
 
 namespace CollabXR.UI
@@ -14,11 +16,18 @@ namespace CollabXR.UI
 		[SerializeField]
 		private List<RadialMenuButton> buttons = new();
 
-		[SerializeField]
+		[SerializeField, Tooltip("Tool that is automatically selected upon button tap if the menu is not opened.")]
 		private RadialMenuButton defaultButton;
 
 		[SerializeField]
 		private RectTransform cursorTransform;
+
+		[SerializeField]
+		private TextMeshProUGUI toolTipText;
+
+		[SerializeField]
+		private RectTransform toolTipMask;
+		private Image toolTipImage;
 
 		[Header("Timing")]
 		[SerializeField]
@@ -54,6 +63,9 @@ namespace CollabXR.UI
 		private float pressStartTime;
 		private Vector3 openScale;
 
+		private float openToolTipX;
+		private float originalPPUMultiplier;
+
 		private RadialMenuButton selectedButton;
 		private Vector3 startHandPosition;
 		private Vector3 startMenuGlobalPosition;
@@ -65,7 +77,10 @@ namespace CollabXR.UI
 		private void Awake()
 		{
 			openScale = transform.localScale;
+			openToolTipX = toolTipMask.sizeDelta.x;
 			transform.localScale = Vector3.zero;
+			toolTipImage = toolTipMask.GetComponent<Image>();
+			originalPPUMultiplier = toolTipImage.pixelsPerUnitMultiplier;
 
 			handRef = this.GetRigHandRef();
 			handRef.Hand.AddListenerAndCheck(SubscribeToHand);
@@ -86,13 +101,17 @@ namespace CollabXR.UI
 		public void SubscribeToHand(RigHand newHand)
 		{
 			if (subscribed)
+			{
 				Unsubscribe();
+			}
 
 			hand = newHand;
 			handNotNull = newHand != null;
 
 			if (handNotNull)
+			{
 				Subscribe();
+			}
 		}
 
 		private void Subscribe()
@@ -136,10 +155,27 @@ namespace CollabXR.UI
 			}
 		}
 
+		/// <summary>
+		/// Forcibly switches to the default tool. Closes menu if it is currently open.
+		/// Note: this method is bound to by the Spawner tool in the Tool Palette prefab.
+		/// </summary>
+		public void SwitchToDefault()
+		{
+			isPressed = false;
+			if (isMenuOpen)
+			{
+				OnMenuClose();
+				isMenuOpen = false;
+			}
+			defaultButton.OnClicked(hand.isRight);
+		}
+
 		private void Update()
 		{
 			if (!isPressed)
+			{
 				return;
+			}
 
 			if (!isMenuOpen && Time.time - pressStartTime >= holdThreshold)
 			{
@@ -148,7 +184,9 @@ namespace CollabXR.UI
 			}
 
 			if (isPressed && isMenuOpen && openAnimFinished)
+			{
 				UpdateSelection();
+			}
 		}
 
 		private void LateUpdate()
@@ -196,9 +234,11 @@ namespace CollabXR.UI
 
 			if (distance >= selectDistance)
 			{
-				float tiltAngle = Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 360f / (Mathf.PI * 2f);
+				float tiltAngle = Mathf.Atan2(tiltAxis.x, tiltAxis.y) * 180f / Mathf.PI;
 				if (tiltAngle < 0f)
+				{
 					tiltAngle += 360f;
+				}
 
 				foreach (var button in buttons)
 				{
@@ -214,7 +254,7 @@ namespace CollabXR.UI
 			{
 				selectedButton?.OnDeselected();
 				selectedButton = newSelection;
-				selectedButton.OnSelected(hand.isRight);
+				toolTipText.text = selectedButton.OnSelected(hand.isRight);
 			}
 		}
 
@@ -241,19 +281,45 @@ namespace CollabXR.UI
 
 			var palette = ToolPalette.Get(hand.isRight);
 			if (palette != null)
+			{
 				palette.DeEquipTool(() => CompleteAnim(requestId));
+			}
 			else
+			{
 				CompleteAnim(requestId);
+			}
 		}
 
 		private void CompleteAnim(int requestId)
 		{
 			// The tool deequip animation driving this can finish so ignore it unless its still for the current open
 			if (!isMenuOpen || requestId != openRequestId)
+			{
 				return;
+			}
+
+			toolTipMask.sizeDelta = new Vector2(0, toolTipMask.sizeDelta.y);
 
 			openAnimFinished = true;
-			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t));
+			this.GenericTween(transform, transform.localScale, openScale, openCloseTweenDuration, openCloseEaseType, v => transform.localScale = v, (a, b, t) => Vector3.Lerp(a, b, t), OpenTooltip);
+		}
+
+		private void OpenTooltip()
+		{
+			this.GenericTween(
+				toolTipMask,
+				0f,
+				openToolTipX,
+				openCloseTweenDuration,
+				openCloseEaseType,
+				x =>
+				{
+					toolTipMask.sizeDelta = new Vector2(x, toolTipMask.sizeDelta.y);
+					toolTipImage.pixelsPerUnitMultiplier = originalPPUMultiplier;
+					toolTipImage.SetAllDirty();
+				},
+				(a, b, t) => Mathf.Lerp(a, b, t)
+			);
 		}
 
 		private void OnMenuClose()

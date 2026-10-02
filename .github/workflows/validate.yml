@@ -48,7 +48,7 @@ jobs:
 
       - name: Setup CollabXR
         id: setup
-        uses: ./.github/composite/collabxr
+        uses: ./.github/composite/setup
         with:
           unity-hub: "/Applications/Unity\\ Hub.app/Contents/MacOS/Unity\\ Hub"
           unity-version: ${{ vars.UNITY_VERSION }}

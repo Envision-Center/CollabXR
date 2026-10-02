@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,6 +31,15 @@ namespace CollabXR.Tools.Drawing
 			ClearRibbon();
 		}
 
+		/// <summary>
+		/// Adds a single point to the internal mesh buffer.
+		/// Does not apply it to the mesh directly, to avoid repeated copies.
+		/// Call UpdateGeometry to finalize the mesh.
+		/// </summary>
+		/// <param name="position"></param>
+		/// <param name="rotation"></param>
+		/// <param name="width"></param>
+		/// <param name="color"></param>
 		public void AddRibbonPoint(Vector3 position, Quaternion rotation, float width, Color32 color)
 		{
 			// Calculate vertices + normal for ribbon point
@@ -65,11 +74,12 @@ namespace CollabXR.Tools.Drawing
 				triangles.Add(vertices.Count - 3);
 			}
 
-			// Update the mesh
-			UpdateGeometry();
 			PointCount++;
 		}
 
+		/// <summary>
+		/// Clears all mesh buffers, and clears the GPU mesh buffer as well.
+		/// </summary>
 		public void ClearRibbon()
 		{
 			vertices.Clear();
@@ -89,7 +99,10 @@ namespace CollabXR.Tools.Drawing
 			normal = rotation * Vector3.up;
 		}
 
-		private void UpdateGeometry()
+		/// <summary>
+		/// Copies the current mesh buffers to the GPU.
+		/// </summary>
+		public void UpdateGeometry()
 		{
 			bool validMesh = vertices.Count >= 4;
 

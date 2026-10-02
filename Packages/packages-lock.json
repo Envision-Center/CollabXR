@@ -8,20 +8,20 @@
       "hash": "3e7f8c52eb46548aa6c55db054112fab4ec48211"
     },
     "com.atteneder.gltfast": {
-      "version": "6.15.0",
+      "version": "6.20.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
+        "com.unity.burst": "1.8.30",
+        "com.unity.collections": "2.6.8",
+        "com.unity.mathematics": "1.3.3",
         "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.unitywebrequest": "1.0.0",
-        "com.unity.mathematics": "1.2.6",
-        "com.unity.burst": "1.8.24",
-        "com.unity.collections": "1.2.4"
+        "com.unity.modules.unitywebrequest": "1.0.0"
       },
       "url": "https://package.openupm.com"
     },
     "com.cesium.unity": {
-      "version": "1.21.0",
+      "version": "1.26.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -123,7 +123,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.burst": {
-      "version": "1.8.29",
+      "version": "1.8.30",
       "depth": 1,
       "source": "registry",
       "dependencies": {
