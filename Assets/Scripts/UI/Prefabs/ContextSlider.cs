@@ -8,17 +8,17 @@ namespace CollabXR.UI.Prefabs
 	{
 		[Header("Prefab")]
 #if UNITY_EDITOR
-		[SerializeField]
+		[SerializeField, Tooltip("Label to use for displaying name on slider.")]
 		private TMP_Text label;
 
-		[SerializeField]
+		[SerializeField, Tooltip("Slider to bind to.")]
 		private Slider slider;
 #endif
 
-		[SerializeField]
+		[SerializeField, Tooltip("Label to use for number display.")]
 		private TMP_Text readout;
 
-		[SerializeField]
+		[SerializeField, Tooltip("Number formatting for display.")]
 		private string stringFormat = "0.00u";
 
 		public void UpdateReadout(float newValue)

@@ -23,60 +23,6 @@ namespace CollabXR.Objects.Linker.Sockets
 		Consumer = 1,
 	}
 
-	///// <summary>
-	///// What kind of data is being passed through this socket.
-	///// </summary>
-	//public enum SocketDataType
-	//{
-	//	/// <summary>
-	//	/// Used for real-time graphing, describing states.
-	//	/// Placeholder.
-	//	/// </summary>
-	//	Integer = 0,
-
-	//	/// <summary>
-	//	/// Used for real-time graphing, processing, etc.
-	//	/// Placeholder.
-	//	/// </summary>
-	//	Float = 1,
-
-	//	/// <summary>
-	//	/// Pass a 3D vector. Useful for 3D computation.
-	//	/// Placeholder.
-	//	/// </summary>
-	//	Vector3 = 2,
-
-	//	/// <summary>
-	//	/// Pass a world-space 4x4 transformation matrix. Useful for handheld tools.
-	//	/// Placeholder.
-	//	/// </summary>
-	//	Matrix = 3,
-
-	//	/// <summary>
-	//	/// Used for static images, video feeds, etc.
-	//	/// Placeholder.
-	//	/// </summary>
-	//	Texture2D = 4,
-
-	//	/// <summary>
-	//	/// Used for volumetric data visualization, like volume slicing.
-	//	/// We may want to pass additional data with this, like a transform and volume boundaries.
-	//	/// Placeholder.
-	//	/// </summary>
-	//	Texture3D = 5,
-
-	//	/// <summary>
-	//	/// Used for real-time audio data (that can maybe be processed?).
-	//	/// Placeholder.
-	//	/// </summary>
-	//	AudioStream = 6,
-
-	//	/// <summary>
-	//	/// Pass a generic data structure, such as metadata.
-	//	/// </summary>
-	//	ScriptableObject = 7,
-	//}
-
 	/// <summary>
 	/// Base class for sockets.
 	/// A socket is used to pipe data from one Prefab to another, or within a single prefab.

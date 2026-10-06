@@ -13,9 +13,7 @@ namespace CollabXR.Objects
 		protected CollabObject dataObj;
 		protected CollabContextMenu menuRef;
 
-		/// <summary>
-		/// The icon that represents the context tab.
-		/// </summary>
+		[Tooltip("The icon that represents the context tab.")]
 		public Sprite menuIcon;
 
 		protected virtual void Update()
