@@ -11,7 +11,7 @@ namespace CollabXR.Tools.Drawing
 		private RibbonMesh strokeMesh;
 
 		// every point's position, rotation and color lives compressed in here
-		// Fusion reserves the full capacity per spawned object however little the stroke holds, so every substroke pays it
+		// Fusion reserves the full capacity per spawned object however little the stroke holds, so every substroke has it
 		[Networked, OnChangedRender(nameof(OnPointsChanged)), Capacity(BrushStrokeSchema.StreamWords)]
 		private NetworkArray<int> packedStrokeWords => default;
 
