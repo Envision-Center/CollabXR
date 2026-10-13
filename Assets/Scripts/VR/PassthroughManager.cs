@@ -1,6 +1,6 @@
 using CollabXR.Desktop;
 using CollabXR.Environments;
-using CollabXR.EnvironmentExtras;
+using CollabXR.ModPackager.EnvironmentExtras;
 using CollabXR.ModExtras;
 using Meta.XR.EnvironmentDepth;
 using UnityEngine;
