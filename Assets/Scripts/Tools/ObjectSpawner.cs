@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using CollabXR.ModLoader;
 using CollabXR.Networking;
 using CollabXR.Objects;
+using Cysharp.Threading.Tasks;
 using Fusion;
 using Fusion.Addons.Physics;
 using UnityEngine;
@@ -13,6 +15,10 @@ namespace CollabXR.Tools
 	{
 		[SerializeField]
 		private GameObject simpleModelContainer;
+
+		[SerializeField]
+		[Tooltip("Container used instead of the simple one when the object's root has a Rigidbody.")]
+		private GameObject rigidbodyModelContainer;
 
 		public Vector3 defaultSpawnPos;
 
@@ -201,9 +207,35 @@ namespace CollabXR.Tools
 				return;
 			}
 
-			GameObject objectToSpawn = data.isSimpleModel ? simpleModelContainer : data.prefab;
+			SpawnObjectAsync(data, position, rotation).Forget();
+		}
 
-			CollabObjectData spawnedData = data;
+		private async UniTaskVoid SpawnObjectAsync(CollabObjectData data, Vector3 position, Quaternion rotation)
+		{
+			AssetReference<GameObject> preloadedPrefab = null;
+			GameObject objectToSpawn = data.prefab;
+
+			if (data.isSimpleModel)
+			{
+				// Mods have to be loaded here so we know whether they need a physics container before spawning
+				if (data.prefab == null)
+				{
+					preloadedPrefab = await TryPreloadMod(data);
+				}
+
+				GameObject source = preloadedPrefab != null ? preloadedPrefab.Value : data.prefab;
+				objectToSpawn = GetContainerFor(source);
+			}
+
+			// The session may have ended while the mod was loading
+			if (NetworkManager.Runner == null || !NetworkManager.Runner.IsRunning)
+			{
+				if (preloadedPrefab != null)
+				{
+					ModManager.ReleaseAsset(preloadedPrefab);
+				}
+				return;
+			}
 
 			NetworkManager.Runner.Spawn(
 				objectToSpawn,
@@ -214,9 +246,55 @@ namespace CollabXR.Tools
 				{
 					// Debug.Log("Setting data before spawn " + spawnedData.assetFolder + "/" + spawnedData.assetName);
 					CollabObject collabObject = newObject.GetComponent<CollabObject>();
-					collabObject.SetNetworkedData(spawnedData.category, spawnedData.assetName);
+					collabObject.SetNetworkedData(data.category, data.assetName);
+
+					if (preloadedPrefab != null)
+					{
+						collabObject.UsePreloadedPrefab(preloadedPrefab);
+					}
 				}
 			);
+		}
+
+		/// <summary>
+		/// Loads a mod's prefab ahead of spawning. Returns null on failure so the spawned object
+		/// falls back to loading it itself and shows its usual failure state.
+		/// </summary>
+		private static async UniTask<AssetReference<GameObject>> TryPreloadMod(CollabObjectData data)
+		{
+			try
+			{
+				AssetReference<GameObject> reference = await ModManager.LoadAsset<GameObject>(data.modGUID, data.assetGUID);
+
+				if (reference.Value != null)
+				{
+					return reference;
+				}
+
+				ModManager.ReleaseAsset(reference);
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Could not preload {data.category}/{data.assetName}: {e.Message}");
+			}
+
+			return null;
+		}
+
+		private GameObject GetContainerFor(GameObject prefab)
+		{
+			if (prefab == null || prefab.GetComponent<Rigidbody>() == null)
+			{
+				return simpleModelContainer;
+			}
+
+			if (rigidbodyModelContainer == null)
+			{
+				Debug.LogWarning($"No rigidbody container assigned, spawning {prefab.name} without physics.");
+				return simpleModelContainer;
+			}
+
+			return rigidbodyModelContainer;
 		}
 	}
 }
