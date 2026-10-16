@@ -18,7 +18,7 @@ namespace CollabXR.Objects
 		[Networked, OnChangedRender(nameof(NetworkScaleChanged))]
 		public Vector3 nonUniformNetworkScale { get; set; } = Vector3.zero; // the sliders start at zero lol
 
-		CollabObject collabObject;
+		CollabObjectData data;
 		NetworkGrabbable grabbable;
 		public event Action OnNonUniformScaleChange;
 
@@ -29,22 +29,9 @@ namespace CollabXR.Objects
 
 		public bool ScalingLocked { get; set; }
 
-		/// <summary>
-		/// How many times larger this object's volume is than its unscaled size.
-		/// </summary>
-		public float VolumeScale
-		{
-			get
-			{
-				Vector3 nonUniform = nonUniformNetworkScale;
-				float uniform = uniformNetworkScale;
-				return uniform * uniform * uniform * Mathf.Pow(10.0f, nonUniform.x + nonUniform.y + nonUniform.z);
-			}
-		}
-
 		public override void Spawned()
 		{
-			collabObject = GetComponent<CollabObject>();
+			data = GetComponent<CollabObject>().GetData();
 			grabbable = GetComponent<NetworkGrabbable>();
 			if (Object.HasStateAuthority)
 			{
@@ -67,12 +54,6 @@ namespace CollabXR.Objects
 		/// <returns>Constrained scaling value</returns>
 		private float ConstrainUniformScale(float newScale)
 		{
-			CollabObjectData data = collabObject.GetData();
-
-			// The limits aren't known until this client has the object's data, so hold the current scale until then
-			if (data == null)
-				return uniformNetworkScale;
-
 			// TODO: use a single float for min/max uniform scaling. Requires mod packaging/loading updates
 			return Mathf.Clamp(newScale, Mathf.Max(data.minScale.x, data.minScale.y, data.minScale.z), Mathf.Min(data.maxScale.x, data.maxScale.y, data.maxScale.z));
 		}
