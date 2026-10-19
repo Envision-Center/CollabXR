@@ -1766,7 +1766,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99da4c428448d5f468f40517a11faa18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grabber: {fileID: 5855145888110705639}
   uiErrorObject: {fileID: 8212292423577501930}
   uiErrorGroup: {fileID: 1517502567099925718}
   uiErrorText: {fileID: 2492511149313119328}
@@ -3853,6 +3852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simpleModelContainer: {fileID: 7825334759644448384, guid: 148f886104e80104894bad66a47b9e4f, type: 3}
+  rigidbodyModelContainer: {fileID: 1254412799563704998, guid: f45eb6fee97a00045aa8820c3fe2d8b5, type: 3}
   defaultSpawnPos: {x: 0, y: 0, z: 0}
   DataToSpawn:
     variableValue: {fileID: 0}
