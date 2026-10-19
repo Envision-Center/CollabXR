@@ -19,10 +19,6 @@ namespace CollabXR
 	public class NetworkRigidbodyAdapter : ModNetworkBehaviour, IPhysicsBody, IStateAuthorityChanged
 	{
 		[SerializeField]
-		[Tooltip("Number of recent frames averaged to get the velocity an object is thrown with.")]
-		private int throwSampleFrames = 5;
-
-		[SerializeField]
 		[Tooltip("Minimum impact speed for this body to take authority over an unheld body it hits.")]
 		private float contactAuthoritySpeed = 0.1f;
 
@@ -50,7 +46,10 @@ namespace CollabXR
 		private NetworkGrabbable grabbable;
 		private NetworkScalable scalable;
 		private ThrowVelocityEstimator throwEstimator;
+		private ThrowTuning throwTuning;
 		private PhysicsScaleMode scaleMode;
+		private float gravityScale = 1f;
+		private RigidbodyBasicConfig ownConfig;
 		private bool authoredIsKinematic;
 		private bool heldLocally;
 		private float lastVolume;
@@ -99,7 +98,7 @@ namespace CollabXR
 				if (HasAuthority)
 				{
 					NetworkedUseGravity = value;
-					body.useGravity = value;
+					RefreshGravity();
 				}
 				else
 				{
@@ -159,7 +158,10 @@ namespace CollabXR
 			body = GetComponent<Rigidbody>();
 			grabbable = GetComponent<NetworkGrabbable>();
 			scalable = GetComponent<NetworkScalable>();
-			throwEstimator = new ThrowVelocityEstimator(throwSampleFrames);
+			throwEstimator = new ThrowVelocityEstimator();
+
+			// Captured before NetworkRigidbody3D forces nonauthority copies kinematic in Spawned
+			ownConfig = RigidbodyBasicConfig.Capture(body);
 
 			if (grabbable != null)
 			{
@@ -184,6 +186,14 @@ namespace CollabXR
 		{
 			if (heldLocally)
 				throwEstimator.AddSample(transform.position, transform.rotation, Time.time);
+		}
+
+		private void FixedUpdate()
+		{
+			if (!UsesScaledGravity() || !HasAuthority || body.isKinematic || !NetworkedUseGravity)
+				return;
+
+			body.AddForce(UnityEngine.Physics.gravity * gravityScale, ForceMode.Acceleration);
 		}
 
 		public override void FixedUpdateNetwork()
@@ -234,7 +244,7 @@ namespace CollabXR
 		{
 			if (IsReady && HasAuthority)
 			{
-				body.useGravity = NetworkedUseGravity;
+				RefreshGravity();
 			}
 		}
 
@@ -256,17 +266,65 @@ namespace CollabXR
 
 			GameObject modRoot = obj.DataRoot;
 
-			if (modRoot == null || !modRoot.TryGetComponent(out Rigidbody source))
+			if (modRoot != null && modRoot.TryGetComponent(out Rigidbody source))
 			{
-				Debug.LogWarning($"{name} has no Rigidbody on its mod root, leaving it kinematic.");
+				ReadSettings(modRoot.GetComponent<PhysicsBodySettings>());
+				TakeOver(source);
+			}
+			else if (IsBuiltIn())
+			{
+				ReadSettings(GetComponent<PhysicsBodySettings>());
+				AdoptOwnBody();
+			}
+			else
+			{
+				// A mod that is still loading which fires again once the real prefab is in place
 				return;
 			}
 
-			scaleMode = modRoot.TryGetComponent(out PhysicsBodySettings settings) ? settings.ScaleMode : PhysicsScaleMode.ScaleMassWithVolume;
-
-			TakeOver(source);
+			RefreshGravity();
 			SetUpScaling();
 			IsReady = true;
+		}
+
+		/// <summary>
+		/// Objects built into collab use their own rigidbody instead of deriving from the mod, so needs a special case.
+		/// </summary>
+		private bool IsBuiltIn()
+		{
+			CollabObjectData data = obj.GetData();
+			return data != null && data.prefab != null;
+		}
+
+		private void ReadSettings(PhysicsBodySettings settings)
+		{
+			if (settings == null)
+			{
+				scaleMode = PhysicsScaleMode.ScaleMassWithVolume;
+				gravityScale = 1f;
+				throwTuning = new ThrowTuning();
+				return;
+			}
+
+			scaleMode = settings.ScaleMode;
+			gravityScale = settings.GravityScale;
+			throwTuning = settings.Throwing;
+		}
+
+		/// <summary>
+		/// Uses this object's own authored Rigidbody settings for internal mods
+		/// </summary>
+		private void AdoptOwnBody()
+		{
+			authoredIsKinematic = ownConfig.IsKinematic;
+
+			if (HasAuthority)
+			{
+				NetworkedUseGravity = ownConfig.UseGravity;
+
+				if (heldLocally)
+					body.isKinematic = true;
+			}
 		}
 
 		/// <summary>
@@ -310,6 +368,19 @@ namespace CollabXR
 				advanced.InertiaTensorRotation = Quaternion.Inverse(transform.rotation) * source.rotation * advanced.InertiaTensorRotation;
 		}
 
+		private bool UsesScaledGravity()
+		{
+			return IsReady && !Mathf.Approximately(gravityScale, 1f);
+		}
+
+		/// <summary>
+		/// Unity's gravity is used at scale 1, where alternative scales happen in fixedupdatenetwork
+		/// </summary>
+		private void RefreshGravity()
+		{
+			body.useGravity = NetworkedUseGravity && Mathf.Approximately(gravityScale, 1f);
+		}
+
 		private void SetUpScaling()
 		{
 			if (scalable == null)
@@ -345,7 +416,6 @@ namespace CollabXR
 			heldLocally = true;
 			throwEstimator.Clear();
 
-			// Proxies are already kinematic so authority catches up in FixedUpdateNetwork if it arrives later
 			if (IsReady)
 				body.isKinematic = true;
 		}
@@ -360,10 +430,12 @@ namespace CollabXR
 			if (!IsReady)
 				return;
 
-			throwEstimator.TryGetVelocity(out Vector3 linear, out Vector3 angular);
+			throwEstimator.TryGetVelocity(throwTuning.SampleWindow, out Vector3 linear, out Vector3 angular);
 
-			// The estimate is for the transform's origin; the body moves about its center of mass
+			// The estimate is for the transform's origin so the body moves about its center of mass
 			linear += Vector3.Cross(angular, body.worldCenterOfMass - transform.position);
+			linear = Vector3.ClampMagnitude(linear * throwTuning.Strength, throwTuning.MaxSpeed);
+			angular *= throwTuning.Spin;
 
 			if (HasAuthority)
 				Release(linear, angular);
