@@ -121,17 +121,23 @@ namespace CollabXR.Objects
 			// Object is not built-in and has not been previously loaded
 			if (Data == null)
 			{
+				Debug.Log($"%%{Category.ToString()}");
+				Debug.Log($"%%{DataName.Value}");
 				// Only spawn placeholder box if this Object has Data (aka isn't a drawing)
-				if (!Category.ToString().IsNullOrEmpty() && DataName.Value.ToString().IsNullOrEmpty())
+				if (!Category.ToString().IsNullOrEmpty() && !DataName.Value.ToString().IsNullOrEmpty())
 				{
 					// Wait for the object to load before finalizing prefab
+					Debug.Log($"%%Waiting for data to load");
 					MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
 				}
 				else
 				{
+					Debug.Log($"%%Not prefab");
 					// This is not a mod prefab, likely a brush stroke.
 					// Do not initialize sockets.
 				}
+				Debug.Log($"%%Category is {!Category.ToString().IsNullOrEmpty()}");
+				Debug.Log($"%%DataName is {!DataName.Value.ToString().IsNullOrEmpty()}");
 				return;
 			}
 
