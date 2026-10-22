@@ -122,7 +122,7 @@ namespace CollabXR.Objects
 			if (Data == null)
 			{
 				// Only spawn placeholder box if this Object has Data (aka isn't a drawing)
-				if (!Category.ToString().IsNullOrEmpty() && DataName.Value.ToString().IsNullOrEmpty())
+				if (!Category.ToString().IsNullOrEmpty() && !DataName.Value.ToString().IsNullOrEmpty())
 				{
 					// Wait for the object to load before finalizing prefab
 					MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
@@ -198,13 +198,24 @@ namespace CollabXR.Objects
 		public void CheckIfDataLoaded()
 		{
 			Data = FindDataset();
-			if (Data != null)
+
+			if (Data == null)
 			{
-				MainLibraryRef.Instance.onNewDataLoad.RemoveListener(CheckIfDataLoaded);
-				GameObject.Destroy(dataRoot);
-				InitializePrefab();
-				FinishedLoading.Invoke();
+				// if data is not found even after all mods are loaded, replace with NotAvaliable box
+				SimpleModLoader.Instance.OnFinishLoading.AddListener(() =>
+				{
+					MainLibraryRef.Instance.onNewDataLoad.RemoveListener(CheckIfDataLoaded);
+					Destroy(dataRoot);
+					dataRoot = Instantiate(MainLibraryRef.Instance.placeholderPrefab, transform);
+					CollabObjectPreview preview = dataRoot.GetComponent<CollabObjectPreview>();
+					preview.EnableLoadingAnimation(true, false);
+				});
+				return;
 			}
+			MainLibraryRef.Instance.onNewDataLoad.RemoveListener(CheckIfDataLoaded);
+			GameObject.Destroy(dataRoot);
+			InitializePrefab();
+			FinishedLoading.Invoke();
 		}
 
 		public string GetWristText()
