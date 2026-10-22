@@ -20,7 +20,11 @@ namespace CollabXR
 		[Tooltip("Minimum impact speed for this body to take authority over an unheld body it hits.")]
 		private float contactAuthoritySpeed = 0.1f;
 
+<<<<<<< HEAD
 		[Networked, OnChangedRender(nameof(OnHeldChanged))]
+=======
+		[Networked]
+>>>>>>> b52b927 (remove constant frame polling for physics)
 		public NetworkBool NetworkedIsHeld { get; set; }
 
 		/// <summary>
@@ -46,9 +50,15 @@ namespace CollabXR
 		private PhysicsMaterial bounceMaterial;
 		private bool authoredIsKinematic;
 		private bool authoredUseGravity;
+<<<<<<< HEAD
 		private float authoredMass;
 		private int holdCount;
 		private bool handHeld;
+=======
+		private int holdCount;
+		private bool handHeld;
+		private float lastVolume;
+>>>>>>> b52b927 (remove constant frame polling for physics)
 
 		protected override void Awake()
 		{
@@ -79,6 +89,7 @@ namespace CollabXR
 			}
 
 			if (scalable != null)
+<<<<<<< HEAD
 				scalable.OnScaleChanged -= ApplyScaledMass;
 
 			PhysicsBodyUpdater.RemoveHeld(this);
@@ -109,6 +120,21 @@ namespace CollabXR
 		{
 			throwEstimator.AddSample(transform.position, transform.rotation, Time.time);
 
+=======
+				scalable.OnScaleChanged -= OnScaleChanged;
+
+			PhysicsBodyUpdater.RemoveHeld(this);
+			PhysicsBodyUpdater.RemoveScaledGravity(this);
+		}
+
+		/// <summary>
+		/// Called every frame by <see cref="PhysicsBodyUpdater"/> while held on this client.
+		/// </summary>
+		public void TickHeld()
+		{
+			throwEstimator.AddSample(transform.position, transform.rotation, Time.time);
+
+>>>>>>> b52b927 (remove constant frame polling for physics)
 			if (!IsReady || !HasAuthority)
 				return;
 
@@ -125,6 +151,10 @@ namespace CollabXR
 		/// </summary>
 		public void TickScaledGravity()
 		{
+<<<<<<< HEAD
+=======
+			// Skipping sleeping bodies lets resting objects stay asleep, which also stops them sending network updates
+>>>>>>> b52b927 (remove constant frame polling for physics)
 			if (!HasAuthority || body.isKinematic || body.IsSleeping())
 				return;
 
@@ -190,14 +220,18 @@ namespace CollabXR
 			SetUpScaling();
 			ApplyBounce();
 			IsReady = true;
+<<<<<<< HEAD
 
 			Debug.Log(
 				$"[Physics] {name} ready: scale mode {scaleMode}, gravity scale {gravityScale}, mass {body.mass}, max spin {body.maxAngularVelocity}, bounce override {bounceTuning.OverrideMaterial}"
 			);
+=======
+>>>>>>> b52b927 (remove constant frame polling for physics)
 			RefreshInterpolation();
 
 			if (UsesScaledGravity())
 				PhysicsBodyUpdater.AddScaledGravity(this);
+<<<<<<< HEAD
 
 			WarnAboutChildRigidbodies();
 		}
@@ -234,6 +268,8 @@ namespace CollabXR
 				if (!collider.isTrigger)
 					collider.sharedMaterial = bounceMaterial;
 			}
+=======
+>>>>>>> b52b927 (remove constant frame polling for physics)
 		}
 
 		/// <summary>
@@ -269,7 +305,10 @@ namespace CollabXR
 		{
 			authoredIsKinematic = ownConfig.IsKinematic;
 			authoredUseGravity = ownConfig.UseGravity;
+<<<<<<< HEAD
 			authoredMass = ownConfig.Mass;
+=======
+>>>>>>> b52b927 (remove constant frame polling for physics)
 
 			if (HasAuthority && HeldLocally)
 				body.isKinematic = true;
@@ -292,7 +331,10 @@ namespace CollabXR
 
 			authoredIsKinematic = basic.IsKinematic;
 			authoredUseGravity = basic.UseGravity;
+<<<<<<< HEAD
 			authoredMass = basic.Mass;
+=======
+>>>>>>> b52b927 (remove constant frame polling for physics)
 
 			// NetworkRigidbody3D keeps every copy without authority kinematic
 			if (!HasAuthority || HeldLocally)
@@ -343,6 +385,7 @@ namespace CollabXR
 		/// </summary>
 		private void ApplyScaledMass()
 		{
+<<<<<<< HEAD
 			if (scaleMode != PhysicsScaleMode.ScaleMassWithVolume)
 				return;
 
@@ -362,6 +405,33 @@ namespace CollabXR
 			if (holdCount > 1)
 				return;
 
+=======
+			float volume = GetVolume();
+
+			// Every client tracks volume so a new authority starts from the right baseline
+			if (scaleMode == PhysicsScaleMode.ScaleMassWithVolume && HasAuthority && lastVolume > Mathf.Epsilon)
+				body.mass *= volume / lastVolume;
+
+			lastVolume = volume;
+		}
+
+		private float GetVolume()
+		{
+			Vector3 scale = transform.localScale;
+			return Mathf.Abs(scale.x * scale.y * scale.z);
+		}
+
+		/// <summary>
+		/// Holds the body kinematic for a tool that moves its transform directly, such as the Mover.
+		/// </summary>
+		public void BeginHold()
+		{
+			holdCount++;
+
+			if (holdCount > 1)
+				return;
+
+>>>>>>> b52b927 (remove constant frame polling for physics)
 			// Only objects that actually get held need the sample buffer
 			throwEstimator ??= new ThrowVelocityEstimator();
 			throwEstimator.Clear();
