@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0a198a0dd4028040ba791a093cadbb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  environmentData:
+  localEnvironmentData:
   - {fileID: 11400000, guid: 70c1857f415557d4a8488db9fd4e3108, type: 2}
   - {fileID: 11400000, guid: f7fc7cacfe658974ba4c65bf075289e0, type: 2}
   - {fileID: 11400000, guid: 897e5d86fd1df7e4bad86300001aecbb, type: 2}
@@ -85,6 +85,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0f8bc5026ca1b914aa6fec51f76bca3f, type: 2}
   - {fileID: 11400000, guid: 5d14223a5ad92d341ac594c448d9e08d, type: 2}
   _currentEnvironmentIndex: 0
+  currentEnvInstance: {fileID: 0}
   _currentTeleportIndex: 0
   OnEnvironmentLoadComplete:
     m_PersistentCalls:

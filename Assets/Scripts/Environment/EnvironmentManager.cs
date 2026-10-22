@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CollabXR.ModExtras;
 using CollabXR.VR;
@@ -5,32 +6,50 @@ using Fusion;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using CollabXR.ModPackager;
 using CollabXR.ModPackager.EnvironmentExtras;
 
 namespace CollabXR.Environments
 {
 	public class EnvironmentManager : SingletonNetworkBehavior<EnvironmentManager>, IStateAuthorityChanged, IDespawned
 	{
-		[SerializeField]
-		public EnvironmentData[] environmentData;
+		///
+		/// DATA STORAGE
+		/// 
+
+		/// <summary>
+		/// Primary source of environment entry data
+		/// </summary>
+		EnvironmentLibrary environmentLibrary = new EnvironmentLibrary();
+		
+		/// <summary>
+		/// Legacy built-in environment data scriptable objects
+		/// </summary>
+		[SerializeField] public EnvironmentData[] localEnvironmentData;
+
+		///
+		/// STATE VARIABLES
+		/// 
 
 		[Networked, OnChangedRender(nameof(LoadEnvironmentSceneLocal))]
 		public int currentEnvironmentIndex { get; set; }
+		private string currentEnvSceneName = "";
+		[SerializeField] public EnvironmentScene currentEnvInstance;
 
 		[Networked, OnChangedRender(nameof(Teleport))]
 		public int currentTeleportIndex { get; set; }
-		public UnityEvent OnEnvironmentLoadComplete;
+		
 		private Matrix4x4 previousTeleportMatrix = Matrix4x4.identity;
-
-		private int requestedEnvIndex,
-			requestedTeleportIndex;
-
-		private string currentEnvSceneName = "";
+		private int requestedEnvIndex;
+		private int requestedTeleportIndex;
 		bool loadingScene = false;
 		bool teleportAfterSceneLoad = false;
 
-		[SerializeField]
-		public EnvironmentScene currentEnvInstance;
+		///
+		/// EVENTS
+		/// 
+
+		public UnityEvent OnEnvironmentLoadComplete;
 
 		/// <summary>
 		/// Overriding singleton initialization function
@@ -147,9 +166,9 @@ namespace CollabXR.Environments
 			OnEnvironmentLoadComplete.Invoke();			
 		}
 
-		public EnvironmentData GetEnvironmentAtIndex(int index) => environmentData[index];
+		public EnvironmentData GetEnvironmentAtIndex(int index) => localEnvironmentData[index];
 
-		public EnvironmentData GetEnvironment() => environmentData[currentEnvironmentIndex];
+		public EnvironmentData GetEnvironment() => localEnvironmentData[currentEnvironmentIndex];
 
 		public void RequestRoomEnvironmentChange(int envIndex, int teleportIndex)
 		{
@@ -198,6 +217,28 @@ namespace CollabXR.Environments
 		{
 			Debug.Log("Setting environment instance to " + instance.name);
 			currentEnvInstance = instance;
+		}
+
+		///
+		/// NEW DATA STORE METHODS
+		/// 
+
+		public void AddEnvironmentEntry(Guid modGUID, Guid assetGUID, ModScene modScene, ModMetadata modMetadata, bool bundleExists)
+		{
+			EnvironmentEntry newEntry = new EnvironmentEntry();
+			newEntry.Initialize(modGUID, assetGUID, modScene, modMetadata, bundleExists);
+			Debug.Log($"Adding environment entry for mod {modGUID} with asset {assetGUID}");
+			environmentLibrary.AddEnvironmentEntry(newEntry);
+		}
+
+		void BuildEntriesFromLocalData()
+		{
+			foreach (var entry in localEnvironmentData)
+			{
+				EnvironmentEntry newEntry = new EnvironmentEntry();
+				
+				environmentLibrary.AddEnvironmentEntry(newEntry);
+			}
 		}
 	}
 }

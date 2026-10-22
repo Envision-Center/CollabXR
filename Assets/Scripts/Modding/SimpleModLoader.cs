@@ -7,6 +7,7 @@ using CollabXR.ModPackager;
 using CollabXR.Objects;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using CollabXR.Environments;
 
 namespace CollabXR.ModLoader
 {
@@ -35,12 +36,25 @@ namespace CollabXR.ModLoader
 					ModMetadata metadata = mod.Value.Item1;
 					string platform = ModManager.GetPlatformString();
 					int availableVersion = metadata.BuildNumberMap.ContainsKey(platform) ? metadata.BuildNumberMap[platform] : 0;
+
 					Debug.Log($"{DEBUG_LOG_HEADER} Checking mod {string.Join(",", mod.Value.Item1.PrefabMap.Values.Select(v => $"Name: {v.FormattedName}, Category: {v.Category}"))} @v{availableVersion}");
+					
 					bool bundleExists = availableVersion > 0;
+					
 					foreach (KeyValuePair<Guid, ModPrefab> prefab in metadata.PrefabMap)
 					{
 						Debug.Log($"{DEBUG_LOG_HEADER} Found asset {prefab.Key}: {prefab.Value.Category}/{prefab.Value.FormattedName}");
 						MainLibraryRef.Instance.AddData(mod.Key, prefab.Key, prefab.Value, metadata, bundleExists);
+					}
+
+					if (metadata.SceneMap.Count > 0)
+					{
+						Debug.Log($"{DEBUG_LOG_HEADER} Number of scenes found: {metadata.SceneMap.Count}");
+					}
+					foreach (KeyValuePair<Guid, ModScene> scene in metadata.SceneMap)
+					{
+						Debug.Log($"{DEBUG_LOG_HEADER} Found scene {scene.Key}: {scene.Value.Category}/{scene.Value.FormattedName}");
+						EnvironmentManager.Instance.AddEnvironmentEntry(mod.Key, scene.Key, scene.Value, metadata, bundleExists);
 					}
 				}
 				catch (Exception e)

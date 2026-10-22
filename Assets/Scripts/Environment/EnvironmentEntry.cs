@@ -2,8 +2,9 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using CollabXR.ModPackager;
+using CollabXR.ModPackager.EnvironmentExtras;
 
-namespace CollabXR.Environment
+namespace CollabXR.Environments
 {
     public class EnvironmentEntry
     {
@@ -44,6 +45,25 @@ namespace CollabXR.Environment
             this.thumbnail = modScene.Thumbnail;
             this.availableOnThisPlatform = available;
             this.creatorNames = modMetadata.Creators;
+        }
+
+        public void InitializeFromLocalData(EnvironmentData envData)
+        {
+            this.modGUID = Guid.Empty;
+            this.assetGUID = Guid.Empty;
+            this.category = "Built-in Environments"; // placeholder
+            this.attribution = null;
+            this.formattedSceneName = envData.sceneName;
+            this.thumbnail = envData.teleportInfo[0].thumbnail.texture;
+            this.availableOnThisPlatform = true; // built-in environments are always available
+            this.creatorNames = new List<string> { "Envision Center" };
+
+            List<string> teleportNames = new List<string>();
+            foreach (var teleport in envData.teleportInfo)
+            {
+                teleportNames.Add(teleport.name);
+            }
+            this.teleports = teleportNames;
         }
     }
 }

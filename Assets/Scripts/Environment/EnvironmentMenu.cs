@@ -93,7 +93,7 @@ namespace CollabXR.Environments
 
 		private void InstantiateCategoryButtons()
 		{
-			for (int i = 0; i < EnvironmentManager.Instance?.environmentData.Length; i++)
+			for (int i = 0; i < EnvironmentManager.Instance?.localEnvironmentData.Length; i++)
 			{
 				int iCaptured = i;
 
