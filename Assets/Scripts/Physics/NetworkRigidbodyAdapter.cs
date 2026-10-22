@@ -1,4 +1,3 @@
-using System;
 using CollabXR.Networking;
 using CollabXR.Objects;
 using CollabXR.Objects.Components;
@@ -10,37 +9,28 @@ using UnityEngine;
 namespace CollabXR
 {
 	/// <summary>
-	/// Networked <see cref="IPhysicsBody"/> for a CollabObject. When the mod loads, this adapter takes over the Rigidbody on the
-	/// mod's root, routes physics commands to the state authority, and handles holding and throwing
+	/// Makes a CollabObject's Rigidbody work over the network. For mods it takes over the Rigidbody on the mod's root,
+	/// for built-in objects it uses the one here. It also handles holding, throwing, scaling and gravity scale.
 	/// </summary>
 	[DisallowMultipleComponent]
-	[DefaultExecutionOrder(20)] // After TransformFollow and NetworkGrabbable move the held object in LateUpdate
 	[RequireComponent(typeof(NetworkRigidbody3D))]
-	public class NetworkRigidbodyAdapter : ModNetworkBehaviour, IPhysicsBody, IStateAuthorityChanged
+	public class NetworkRigidbodyAdapter : ModNetworkBehaviour, IStateAuthorityChanged
 	{
 		[SerializeField]
 		[Tooltip("Minimum impact speed for this body to take authority over an unheld body it hits.")]
 		private float contactAuthoritySpeed = 0.1f;
 
-		/// <summary>
-		/// Replicated separately because NetworkRigidbody3D does not restore gravity when authority changes hands
-		/// </summary>
-		[Networked]
-		public NetworkBool NetworkedUseGravity { get; set; }
-
 		[Networked]
 		public NetworkBool NetworkedIsHeld { get; set; }
-
-		public event Action<Collision> CollisionEntered = delegate { };
 
 		/// <summary>
 		/// True once the mod's Rigidbody has been taken over and its settings applied
 		/// </summary>
 		public bool IsReady { get; private set; }
 
-		public bool HasAuthority => Object != null && Object.IsValid && Object.HasStateAuthority;
-
-		public bool IsHeld => IsReady && Object != null && Object.IsValid && NetworkedIsHeld;
+		private bool HasAuthority => Object != null && Object.IsValid && Object.HasStateAuthority;
+		private bool IsHeld => IsReady && Object != null && Object.IsValid && NetworkedIsHeld;
+		private bool HeldLocally => holdCount > 0;
 
 		private Rigidbody body;
 		private NetworkGrabbable grabbable;
@@ -51,106 +41,10 @@ namespace CollabXR
 		private float gravityScale = 1f;
 		private RigidbodyBasicConfig ownConfig;
 		private bool authoredIsKinematic;
-		private bool heldLocally;
+		private bool authoredUseGravity;
+		private int holdCount;
+		private bool handHeld;
 		private float lastVolume;
-
-		public float Mass
-		{
-			get => body.mass;
-			set
-			{
-				if (HasAuthority)
-					body.mass = value;
-				else
-					RPC_SetMass(value);
-			}
-		}
-
-		public float LinearDamping
-		{
-			get => body.linearDamping;
-			set
-			{
-				if (HasAuthority)
-					body.linearDamping = value;
-				else
-					RPC_SetLinearDamping(value);
-			}
-		}
-
-		public float AngularDamping
-		{
-			get => body.angularDamping;
-			set
-			{
-				if (HasAuthority)
-					body.angularDamping = value;
-				else
-					RPC_SetAngularDamping(value);
-			}
-		}
-
-		public bool UseGravity
-		{
-			get => NetworkedUseGravity;
-			set
-			{
-				if (HasAuthority)
-				{
-					NetworkedUseGravity = value;
-					RefreshGravity();
-				}
-				else
-				{
-					RPC_SetUseGravity(value);
-				}
-			}
-		}
-
-		/// <summary>
-		/// while held the body is kinematic regardless
-		/// </summary>
-		public bool IsKinematic
-		{
-			get => authoredIsKinematic;
-			set
-			{
-				if (HasAuthority)
-				{
-					authoredIsKinematic = value;
-					if (!heldLocally)
-						body.isKinematic = value;
-				}
-				else
-				{
-					RPC_SetIsKinematic(value);
-				}
-			}
-		}
-
-		public Vector3 LinearVelocity
-		{
-			get => body.linearVelocity;
-			set
-			{
-				if (HasAuthority)
-					body.linearVelocity = value;
-				else
-					RPC_SetLinearVelocity(value);
-			}
-		}
-
-		public Vector3 AngularVelocity
-		{
-			get => body.angularVelocity;
-			set
-			{
-				if (HasAuthority)
-					body.angularVelocity = value;
-				else
-					RPC_SetAngularVelocity(value);
-			}
-		}
 
 		protected override void Awake()
 		{
@@ -158,7 +52,6 @@ namespace CollabXR
 			body = GetComponent<Rigidbody>();
 			grabbable = GetComponent<NetworkGrabbable>();
 			scalable = GetComponent<NetworkScalable>();
-			throwEstimator = new ThrowVelocityEstimator();
 
 			// Captured before NetworkRigidbody3D forces nonauthority copies kinematic in Spawned
 			ownConfig = RigidbodyBasicConfig.Capture(body);
@@ -180,72 +73,59 @@ namespace CollabXR
 
 			if (scalable != null)
 				scalable.OnScaleChanged -= OnScaleChanged;
+
+			PhysicsBodyUpdater.RemoveHeld(this);
+			PhysicsBodyUpdater.RemoveScaledGravity(this);
 		}
 
-		private void LateUpdate()
+		/// <summary>
+		/// Called every frame by <see cref="PhysicsBodyUpdater"/> while held on this client.
+		/// </summary>
+		public void TickHeld()
 		{
-			if (heldLocally)
-				throwEstimator.AddSample(transform.position, transform.rotation, Time.time);
-		}
+			throwEstimator.AddSample(transform.position, transform.rotation, Time.time);
 
-		private void FixedUpdate()
-		{
-			if (!UsesScaledGravity() || !HasAuthority || body.isKinematic || !NetworkedUseGravity)
-				return;
-
-			body.AddForce(UnityEngine.Physics.gravity * gravityScale, ForceMode.Acceleration);
-		}
-
-		public override void FixedUpdateNetwork()
-		{
 			if (!IsReady || !HasAuthority)
 				return;
 
-			NetworkedIsHeld = heldLocally;
+			if (!NetworkedIsHeld)
+				NetworkedIsHeld = true;
 
 			// Authority can arrive after the grab, carrying the previous owner's dynamic state with it
-			if (heldLocally && !body.isKinematic)
+			if (!body.isKinematic)
 				body.isKinematic = true;
+		}
+
+		/// <summary>
+		/// Called every physics step by <see cref="PhysicsBodyUpdater"/> when the gravity scale is not 1.
+		/// </summary>
+		public void TickScaledGravity()
+		{
+			// Skipping sleeping bodies lets resting objects stay asleep, which also stops them sending network updates
+			if (!HasAuthority || body.isKinematic || body.IsSleeping())
+				return;
+
+			body.AddForce(Physics.gravity * gravityScale, ForceMode.Acceleration);
 		}
 
 		private void OnCollisionEnter(Collision collision)
 		{
-			CollisionEntered(collision);
-
 			if (HasAuthority)
 				TryClaimContact(collision);
 		}
 
-		public void AddForce(Vector3 force, ForceMode mode = ForceMode.Force)
-		{
-			if (HasAuthority)
-				body.AddForce(force, mode);
-			else
-				RPC_AddForce(force, mode);
-		}
-
-		public void AddForceAtPosition(Vector3 force, Vector3 position, ForceMode mode = ForceMode.Force)
-		{
-			if (HasAuthority)
-				body.AddForceAtPosition(force, position, mode);
-			else
-				RPC_AddForceAtPosition(force, position, mode);
-		}
-
-		public void AddTorque(Vector3 torque, ForceMode mode = ForceMode.Force)
-		{
-			if (HasAuthority)
-				body.AddTorque(torque, mode);
-			else
-				RPC_AddTorque(torque, mode);
-		}
-
 		public void StateAuthorityChanged()
 		{
-			if (IsReady && HasAuthority)
+			if (!IsReady)
+				return;
+
+			if (HasAuthority && !HeldLocally)
 			{
-				RefreshGravity();
+				NetworkedIsHeld = false;
+				body.isKinematic = authoredIsKinematic;
 			}
+
+			RefreshInterpolation();
 		}
 
 		/// <summary>
@@ -285,6 +165,10 @@ namespace CollabXR
 			RefreshGravity();
 			SetUpScaling();
 			IsReady = true;
+			RefreshInterpolation();
+
+			if (UsesScaledGravity())
+				PhysicsBodyUpdater.AddScaledGravity(this);
 		}
 
 		/// <summary>
@@ -317,14 +201,10 @@ namespace CollabXR
 		private void AdoptOwnBody()
 		{
 			authoredIsKinematic = ownConfig.IsKinematic;
+			authoredUseGravity = ownConfig.UseGravity;
 
-			if (HasAuthority)
-			{
-				NetworkedUseGravity = ownConfig.UseGravity;
-
-				if (heldLocally)
-					body.isKinematic = true;
-			}
+			if (HasAuthority && HeldLocally)
+				body.isKinematic = true;
 		}
 
 		/// <summary>
@@ -343,17 +223,15 @@ namespace CollabXR
 			DestroyImmediate(source);
 
 			authoredIsKinematic = basic.IsKinematic;
+			authoredUseGravity = basic.UseGravity;
 
 			// NetworkRigidbody3D keeps every copy without authority kinematic
-			if (!HasAuthority || heldLocally)
+			if (!HasAuthority || HeldLocally)
 				basic.IsKinematic = true;
 
 			basic.Apply(body);
 			collision.Apply(body);
 			advanced.Apply(body);
-
-			if (HasAuthority)
-				NetworkedUseGravity = basic.UseGravity;
 		}
 
 		/// <summary>
@@ -370,15 +248,15 @@ namespace CollabXR
 
 		private bool UsesScaledGravity()
 		{
-			return IsReady && !Mathf.Approximately(gravityScale, 1f);
+			return IsReady && authoredUseGravity && !Mathf.Approximately(gravityScale, 1f);
 		}
 
 		/// <summary>
-		/// Unity's gravity is used at scale 1, where alternative scales happen in fixedupdatenetwork
+		/// Unity's gravity is used at scale 1 and any other scale is applied as a force by <see cref="PhysicsBodyUpdater"/>.
 		/// </summary>
 		private void RefreshGravity()
 		{
-			body.useGravity = NetworkedUseGravity && Mathf.Approximately(gravityScale, 1f);
+			body.useGravity = authoredUseGravity && Mathf.Approximately(gravityScale, 1f);
 		}
 
 		private void SetUpScaling()
@@ -408,34 +286,53 @@ namespace CollabXR
 			return Mathf.Abs(scale.x * scale.y * scale.z);
 		}
 
-		private void OnGrabbedLocal(Grabber grabber)
+		/// <summary>
+		/// Holds the body kinematic for a tool that moves its transform directly, such as the Mover.
+		/// </summary>
+		public void BeginHold()
 		{
-			if (heldLocally)
+			holdCount++;
+
+			if (holdCount > 1)
 				return;
 
-			heldLocally = true;
+			// Only objects that actually get held need the sample buffer
+			throwEstimator ??= new ThrowVelocityEstimator();
 			throwEstimator.Clear();
+			PhysicsBodyUpdater.AddHeld(this);
 
 			if (IsReady)
+			{
 				body.isKinematic = true;
+				RefreshInterpolation();
+			}
 		}
 
-		private void OnReleasedLocal(Grabber grabber)
+		/// <summary>
+		/// Ends a hold started with <see cref="BeginHold"/>. The body is released once every hold has ended.
+		/// </summary>
+		/// <param name="throwOnRelease">True to keep the motion it was being moved with, false to drop it in place.</param>
+		public void EndHold(bool throwOnRelease)
 		{
-			if (!heldLocally || grabbable.Holding != NetworkGrabbable.HoldState.None)
+			if (holdCount == 0)
 				return;
 
-			heldLocally = false;
+			holdCount--;
 
-			if (!IsReady)
+			if (holdCount > 0)
 				return;
 
-			throwEstimator.TryGetVelocity(throwTuning.SampleWindow, out Vector3 linear, out Vector3 angular);
+			PhysicsBodyUpdater.RemoveHeld(this);
 
-			// The estimate is for the transform's origin so the body moves about its center of mass
-			linear += Vector3.Cross(angular, body.worldCenterOfMass - transform.position);
-			linear = Vector3.ClampMagnitude(linear * throwTuning.Strength, throwTuning.MaxSpeed);
-			angular *= throwTuning.Spin;
+			// Also covers being despawned while held
+			if (!IsReady || Object == null || !Object.IsValid)
+				return;
+
+			Vector3 linear = Vector3.zero;
+			Vector3 angular = Vector3.zero;
+
+			if (throwOnRelease)
+				GetThrowVelocity(out linear, out angular);
 
 			if (HasAuthority)
 				Release(linear, angular);
@@ -443,10 +340,43 @@ namespace CollabXR
 				RPC_Release(linear, angular);
 		}
 
+		private void OnGrabbedLocal(Grabber grabber)
+		{
+			if (handHeld)
+				return;
+
+			handHeld = true;
+			BeginHold();
+		}
+
+		private void OnReleasedLocal(Grabber grabber)
+		{
+			if (!handHeld || grabbable.Holding != NetworkGrabbable.HoldState.None)
+				return;
+
+			handHeld = false;
+			EndHold(true);
+		}
+
+		private void GetThrowVelocity(out Vector3 linear, out Vector3 angular)
+		{
+			throwEstimator.TryGetVelocity(throwTuning.SampleWindow, out linear, out angular);
+
+			// The estimate is for the transform's origin so the body moves about its center of mass
+			linear += Vector3.Cross(angular, body.worldCenterOfMass - transform.position);
+			linear = Vector3.ClampMagnitude(linear * throwTuning.Strength, throwTuning.MaxSpeed);
+			angular *= throwTuning.Spin;
+		}
+
 		private void Release(Vector3 linear, Vector3 angular)
 		{
+			// A late release from the previous holder must not drop an object this client has since grabbed
+			if (HeldLocally)
+				return;
+
 			NetworkedIsHeld = false;
 			body.isKinematic = authoredIsKinematic;
+			RefreshInterpolation();
 
 			if (authoredIsKinematic)
 				return;
@@ -454,6 +384,15 @@ namespace CollabXR
 			body.linearVelocity = linear;
 			body.angularVelocity = angular;
 			body.WakeUp();
+		}
+
+		/// <summary>
+		/// Special casing because of how Unity handles interpolation
+		/// </summary>
+		private void RefreshInterpolation()
+		{
+			bool simulatedHere = IsReady && HasAuthority && !HeldLocally && !authoredIsKinematic;
+			body.interpolation = simulatedHere ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
 		}
 
 		private void TryClaimContact(Collision collision)
@@ -467,41 +406,7 @@ namespace CollabXR
 				otherBody.ClaimFromContact();
 		}
 
-		#region RPCS
-
 		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
 		public void RPC_Release(Vector3 linear, Vector3 angular) => Release(linear, angular);
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetMass(float value) => Mass = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetLinearDamping(float value) => LinearDamping = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetAngularDamping(float value) => AngularDamping = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetUseGravity(NetworkBool value) => UseGravity = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetIsKinematic(NetworkBool value) => IsKinematic = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetLinearVelocity(Vector3 value) => LinearVelocity = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_SetAngularVelocity(Vector3 value) => AngularVelocity = value;
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_AddForce(Vector3 force, ForceMode mode) => AddForce(force, mode);
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_AddForceAtPosition(Vector3 force, Vector3 position, ForceMode mode) => AddForceAtPosition(force, position, mode);
-
-		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-		public void RPC_AddTorque(Vector3 torque, ForceMode mode) => AddTorque(torque, mode);
-
-		#endregion
 	}
 }
