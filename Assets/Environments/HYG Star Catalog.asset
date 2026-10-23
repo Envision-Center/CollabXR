@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: HYG Star Catalog
   m_EditorClassIdentifier: 
   sceneName: HYG
+  scenePath: Assets/Environments/HYG/HYG.unity
+  sceneAsset: {fileID: 102900000, guid: bff9cbe8fdb0c1842859f944ed45a4b5, type: 3}
   teleportInfo:
   - name: HYG Star Catalog
     thumbnail: {fileID: 21300000, guid: cb18eb2c08f1d4541805a5d015a7fd76, type: 3}

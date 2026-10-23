@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Green Screen
   m_EditorClassIdentifier: 
   sceneName: GreenScreen
+  scenePath: Assets/Environments/GreenScreen/GreenScreen.unity
+  sceneAsset: {fileID: 102900000, guid: 80ca669176d2ebe4595aae4298ca4c28, type: 3}
   teleportInfo:
   - name: Green Screen
     thumbnail: {fileID: 21300000, guid: fc82ea91614e38f4bae1d65b75b9eae7, type: 3}

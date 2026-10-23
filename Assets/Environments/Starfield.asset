@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Starfield
   m_EditorClassIdentifier: 
   sceneName: Starfield
+  scenePath: Assets/Environments/Starfield/Starfield.unity
+  sceneAsset: {fileID: 102900000, guid: 9f48fa956deca6246b3c51870ee23bc6, type: 3}
   teleportInfo:
   - name: Starfield
     thumbnail: {fileID: 21300000, guid: 0f19eca42cef70e42b9563b9d72fa4c8, type: 3}

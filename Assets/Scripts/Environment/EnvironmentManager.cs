@@ -33,7 +33,7 @@ namespace CollabXR.Environments
 
 		[Networked, OnChangedRender(nameof(LoadEnvironmentSceneLocal))]
 		public int currentEnvironmentIndex { get; set; }
-		private string currentEnvSceneName = "";
+		private string currentEnvScenePath = "";
 		[SerializeField] public EnvironmentScene currentEnvInstance;
 
 		[Networked, OnChangedRender(nameof(Teleport))]
@@ -53,7 +53,7 @@ namespace CollabXR.Environments
 
 		/// <summary>
 		/// Overriding singleton initialization function
-		/// Loads currentEnvSceneName, which starts as empty "", so loads nothing
+		/// Loads currentEnvScenePath, which starts as empty "", so loads nothing
 		/// </summary>
 		public override void Spawned()
 		{
@@ -92,7 +92,7 @@ namespace CollabXR.Environments
 		}
 
 		/// <summary>
-		/// Main function that load the current environment at "currentEnvSceneName".
+		/// Main function that loads the current environment at "currentEnvScenePath".
 		/// </summary>
 		void LoadEnvironmentSceneLocal()
 		{
@@ -103,23 +103,23 @@ namespace CollabXR.Environments
 			}
 			loadingScene = true;
 
-			if (!currentEnvSceneName.Equals(""))
+			if (!currentEnvScenePath.Equals(""))
 			{
-				SceneManager.UnloadSceneAsync(currentEnvSceneName);
+				SceneManager.UnloadSceneAsync(currentEnvScenePath);
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 				currentEnvInstance = null;
 			}
 
-			currentEnvSceneName = GetEnvironment().sceneName;
-			Debug.Log($"Initializing loading of: {currentEnvSceneName}");
-			SceneManager.LoadSceneAsync(currentEnvSceneName, LoadSceneMode.Additive).completed += OnSceneLoadComplete;
+			currentEnvScenePath = GetEnvironment().scenePath;
+			Debug.Log($"Initializing loading of: {currentEnvScenePath}");
+			SceneManager.LoadSceneAsync(currentEnvScenePath, LoadSceneMode.Additive).completed += OnSceneLoadComplete;
 		}
 
 		public void DisconnectFromEnvironment()
 		{
-			if (!currentEnvSceneName.Equals(""))
+			if (!currentEnvScenePath.Equals(""))
 			{
-				SceneManager.UnloadSceneAsync(currentEnvSceneName);
+				SceneManager.UnloadSceneAsync(currentEnvScenePath);
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 				currentEnvInstance = null;
 			}
@@ -130,7 +130,12 @@ namespace CollabXR.Environments
 			loadingScene = false;
 
 			// hotswap scenes
-			Scene loadedScene = SceneManager.GetSceneByName(GetEnvironment().sceneName);
+			Scene loadedScene = SceneManager.GetSceneByPath(currentEnvScenePath);
+			if (!loadedScene.IsValid())
+			{
+				Debug.LogError($"Failed to find loaded environment scene at {currentEnvScenePath}.");
+				return;
+			}
 			SceneManager.SetActiveScene(loadedScene);
 			
 			// initialize depth masks for all root gameobjects
