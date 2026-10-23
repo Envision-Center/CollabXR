@@ -24,6 +24,7 @@ namespace CollabXR.ModLoader
 		{
 			Debug.Log($"{DEBUG_LOG_HEADER} Refreshing simple mod loader!");
 			MainLibraryRef.Instance.ClearData();
+			EnvironmentManager.Instance?.ResetEnvironmentLibrary();
 			LoadArbitraryMods();
 		}
 

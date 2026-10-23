@@ -16,5 +16,10 @@ namespace CollabXR.Environments
         {
             entries.Add(entry);
         }
+
+        public void ClearEnvironmentEntries()
+        {
+            entries.Clear();
+        }
     }
 }

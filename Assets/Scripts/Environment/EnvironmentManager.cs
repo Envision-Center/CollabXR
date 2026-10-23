@@ -58,6 +58,7 @@ namespace CollabXR.Environments
 		public override void Spawned()
 		{
 			base.Spawned();
+			ResetEnvironmentLibrary();
 			LoadEnvironmentSceneLocal();
 		}
 
@@ -223,20 +224,33 @@ namespace CollabXR.Environments
 		/// NEW DATA STORE METHODS
 		/// 
 
+		/// <summary>
+		/// Clears all entries and rebuilds them from local data.
+		/// </summary>
+		public void ResetEnvironmentLibrary()
+		{
+			environmentLibrary.ClearEnvironmentEntries();
+			BuildEntriesFromLocalData();
+		}
+
 		public void AddEnvironmentEntry(Guid modGUID, Guid assetGUID, ModScene modScene, ModMetadata modMetadata, bool bundleExists)
 		{
 			EnvironmentEntry newEntry = new EnvironmentEntry();
 			newEntry.Initialize(modGUID, assetGUID, modScene, modMetadata, bundleExists);
-			Debug.Log($"Adding environment entry for mod {modGUID} with asset {assetGUID}");
+			Debug.Log($"Adding environment entry for mod {newEntry.modGUID} with asset {newEntry.assetGUID}");
 			environmentLibrary.AddEnvironmentEntry(newEntry);
 		}
 
+		/// <summary>
+		/// Builds environment entries from the local environment data and adds them to the environment library.
+		/// </summary>
 		void BuildEntriesFromLocalData()
 		{
 			foreach (var entry in localEnvironmentData)
 			{
 				EnvironmentEntry newEntry = new EnvironmentEntry();
-				
+				newEntry.InitializeFromLocalData(entry);
+				Debug.Log($"Building environment entry from local data for environment {entry.name}");
 				environmentLibrary.AddEnvironmentEntry(newEntry);
 			}
 		}
