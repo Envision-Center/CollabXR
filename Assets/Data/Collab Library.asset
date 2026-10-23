@@ -41,6 +41,7 @@ MonoBehaviour:
       - {fileID: 11400000, guid: aaf6c1bc02197154bb9c8c132a74597c, type: 2}
       - {fileID: 11400000, guid: 7fb5be6a60ae77042bcddd0f11093527, type: 2}
       - {fileID: 11400000, guid: 554af3b2ac7dade4b901ca5fed34ca17, type: 2}
+      - {fileID: 11400000, guid: 4e5e0bd52374f4640a741fda4bd1a0e7, type: 2}
     - name: Utility
       objectData:
       - {fileID: 11400000, guid: aefbda8e96cff324ca3ad9a0c3f95bf9, type: 2}
