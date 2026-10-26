@@ -8,14 +8,21 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using CollabXR.ModPackager;
 using CollabXR.ModPackager.EnvironmentExtras;
+using CollabXR.ModLoader;
 
 namespace CollabXR.Environments
 {
+	public struct EnvironmentSelection : INetworkStruct
+	{
+		public int CategoryIndex;
+		public int EntryIndex;
+	}
+
 	public class EnvironmentManager : SingletonNetworkBehavior<EnvironmentManager>, IStateAuthorityChanged, IDespawned
 	{
 		///
 		/// DATA STORAGE
-		/// 
+		///
 
 		/// <summary>
 		/// Primary source of environment entry data
@@ -29,31 +36,57 @@ namespace CollabXR.Environments
 
 		///
 		/// STATE VARIABLES
-		/// 
+		///
 
 		[Networked, OnChangedRender(nameof(LoadEnvironmentSceneLocal))]
-		public int currentEnvironmentIndex { get; set; }
+		public EnvironmentSelection currentEnvironmentSelection { get; set; }
 		private string currentEnvScenePath = "";
+		private Guid currentEnvModGUID;
 		[SerializeField] public EnvironmentScene currentEnvInstance;
 
 		[Networked, OnChangedRender(nameof(Teleport))]
 		public int currentTeleportIndex { get; set; }
 		
 		private Matrix4x4 previousTeleportMatrix = Matrix4x4.identity;
-		private int requestedEnvIndex;
+		private int requestedCategoryIndex;
+		private int requestedEntryIndex;
 		private int requestedTeleportIndex;
-		bool loadingScene = false;
-		bool teleportAfterSceneLoad = false;
+		private EnvironmentEntry selectedEntryBeforeRefresh;
+		private bool loadingScene;
+		private bool retryEnvironmentLoad;
 
 		///
 		/// EVENTS
 		/// 
 
 		public UnityEvent OnEnvironmentLoadComplete;
+		public event Action OnEnvironmentLibraryChanged;
+		public IReadOnlyList<EnvironmentCategory> EnvironmentCategories
+		{
+			get
+			{
+				return environmentLibrary.categories;
+			}
+		}
+		public EnvironmentEntry GetEnvironmentEntry(int categoryIndex, int entryIndex)
+		{
+			return environmentLibrary.GetEntry(categoryIndex, entryIndex);
+		}
+		public EnvironmentEntry GetEnvironment()
+		{
+			int categoryIndex = currentEnvironmentSelection.CategoryIndex;
+			int entryIndex = currentEnvironmentSelection.EntryIndex;
+			if (categoryIndex < 0 || categoryIndex >= EnvironmentCategories.Count ||
+				entryIndex < 0 || entryIndex >= EnvironmentCategories[categoryIndex].entries.Count)
+			{
+				return null;
+			}
+			return GetEnvironmentEntry(categoryIndex, entryIndex);
+		}
 
 		/// <summary>
 		/// Overriding singleton initialization function
-		/// Loads currentEnvScenePath, which starts as empty "", so loads nothing
+		/// Builds built-in entries and loads the selected environment.
 		/// </summary>
 		public override void Spawned()
 		{
@@ -62,7 +95,7 @@ namespace CollabXR.Environments
 			LoadEnvironmentSceneLocal();
 		}
 
-		public void SpawnNetworkedObjects(List<GameObject> objs)
+		private void SpawnNetworkedObjects(List<GameObject> objs)
 		{
 			foreach (GameObject obj in objs)
 			{
@@ -75,11 +108,12 @@ namespace CollabXR.Environments
 		/// </summary>
 		private void Teleport()
 		{
-			Debug.Log($"Teleporting to {currentTeleportIndex} in {GetEnvironment().sceneName}");
-			if (loadingScene)
+			if (loadingScene || currentEnvInstance == null || currentTeleportIndex < 0 ||
+				currentTeleportIndex >= currentEnvInstance.teleports.Length)
 			{
 				return;
 			}
+			Debug.Log($"Teleporting to {currentTeleportIndex} in {currentEnvInstance.name}");
 
 			Transform t = currentEnvInstance.teleports[currentTeleportIndex].transform;
 
@@ -94,7 +128,7 @@ namespace CollabXR.Environments
 		/// <summary>
 		/// Main function that loads the current environment at "currentEnvScenePath".
 		/// </summary>
-		void LoadEnvironmentSceneLocal()
+		private async void LoadEnvironmentSceneLocal()
 		{
 			// flag to indicate if a scene is currently loading
 			if (loadingScene)
@@ -102,6 +136,48 @@ namespace CollabXR.Environments
 				return;
 			}
 			loadingScene = true;
+			
+			// 
+			EnvironmentEntry entry;
+			try
+			{
+				entry = GetEnvironment();
+				if (entry == null || !entry.availableOnThisPlatform || string.IsNullOrEmpty(entry.scenePath))
+				{
+					throw new InvalidOperationException("Selected environment is unavailable or has no scene path.");
+				}
+				if (entry.modGUID != Guid.Empty)
+				{
+					await new ModLoadTask(entry.modGUID);
+				}
+			}
+			catch (Exception exception)
+			{
+				loadingScene = false;
+				retryEnvironmentLoad = true;
+				Debug.LogError($"Failed to prepare environment scene: {exception}");
+				return;
+			}
+
+			retryEnvironmentLoad = false;
+			if (!ReferenceEquals(entry, GetEnvironment()))
+			{
+				loadingScene = false;
+				if (GetEnvironment() != null)
+				{
+					LoadEnvironmentSceneLocal();
+				}
+				else
+				{
+					retryEnvironmentLoad = true;
+				}
+				return;
+			}
+			if (currentEnvInstance != null && currentEnvScenePath == entry.scenePath && currentEnvModGUID == entry.modGUID)
+			{
+				loadingScene = false;
+				return;
+			}
 
 			if (!currentEnvScenePath.Equals(""))
 			{
@@ -110,9 +186,29 @@ namespace CollabXR.Environments
 				currentEnvInstance = null;
 			}
 
-			currentEnvScenePath = GetEnvironment().scenePath;
+			currentEnvScenePath = entry.scenePath;
+			currentEnvModGUID = entry.modGUID;
 			Debug.Log($"Initializing loading of: {currentEnvScenePath}");
-			SceneManager.LoadSceneAsync(currentEnvScenePath, LoadSceneMode.Additive).completed += OnSceneLoadComplete;
+			AsyncOperation loadOperation;
+			try
+			{
+				loadOperation = SceneManager.LoadSceneAsync(currentEnvScenePath, LoadSceneMode.Additive);
+			}
+			catch (Exception exception)
+			{
+				loadingScene = false;
+				Debug.LogError($"Failed to load environment scene at {currentEnvScenePath}: {exception}");
+				currentEnvScenePath = "";
+				return;
+			}
+			if (loadOperation == null)
+			{
+				loadingScene = false;
+				Debug.LogError($"Failed to start loading environment scene at {currentEnvScenePath}.");
+				currentEnvScenePath = "";
+				return;
+			}
+			loadOperation.completed += OnSceneLoadComplete;
 		}
 
 		public void DisconnectFromEnvironment()
@@ -122,6 +218,7 @@ namespace CollabXR.Environments
 				SceneManager.UnloadSceneAsync(currentEnvScenePath);
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 				currentEnvInstance = null;
+				currentEnvScenePath = "";
 			}
 		}
 
@@ -134,6 +231,7 @@ namespace CollabXR.Environments
 			if (!loadedScene.IsValid())
 			{
 				Debug.LogError($"Failed to find loaded environment scene at {currentEnvScenePath}.");
+				currentEnvScenePath = "";
 				return;
 			}
 			SceneManager.SetActiveScene(loadedScene);
@@ -151,13 +249,23 @@ namespace CollabXR.Environments
 		
 			// set currentScene reference and initialize networked objects
 			// NOTE: currently no environment uses networked objects, but I'm keeping it just for consistency
-			EnvironmentScene sceneScript = FindFirstObjectByType<EnvironmentScene>();
+			EnvironmentScene sceneScript = null;
+			foreach (GameObject root in rootObjects)
+			{
+				sceneScript = root.GetComponentInChildren<EnvironmentScene>();
+				if (sceneScript != null)
+				{
+					break;
+				}
+			}
 			if (sceneScript == null)
 			{
 				Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
+				currentEnvScenePath = "";
 				return;
 			}
-			if (sceneScript.environmentData.networkObjects.objects.Count > 0)
+			if (sceneScript.environmentData != null && sceneScript.environmentData.networkObjects.objects != null &&
+				sceneScript.environmentData.networkObjects.objects.Count > 0)
 			{
 				Debug.Log("EnvironmentManager: Spawning networked objects");
 				EnvironmentManager.Instance.SpawnNetworkedObjects(sceneScript.environmentData.networkObjects.objects);
@@ -172,30 +280,56 @@ namespace CollabXR.Environments
 			OnEnvironmentLoadComplete.Invoke();			
 		}
 
-		public EnvironmentData GetEnvironmentAtIndex(int index) => localEnvironmentData[index];
+		void SetEnvironmentInstance(EnvironmentScene instance)
+		{
+			Debug.Log("Setting environment instance to " + instance.name);
+			currentEnvInstance = instance;
+		}
 
-		public EnvironmentData GetEnvironment() => localEnvironmentData[currentEnvironmentIndex];
+#region AUTHORITY TRANSFER
 
-		public void RequestRoomEnvironmentChange(int envIndex, int teleportIndex)
+		///
+		/// AUTHORITY TRANSFER LOGIC
+		///
+
+		/// <summary>
+		/// Requests a change to the room environment.
+		/// First entrypoint for switching environments.
+		/// </summary>
+		public void RequestRoomEnvironmentChange(int categoryIndex, int entryIndex, int teleportIndex)
 		{
 			if (loadingScene)
 				return;
+			if (categoryIndex < 0 || categoryIndex >= EnvironmentCategories.Count ||
+				entryIndex < 0 || entryIndex >= EnvironmentCategories[categoryIndex].entries.Count)
+			{
+				return;
+			}
+			EnvironmentEntry entry = GetEnvironmentEntry(categoryIndex, entryIndex);
+			if (!entry.availableOnThisPlatform || teleportIndex < 0 || teleportIndex >= entry.teleports.Count)
+			{
+				return;
+			}
 
 			if (Object.HasStateAuthority)
 			{
-				UpdateWithAuthority(envIndex, teleportIndex);
+				ChangeEnvironmentWithAuthority(categoryIndex, entryIndex, teleportIndex);
 			}
 			else
 			{
 				Object.RequestStateAuthority();
-				requestedEnvIndex = envIndex;
+				requestedCategoryIndex = categoryIndex;
+				requestedEntryIndex = entryIndex;
 				requestedTeleportIndex = teleportIndex;
 			}
 		}
 
-		private void UpdateWithAuthority(int environment, int teleport)
+		/// <summary>
+		/// Updates the environment and teleport indices with authority.
+		/// </summary>
+		private void ChangeEnvironmentWithAuthority(int categoryIndex, int entryIndex, int teleport)
 		{
-			currentEnvironmentIndex = environment;
+			currentEnvironmentSelection = new EnvironmentSelection { CategoryIndex = categoryIndex, EntryIndex = entryIndex };
 			currentTeleportIndex = teleport;
 		}
 
@@ -203,9 +337,16 @@ namespace CollabXR.Environments
 		{
 			if (Object.HasStateAuthority)
 			{
-				UpdateWithAuthority(requestedEnvIndex, requestedTeleportIndex);
+				ChangeEnvironmentWithAuthority(requestedCategoryIndex, requestedEntryIndex, requestedTeleportIndex);
 			}
 		}
+
+#endregion
+#region CLEANUP LOGIC
+
+		///
+		/// CLEANUP LOGIC
+		///
 
 		protected override void OnDestroy()
 		{
@@ -219,11 +360,10 @@ namespace CollabXR.Environments
 			Debug.LogError("Environment Manager has been despawned!", this);
 		}
 
-		void SetEnvironmentInstance(EnvironmentScene instance)
-		{
-			Debug.Log("Setting environment instance to " + instance.name);
-			currentEnvInstance = instance;
-		}
+#endregion
+
+#region DATA MANAGEMENT
+
 
 		///
 		/// NEW DATA STORE METHODS
@@ -234,6 +374,7 @@ namespace CollabXR.Environments
 		/// </summary>
 		public void ResetEnvironmentLibrary()
 		{
+			selectedEntryBeforeRefresh = Object != null ? GetEnvironment() : null;
 			environmentLibrary.ClearEnvironmentEntries();
 			BuildEntriesFromLocalData();
 		}
@@ -244,6 +385,48 @@ namespace CollabXR.Environments
 			newEntry.Initialize(modGUID, assetGUID, modScene, modMetadata, bundleExists);
 			Debug.Log($"Adding environment entry for mod {newEntry.modGUID} with asset {newEntry.assetGUID}");
 			environmentLibrary.AddEnvironmentEntry(newEntry);
+		}
+
+		public void NotifyEnvironmentLibraryChanged()
+		{
+			if (selectedEntryBeforeRefresh != null && Object != null && Object.HasStateAuthority)
+			{
+				bool found = false;
+				for (int categoryIndex = 0; categoryIndex < EnvironmentCategories.Count; categoryIndex++)
+				{
+					for (int entryIndex = 0; entryIndex < EnvironmentCategories[categoryIndex].entries.Count; entryIndex++)
+					{
+						EnvironmentEntry entry = GetEnvironmentEntry(categoryIndex, entryIndex);
+						if (entry.modGUID != selectedEntryBeforeRefresh.modGUID ||
+							entry.assetGUID != selectedEntryBeforeRefresh.assetGUID ||
+							entry.scenePath != selectedEntryBeforeRefresh.scenePath)
+						{
+							continue;
+						}
+						currentEnvironmentSelection = new EnvironmentSelection { CategoryIndex = categoryIndex, EntryIndex = entryIndex };
+						found = true;
+						break;
+					}
+					if (found)
+					{
+						break;
+					}
+				}
+				if (!found)
+				{
+					currentEnvironmentSelection = new EnvironmentSelection();
+					currentTeleportIndex = 0;
+				}
+			}
+			selectedEntryBeforeRefresh = null;
+			OnEnvironmentLibraryChanged?.Invoke();
+			EnvironmentEntry selected = Object != null ? GetEnvironment() : null;
+			if (Object != null && !loadingScene && selected != null &&
+				(currentEnvInstance == null || retryEnvironmentLoad ||
+				(Object.HasStateAuthority && (currentEnvScenePath != selected.scenePath || currentEnvModGUID != selected.modGUID))))
+			{
+				LoadEnvironmentSceneLocal();
+			}
 		}
 
 		/// <summary>
@@ -259,5 +442,7 @@ namespace CollabXR.Environments
 				environmentLibrary.AddEnvironmentEntry(newEntry);
 			}
 		}
+#endregion
+
 	}
 }

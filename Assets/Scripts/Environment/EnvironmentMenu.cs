@@ -2,7 +2,6 @@ using CollabXR.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using CollabXR.ModPackager.EnvironmentExtras;
 
 namespace CollabXR.Environments
 {
@@ -11,33 +10,48 @@ namespace CollabXR.Environments
 		[Header("UI references")]
 		[SerializeField]
 		private Button pageBackButton;
-
 		[SerializeField]
 		private Button pageForwardButton;
-
 		[SerializeField]
 		private TMP_Text pageCountText;
-
 		[SerializeField]
 		private TMP_Text teleportName;
-
 		[SerializeField]
 		private CategoryButtonList categoryButtonList;
-
 		[SerializeField]
 		private Transform objectButtonParent;
-
 		[SerializeField]
 		private Transform extensionsParent;
 
 		private ObjectButton[] objectButtons;
+		private Sprite modThumbnail;
 		private int pageIndex;
-		private int selectedIndex;
+		private int selectedCategoryIndex;
+		private int selectedEntryIndex;
 		private int selectedTeleportIndex;
+		private bool started;
 
-		//public EnvironmentScene currentEnvironmentInstance => EnvironmentManager.Instance?.GetEnvironmentInstance();
-		public EnvironmentData selectedEnvironment => EnvironmentManager.Instance?.GetEnvironmentAtIndex(selectedIndex);
-		public EnvironmentTeleportInfo selectedTeleport => selectedEnvironment.teleportInfo[selectedTeleportIndex];
+		public EnvironmentEntry selectedEnvironment
+		{
+			get
+			{
+				var categories = EnvironmentManager.Instance?.EnvironmentCategories;
+				if (categories == null || selectedCategoryIndex >= categories.Count ||
+					selectedEntryIndex >= categories[selectedCategoryIndex].entries.Count)
+				{
+					return null;
+				}
+				return categories[selectedCategoryIndex].entries[selectedEntryIndex];
+			}
+		}
+
+		public string selectedTeleport
+		{
+			get
+			{
+				return selectedEnvironment.teleports[selectedTeleportIndex];
+			}
+		}
 
 		public Transform ExtensionsParent
 		{
@@ -49,89 +63,162 @@ namespace CollabXR.Environments
 		{
 			base.Awake();
 			objectButtons = objectButtonParent.GetComponentsInChildren<ObjectButton>();
-
-			// setup button events
 			for (int i = 0; i < objectButtons.Length; i++)
 			{
-				int iCaptured = i;
-
-				objectButtons[i]
-					.OnClick.AddListener(
-						delegate
-						{
-							SetSelectedTeleport(iCaptured);
-						}
-					);
+				int captured = i;
+				objectButtons[i].OnClick.AddListener(() =>
+				{
+					SetSelectedTeleport(captured);
+				});
 			}
 		}
-
-		private bool started = false;
 
 		private void Start()
 		{
 			started = true;
-			InstantiateCategoryButtons();
-
-			categoryButtonList.Select(selectedIndex);
-			SetSelectedTeleport(selectedTeleportIndex);
+			EnvironmentManager.Instance.OnEnvironmentLibraryChanged += RefreshLibrary;
+			RefreshLibrary();
 		}
 
 		private void OnEnable()
 		{
-			if (!started)
-				return;
+			if (started && selectedEnvironment != null && selectedEnvironment.teleports.Count > selectedTeleportIndex)
+			{
+				teleportName.text = selectedTeleport;
+			}
+		}
 
-			categoryButtonList.Select(selectedIndex);
-			SetSelectedTeleport(selectedTeleportIndex);
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (EnvironmentManager.Instance != null)
+			{
+				EnvironmentManager.Instance.OnEnvironmentLibraryChanged -= RefreshLibrary;
+			}
+			ClearModThumbnail();
 		}
 
 		public void Teleport()
 		{
-			EnvironmentManager.Instance?.RequestRoomEnvironmentChange(selectedIndex, selectedTeleportIndex);
-			//EnvironmentManager.Instance?.TeleportTo(selectedTeleportIndex);
+			if (selectedEnvironment != null && selectedEnvironment.availableOnThisPlatform && selectedEnvironment.teleports.Count > 0)
+			{
+				EnvironmentManager.Instance.RequestRoomEnvironmentChange(selectedCategoryIndex, selectedEntryIndex, selectedTeleportIndex);
+			}
 		}
 
-		private void InstantiateCategoryButtons()
+		private void RefreshLibrary()
 		{
-			for (int i = 0; i < EnvironmentManager.Instance?.localEnvironmentData.Length; i++)
+			ClearModThumbnail();
+			selectedCategoryIndex = 0;
+			selectedEntryIndex = 0;
+			if (EnvironmentManager.Instance.EnvironmentCategories.Count > 0)
 			{
-				int iCaptured = i;
+				ShowCategories();
+				SetSelectedEnvironment(0);
+			}
+			else
+			{
+				categoryButtonList.ResetCategoryButtons();
+				teleportName.text = "No environments";
+				SetPage(0);
+			}
+		}
 
-				categoryButtonList.InstantiateCategoryButton(
-					EnvironmentManager.Instance?.GetEnvironmentAtIndex(i).name,
-					delegate
-					{
-						SetSelectedEnvironment(iCaptured);
-					}
-				);
+		private void ShowCategories()
+		{
+			categoryButtonList.ResetCategoryButtons();
+			var categories = EnvironmentManager.Instance.EnvironmentCategories;
+			for (int i = 0; i < categories.Count; i++)
+			{
+				int captured = i;
+				categoryButtonList.InstantiateCategoryButton(categories[i].name, () =>
+				{
+					ShowEnvironments(captured);
+				});
+			}
+		}
+
+		private void ShowEnvironments(int categoryIndex)
+		{
+			selectedCategoryIndex = categoryIndex;
+			categoryButtonList.ResetCategoryButtons();
+			categoryButtonList.InstantiateCategoryButton("← Categories", ShowCategories);
+			var entries = EnvironmentManager.Instance.EnvironmentCategories[categoryIndex].entries;
+			for (int i = 0; i < entries.Count; i++)
+			{
+				int captured = i;
+				string label = entries[i].formattedSceneName + (entries[i].availableOnThisPlatform ? "" : " (Unavailable)");
+				categoryButtonList.InstantiateCategoryButton(label, () =>
+				{
+					SetSelectedEnvironment(captured);
+				});
+			}
+			if (entries.Count > 0)
+			{
+				categoryButtonList.Select(1);
 			}
 		}
 
 		private void SetSelectedEnvironment(int index)
 		{
-			selectedIndex = index;
+			ClearModThumbnail();
+			selectedEntryIndex = index;
+			if (selectedEnvironment.thumbnail != null && selectedEnvironment.teleportThumbnails.Count == 0)
+			{
+				Texture2D texture = selectedEnvironment.thumbnail;
+				modThumbnail = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+			}
+			selectedTeleportIndex = 0;
 			SetPage(0);
-			SetSelectedTeleport(0);
-			SetButtons();
+			if (selectedEnvironment.teleports.Count > 0)
+			{
+				SetSelectedTeleport(0);
+			}
+			else
+			{
+				teleportName.text = "No teleports";
+			}
+		}
+
+		private void ClearModThumbnail()
+		{
+			if (modThumbnail != null)
+			{
+				Destroy(modThumbnail);
+			}
+			modThumbnail = null;
 		}
 
 		private void SetSelectedTeleport(int buttonIndex)
 		{
-			selectedTeleportIndex = buttonIndex;
-			teleportName.text = selectedTeleport.name;
+			int index = buttonIndex + pageIndex * objectButtons.Length;
+			if (selectedEnvironment == null || index < 0 || index >= selectedEnvironment.teleports.Count)
+			{
+				return;
+			}
+			selectedTeleportIndex = index;
+			teleportName.text = selectedTeleport;
 		}
 
 		private void SetButtons()
 		{
 			for (int i = 0; i < objectButtons.Length; i++)
 			{
-				int teleportIndex = i + (pageIndex * objectButtons.Length);
-				bool exists = selectedEnvironment.teleportInfo.Length > teleportIndex;
+				int index = i + pageIndex * objectButtons.Length;
+				bool exists = selectedEnvironment?.teleports != null && index < selectedEnvironment.teleports.Count;
 				objectButtons[i].SetShown(exists);
-				if (exists)
+				if (!exists)
 				{
-					objectButtons[i].SetThumbnail(selectedEnvironment.teleportInfo[teleportIndex].thumbnail);
+					continue;
 				}
+
+				Sprite thumbnail = index < selectedEnvironment.teleportThumbnails.Count
+					? selectedEnvironment.teleportThumbnails[index] : null;
+				if (thumbnail == null)
+				{
+					thumbnail = modThumbnail;
+				}
+				objectButtons[i].SetThumbnail(thumbnail);
 			}
 		}
 
@@ -139,18 +226,12 @@ namespace CollabXR.Environments
 
 		public void SetPage(int index)
 		{
-			pageIndex = index;
-
-			int maxPageIndex = Mathf.CeilToInt(selectedEnvironment.teleportInfo.Length / (float)objectButtons.Length - 1);
-
-			pageIndex = Mathf.Clamp(pageIndex, 0, maxPageIndex);
-
+			int count = selectedEnvironment?.teleports?.Count ?? 0;
+			int maxPageIndex = objectButtons.Length > 0 ? Mathf.Max(0, Mathf.CeilToInt(count / (float)objectButtons.Length) - 1) : 0;
+			pageIndex = Mathf.Clamp(index, 0, maxPageIndex);
 			pageCountText.SetText("Page " + (pageIndex + 1) + "/" + (maxPageIndex + 1));
 			pageBackButton.interactable = pageIndex != 0;
 			pageForwardButton.interactable = pageIndex != maxPageIndex;
-			//pageBackButton.gameObject.SetActive(pageIndex != 0);
-			//pageForwardButton.gameObject.SetActive(pageIndex < maxPageIndex);
-
 			SetButtons();
 		}
 	}
