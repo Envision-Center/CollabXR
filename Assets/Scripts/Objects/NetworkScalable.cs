@@ -22,6 +22,13 @@ namespace CollabXR.Objects
 		NetworkGrabbable grabbable;
 		public event Action OnNonUniformScaleChange;
 
+		/// <summary>
+		/// Raised on every client whenever the applied scale changes
+		/// </summary>
+		public event Action OnScaleChanged = delegate { };
+
+		public bool ScalingLocked { get; set; }
+
 		public override void Spawned()
 		{
 			data = GetComponent<CollabObject>().GetData();
@@ -57,6 +64,9 @@ namespace CollabXR.Objects
 		/// <param name="addAmount"></param>
 		public void AddUniformScale(float addAmount)
 		{
+			if (ScalingLocked)
+				return;
+
 			uniformNetworkScale = ConstrainUniformScale(uniformNetworkScale + addAmount);
 			SetLocalScale();
 		}
@@ -76,12 +86,18 @@ namespace CollabXR.Objects
 		/// <param name="scale"></param>
 		public void SetUniformScale(float scale)
 		{
+			if (ScalingLocked)
+				return;
+
 			uniformNetworkScale = ConstrainUniformScale(scale);
 			SetLocalScale();
 		}
 
 		public void SetNonUniformScale(Vector3 sliderScale)
 		{
+			if (ScalingLocked)
+				return;
+
 			nonUniformNetworkScale = sliderScale;
 			SetLocalScale();
 			OnNonUniformScaleChange.Invoke();
@@ -92,6 +108,7 @@ namespace CollabXR.Objects
 			// changing non uniform scale to exponential since it uses a slider for input (bad)
 			Vector3 effectiveNonUniformScale = new Vector3(Mathf.Pow(10.0f, nonUniformNetworkScale.x), Mathf.Pow(10.0f, nonUniformNetworkScale.y), Mathf.Pow(10.0f, nonUniformNetworkScale.z));
 			transform.localScale = Vector3.Scale(baseNetworkScale * uniformNetworkScale, effectiveNonUniformScale);
+			OnScaleChanged();
 		}
 	}
 }
