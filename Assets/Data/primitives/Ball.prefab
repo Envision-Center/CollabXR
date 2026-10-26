@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 145367285632159730}
   - component: {fileID: 3391946423869746415}
   - component: {fileID: 5657365697743414433}
+  - component: {fileID: 150798977183132574}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -147,7 +148,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SortKey: 656590753
   ObjectInterest: 1
-  Flags: 524289
+  Flags: 526593
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 5215245657770286264}
@@ -275,8 +276,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contactAuthoritySpeed: 0.1
-  _NetworkedUseGravity:
-    _value: 0
   _NetworkedIsHeld:
     _value: 0
 --- !u!114 &5657365697743414433
@@ -291,6 +290,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a94a89e42c2fd74498299a8d33b7a6de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &150798977183132574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2630217623640252459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d63622ac3d011b4db722e88f8f0c34e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scaleMode: 0
+  gravityScale: 1
+  throwing:
+    strength: 1
+    spin: 1
+    maxSpeed: 15
+    sampleWindow: 0.1
+  bounce:
+    overrideMaterial: 1
+    bounciness: 0.8
+    friction: 0.6
+    ignoreSurfaceBounce: 1
 --- !u!1 &4705137068640143934
 GameObject:
   m_ObjectHideFlags: 0
