@@ -28,6 +28,9 @@ namespace CollabXR.UI
 			y,
 			z;
 
+		[Tooltip("Parent of the scale sliders, hidden for objects that can't be resized.")]
+		public GameObject scaleSection;
+
 		private List<GameObject> pageInstances = new List<GameObject>();
 
 		public override void GiveContext(CollabObject context, CollabContextMenu menu)
@@ -45,6 +48,7 @@ namespace CollabXR.UI
 			{
 				scaler.OnNonUniformScaleChange += AdjustScaleSliders;
 			}
+			SetScaleSectionVisible(scaler != null && !scaler.ScalingLocked);
 
 			toggleCategories = new List<List<ToggleUI>>();
 			int index = 0;
@@ -166,6 +170,19 @@ namespace CollabXR.UI
 				y.SetValueWithoutNotify(scaler.nonUniformNetworkScale.y);
 				z.SetValueWithoutNotify(scaler.nonUniformNetworkScale.z);
 			}
+		}
+
+		private void SetScaleSectionVisible(bool visible)
+		{
+			if (scaleSection != null)
+			{
+				scaleSection.SetActive(visible);
+				return;
+			}
+
+			x.gameObject.SetActive(visible);
+			y.gameObject.SetActive(visible);
+			z.gameObject.SetActive(visible);
 		}
 
 		public void Scale()

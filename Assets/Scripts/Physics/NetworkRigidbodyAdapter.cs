@@ -20,7 +20,7 @@ namespace CollabXR
 		[Tooltip("Minimum impact speed for this body to take authority over an unheld body it hits.")]
 		private float contactAuthoritySpeed = 0.1f;
 
-		[Networked]
+		[Networked, OnChangedRender(nameof(OnHeldChanged))]
 		public NetworkBool NetworkedIsHeld { get; set; }
 
 		/// <summary>
@@ -40,6 +40,10 @@ namespace CollabXR
 		private PhysicsScaleMode scaleMode;
 		private float gravityScale = 1f;
 		private RigidbodyBasicConfig ownConfig;
+		private NetworkRigidbody3D networkBody;
+		private bool authoredRenderSleep;
+		private BounceTuning bounceTuning;
+		private PhysicsMaterial bounceMaterial;
 		private bool authoredIsKinematic;
 		private bool authoredUseGravity;
 		private int holdCount;
@@ -55,6 +59,9 @@ namespace CollabXR
 
 			// Captured before NetworkRigidbody3D forces nonauthority copies kinematic in Spawned
 			ownConfig = RigidbodyBasicConfig.Capture(body);
+
+			networkBody = GetComponent<NetworkRigidbody3D>();
+			authoredRenderSleep = networkBody.UseRenderSleepThresholds;
 
 			if (grabbable != null)
 			{
@@ -76,6 +83,23 @@ namespace CollabXR
 
 			PhysicsBodyUpdater.RemoveHeld(this);
 			PhysicsBodyUpdater.RemoveScaledGravity(this);
+
+			if (bounceMaterial != null)
+				Destroy(bounceMaterial);
+		}
+
+		public override void Spawned()
+		{
+			base.Spawned();
+			OnHeldChanged();
+		}
+
+		/// <summary>
+		/// Keeps held bodies kinematic and interpolated
+		/// </summary>
+		private void OnHeldChanged()
+		{
+			networkBody.UseRenderSleepThresholds = authoredRenderSleep && !NetworkedIsHeld;
 		}
 
 		/// <summary>
@@ -101,7 +125,6 @@ namespace CollabXR
 		/// </summary>
 		public void TickScaledGravity()
 		{
-			// Skipping sleeping bodies lets resting objects stay asleep, which also stops them sending network updates
 			if (!HasAuthority || body.isKinematic || body.IsSleeping())
 				return;
 
@@ -164,11 +187,37 @@ namespace CollabXR
 
 			RefreshGravity();
 			SetUpScaling();
+			ApplyBounce();
 			IsReady = true;
 			RefreshInterpolation();
 
 			if (UsesScaledGravity())
 				PhysicsBodyUpdater.AddScaledGravity(this);
+		}
+
+		/// <summary>
+		/// Builds one physics material from the bounce settings and puts it on every collider of this body.
+		/// </summary>
+		private void ApplyBounce()
+		{
+			if (!bounceTuning.OverrideMaterial)
+				return;
+
+			bounceMaterial = new PhysicsMaterial($"{name} Bounce")
+			{
+				bounciness = bounceTuning.Bounciness,
+				dynamicFriction = bounceTuning.Friction,
+				staticFriction = bounceTuning.Friction,
+				bounceCombine = bounceTuning.IgnoreSurfaceBounce ? PhysicsMaterialCombine.Maximum : PhysicsMaterialCombine.Average,
+				frictionCombine = PhysicsMaterialCombine.Average,
+			};
+
+			// Include inactive colliders
+			foreach (Collider collider in GetComponentsInChildren<Collider>(true))
+			{
+				if (!collider.isTrigger)
+					collider.sharedMaterial = bounceMaterial;
+			}
 		}
 
 		/// <summary>
@@ -187,11 +236,13 @@ namespace CollabXR
 				scaleMode = PhysicsScaleMode.ScaleMassWithVolume;
 				gravityScale = 1f;
 				throwTuning = new ThrowTuning();
+				bounceTuning = new BounceTuning();
 				return;
 			}
 
 			scaleMode = settings.ScaleMode;
 			gravityScale = settings.GravityScale;
+			bounceTuning = settings.Bounce;
 			throwTuning = settings.Throwing;
 		}
 
