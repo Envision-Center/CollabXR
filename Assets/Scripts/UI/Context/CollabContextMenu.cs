@@ -97,7 +97,7 @@ namespace CollabXR.UI
 			{
 				var tabGo = new GameObject("ExtraContext");
 				tabGo.transform.SetParent(tabContainer, false);
-				var context = Instantiate(obj.Data.contextPrefab, tabGo.transform).GetComponent<CollabContext>();
+				var context = Instantiate(obj.Data.contextPrefab, tabGo.transform, false).GetComponent<CollabContext>();
 				context.transform.localScale = Vector3.one;
 				context.transform.localPosition = Vector3.zero;
 				context.transform.localRotation = Quaternion.identity;

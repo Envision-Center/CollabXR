@@ -2,7 +2,7 @@ using CollabXR.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using CollabXR.EnvironmentExtras;
+using CollabXR.ModPackager.EnvironmentExtras;
 
 namespace CollabXR.Environments
 {
