@@ -48,6 +48,7 @@ namespace CollabXR.Environments
 	public class EnvironmentLibrary
 	{
 		public readonly List<EnvironmentCategory> categories = new();
+        public EnvironmentEntry defaultEnvironmentEntry; // a reference to the default environment entry
 
 		public void AddEnvironmentEntry(EnvironmentEntry entry)
 		{

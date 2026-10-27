@@ -31,8 +31,10 @@ namespace CollabXR.Environments
 		
 		/// <summary>
 		/// Legacy built-in environment data scriptable objects
+		/// The first entry in this array is considered the default environment
 		/// </summary>
 		[SerializeField] public EnvironmentData[] localEnvironmentData;
+		[SerializeField] public EnvironmentData defaultEnvironmentEntry;
 
 		///
 		/// STATE VARIABLES
@@ -46,15 +48,27 @@ namespace CollabXR.Environments
 		[Networked, OnChangedRender(nameof(Teleport))]
 		public int currentTeleportIndex { get; set; }
 		
+		///
+		/// TELEPORT FIELDS
+		/// 
+
 		private Matrix4x4 previousTeleportMatrix = Matrix4x4.identity;
 		private int requestedCategoryIndex;
 		private int requestedEntryIndex;
 		private int requestedTeleportIndex;
+
+		/// <summary>
+		/// A reference to the environment entry that was selected before the environment library was refreshed
+		/// </summary>
 		private EnvironmentEntry selectedEntryBeforeRefresh;
+		
+		///
+		/// FLAGS
+		/// 
+
 		private bool loadingScene;
 		private bool retryEnvironmentLoad;
-		// Ignore async loads started before a disconnect or a newer load.
-		private int sceneLoadVersion;
+		private int sceneLoadVersion; // generation index
 
 		///
 		/// EVENTS
@@ -434,48 +448,6 @@ namespace CollabXR.Environments
 			environmentLibrary.AddEnvironmentEntry(newEntry);
 		}
 
-		public void NotifyEnvironmentLibraryChanged()
-		{
-			if (selectedEntryBeforeRefresh != null && Object != null && Object.HasStateAuthority)
-			{
-				bool found = false;
-				for (int categoryIndex = 0; categoryIndex < EnvironmentCategories.Count; categoryIndex++)
-				{
-					for (int entryIndex = 0; entryIndex < EnvironmentCategories[categoryIndex].entries.Count; entryIndex++)
-					{
-						EnvironmentEntry entry = GetEnvironmentEntry(categoryIndex, entryIndex);
-						if (entry.modGUID != selectedEntryBeforeRefresh.modGUID ||
-							entry.assetGUID != selectedEntryBeforeRefresh.assetGUID ||
-							entry.scenePath != selectedEntryBeforeRefresh.scenePath)
-						{
-							continue;
-						}
-						currentEnvironmentSelection = new EnvironmentSelection { CategoryIndex = categoryIndex, EntryIndex = entryIndex };
-						found = true;
-						break;
-					}
-					if (found)
-					{
-						break;
-					}
-				}
-				if (!found)
-				{
-					currentEnvironmentSelection = new EnvironmentSelection();
-					currentTeleportIndex = 0;
-				}
-			}
-			selectedEntryBeforeRefresh = null;
-			OnEnvironmentLibraryChanged?.Invoke();
-			EnvironmentEntry selected = Object != null ? GetSelectedEnvironmentEntry() : null;
-			if (Object != null && !loadingScene && selected != null &&
-				(currentEnvInstance == null || retryEnvironmentLoad ||
-				(Object.HasStateAuthority && !IsSameScene(activeEnvironmentEntry, selected))))
-			{
-				LoadEnvironmentSceneLocal();
-			}
-		}
-
 		/// <summary>
 		/// Builds environment entries from the local environment data and adds them to the environment library.
 		/// </summary>
@@ -485,8 +457,12 @@ namespace CollabXR.Environments
 			{
 				EnvironmentEntry newEntry = new EnvironmentEntry();
 				newEntry.InitializeFromLocalData(entry);
-				Debug.Log($"Building environment entry from local data for environment {entry.name}");
 				environmentLibrary.AddEnvironmentEntry(newEntry);
+			
+				if (entry == defaultEnvironmentEntry)
+				{
+					environmentLibrary.defaultEnvironmentEntry = newEntry;
+				}
 			}
 		}
 #endregion
