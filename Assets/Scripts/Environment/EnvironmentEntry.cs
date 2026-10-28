@@ -62,11 +62,12 @@ namespace CollabXR.Environments
             this.category = BUILTIN_CATEGORY;
             this.attribution = null;
             this.formattedSceneName = envData.sceneName;
-            this.thumbnail = envData.teleportInfo != null && envData.teleportInfo.Length > 0 && envData.teleportInfo[0].thumbnail != null
-                ? envData.teleportInfo[0].thumbnail.texture : null;
             this.availableOnThisPlatform = true; // built-in environments are always available
             this.creatorNames = new List<string> { "Envision Center" };
             this.scenePath = envData.scenePath;
+
+            bool hasThumbnail = envData.teleportInfo != null && envData.teleportInfo.Length > 0 && envData.teleportInfo[0].thumbnail != null;
+            this.thumbnail = hasThumbnail ? envData.teleportInfo[0].thumbnail.texture : null;
 
             List<string> teleportNames = new List<string>();
             this.teleportThumbnails = new List<Sprite>();

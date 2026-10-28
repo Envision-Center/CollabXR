@@ -26,24 +26,10 @@ namespace CollabXR.Environments
 		private ObjectButton[] objectButtons;
 		private Sprite modThumbnail;
 		private int pageIndex;
-		private int selectedCategoryIndex;
-		private int selectedEntryIndex;
 		private int selectedTeleportIndex;
 		private bool started;
 
-		public EnvironmentEntry selectedEnvironment
-		{
-			get
-			{
-				var categories = EnvironmentManager.Instance?.EnvironmentCategories;
-				if (categories == null || selectedCategoryIndex >= categories.Count ||
-					selectedEntryIndex >= categories[selectedCategoryIndex].entries.Count)
-				{
-					return null;
-				}
-				return categories[selectedCategoryIndex].entries[selectedEntryIndex];
-			}
-		}
+		public EnvironmentEntry selectedEnvironment { get; private set; }
 
 		public string selectedTeleport
 		{
@@ -102,19 +88,18 @@ namespace CollabXR.Environments
 		{
 			if (selectedEnvironment != null && selectedEnvironment.availableOnThisPlatform && selectedEnvironment.teleports.Count > 0)
 			{
-				EnvironmentManager.Instance.RequestRoomEnvironmentChange(selectedCategoryIndex, selectedEntryIndex, selectedTeleportIndex);
+				EnvironmentManager.Instance.RequestRoomEnvironmentChange(selectedEnvironment, selectedTeleportIndex);
 			}
 		}
 
 		private void RefreshLibrary()
 		{
 			ClearModThumbnail();
-			selectedCategoryIndex = 0;
-			selectedEntryIndex = 0;
+			selectedEnvironment = null;
 			if (EnvironmentManager.Instance.EnvironmentCategories.Count > 0)
 			{
 				ShowCategories();
-				SetSelectedEnvironment(0);
+				SetSelectedEnvironment(EnvironmentManager.Instance.EnvironmentCategories[0].entries[0]);
 			}
 			else
 			{
@@ -130,39 +115,36 @@ namespace CollabXR.Environments
 			var categories = EnvironmentManager.Instance.EnvironmentCategories;
 			for (int i = 0; i < categories.Count; i++)
 			{
-				int captured = i;
-				categoryButtonList.InstantiateCategoryButton(categories[i].name, () =>
+				EnvironmentCategory category = categories[i];
+				categoryButtonList.InstantiateCategoryButton(category.name, () =>
 				{
-					ShowEnvironments(captured);
+					ShowEnvironments(category);
 				});
 			}
 		}
 
-		private void ShowEnvironments(int categoryIndex)
+		private void ShowEnvironments(EnvironmentCategory category)
 		{
-			selectedCategoryIndex = categoryIndex;
 			categoryButtonList.ResetCategoryButtons();
 			categoryButtonList.InstantiateCategoryButton("← Categories", ShowCategories);
-			var entries = EnvironmentManager.Instance.EnvironmentCategories[categoryIndex].entries;
-			for (int i = 0; i < entries.Count; i++)
+			foreach (EnvironmentEntry entry in category.entries)
 			{
-				int captured = i;
-				string label = entries[i].formattedSceneName + (entries[i].availableOnThisPlatform ? "" : " (Unavailable)");
+				string label = entry.formattedSceneName + (entry.availableOnThisPlatform ? "" : " (Unavailable)");
 				categoryButtonList.InstantiateCategoryButton(label, () =>
 				{
-					SetSelectedEnvironment(captured);
+					SetSelectedEnvironment(entry);
 				});
 			}
-			if (entries.Count > 0)
+			if (category.entries.Count > 0)
 			{
 				categoryButtonList.Select(1);
 			}
 		}
 
-		private void SetSelectedEnvironment(int index)
+		private void SetSelectedEnvironment(EnvironmentEntry entry)
 		{
 			ClearModThumbnail();
-			selectedEntryIndex = index;
+			selectedEnvironment = entry;
 			if (selectedEnvironment.thumbnail != null && selectedEnvironment.teleportThumbnails.Count == 0)
 			{
 				Texture2D texture = selectedEnvironment.thumbnail;

@@ -53,8 +53,7 @@ namespace CollabXR.Environments
 		/// 
 
 		private Matrix4x4 previousTeleportMatrix = Matrix4x4.identity;
-		private int requestedCategoryIndex;
-		private int requestedEntryIndex;
+		private EnvironmentEntry requestedEnvironmentEntry;
 		private int requestedTeleportIndex;
 
 		/// <summary>
@@ -87,6 +86,25 @@ namespace CollabXR.Environments
 		{
 			return environmentLibrary.GetEntry(categoryIndex, entryIndex);
 		}
+
+		private bool TryGetEntryIndices(EnvironmentEntry entry, out int categoryIndex, out int entryIndex)
+		{
+			for (categoryIndex = 0; categoryIndex < EnvironmentCategories.Count; categoryIndex++)
+			{
+				for (entryIndex = 0; entryIndex < EnvironmentCategories[categoryIndex].entries.Count; entryIndex++)
+				{
+					if (ReferenceEquals(EnvironmentCategories[categoryIndex].entries[entryIndex], entry))
+					{
+						return true;
+					}
+				}
+			}
+
+			categoryIndex = -1;
+			entryIndex = -1;
+			return false;
+		}
+
 		public EnvironmentEntry GetSelectedEnvironmentEntry()
 		{
 			int categoryIndex = currentEnvironmentSelection.CategoryIndex;
@@ -105,6 +123,22 @@ namespace CollabXR.Environments
 				first.modGUID == second.modGUID &&
 				first.assetGUID == second.assetGUID &&
 				first.scenePath == second.scenePath;
+		}
+
+		private EnvironmentEntry FindEntryForScene(EnvironmentEntry previousEntry)
+		{
+			foreach (EnvironmentCategory category in EnvironmentCategories)
+			{
+				foreach (EnvironmentEntry entry in category.entries)
+				{
+					if (IsSameScene(entry, previousEntry))
+					{
+						return entry;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -357,16 +391,16 @@ namespace CollabXR.Environments
 		/// Requests a change to the room environment.
 		/// First entrypoint for switching environments.
 		/// </summary>
-		public void RequestRoomEnvironmentChange(int categoryIndex, int entryIndex, int teleportIndex)
+		public void RequestRoomEnvironmentChange(EnvironmentEntry entry, int teleportIndex)
 		{
 			if (loadingScene)
-				return;
-			if (categoryIndex < 0 || categoryIndex >= EnvironmentCategories.Count ||
-				entryIndex < 0 || entryIndex >= EnvironmentCategories[categoryIndex].entries.Count)
 			{
 				return;
 			}
-			EnvironmentEntry entry = GetEnvironmentEntry(categoryIndex, entryIndex);
+			if (entry == null || !TryGetEntryIndices(entry, out int categoryIndex, out int entryIndex))
+			{
+				return;
+			}
 			if (!entry.availableOnThisPlatform || teleportIndex < 0 || teleportIndex >= entry.teleports.Count)
 			{
 				return;
@@ -378,10 +412,9 @@ namespace CollabXR.Environments
 			}
 			else
 			{
-				Object.RequestStateAuthority();
-				requestedCategoryIndex = categoryIndex;
-				requestedEntryIndex = entryIndex;
+				requestedEnvironmentEntry = entry;
 				requestedTeleportIndex = teleportIndex;
+				Object.RequestStateAuthority();
 			}
 		}
 
@@ -396,9 +429,11 @@ namespace CollabXR.Environments
 
 		public void StateAuthorityChanged()
 		{
-			if (Object.HasStateAuthority)
+			if (Object.HasStateAuthority && requestedEnvironmentEntry != null)
 			{
-				ChangeEnvironmentWithAuthority(requestedCategoryIndex, requestedEntryIndex, requestedTeleportIndex);
+				EnvironmentEntry entry = requestedEnvironmentEntry;
+				requestedEnvironmentEntry = null;
+				RequestRoomEnvironmentChange(entry, requestedTeleportIndex);
 			}
 		}
 
@@ -436,6 +471,7 @@ namespace CollabXR.Environments
 		public void ResetEnvironmentLibrary()
 		{
 			selectedEntryBeforeRefresh = Object != null ? GetSelectedEnvironmentEntry() : null;
+			requestedEnvironmentEntry = null;
 			environmentLibrary.ClearEnvironmentEntries();
 			BuildEntriesFromLocalData();
 		}

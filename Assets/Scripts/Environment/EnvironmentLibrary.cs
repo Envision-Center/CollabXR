@@ -83,6 +83,7 @@ namespace CollabXR.Environments
 		public void ClearEnvironmentEntries()
 		{
 			categories.Clear();
+			defaultEnvironmentEntry = null;
 		}
 
 		public EnvironmentEntry GetEntry(int categoryIndex, int entryIndex)
