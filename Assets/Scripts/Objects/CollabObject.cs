@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using CollabXR.ModExtras;
 using CollabXR.ModExtras.Annotation;
 using CollabXR.ModLoader;
@@ -122,10 +121,18 @@ namespace CollabXR.Objects
 			if (Data == null)
 			{
 				// Only spawn placeholder box if this Object has Data (aka isn't a drawing)
-				if (!Category.ToString().IsNullOrEmpty() && DataName.Value.ToString().IsNullOrEmpty())
+				if (!Category.ToString().IsNullOrEmpty() && !DataName.Value.ToString().IsNullOrEmpty())
 				{
-					// Wait for the object to load before finalizing prefab
-					MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
+					if (SimpleModLoader.Instance.ModsLoaded)
+					{
+						// likely not a mod from the avaliable repository, show it as not avaliable
+						this.SetAsNotAvaliable();
+					}
+					else
+					{
+						// Wait for the object to load before finalizing prefab
+						MainLibraryRef.Instance.onNewDataLoad.AddListener(CheckIfDataLoaded);
+					}
 				}
 				else
 				{
@@ -198,10 +205,15 @@ namespace CollabXR.Objects
 		public void CheckIfDataLoaded()
 		{
 			Data = FindDataset();
-			if (Data != null)
+			MainLibraryRef.Instance.onNewDataLoad.RemoveListener(CheckIfDataLoaded);
+
+			if (Data == null)
 			{
-				MainLibraryRef.Instance.onNewDataLoad.RemoveListener(CheckIfDataLoaded);
-				GameObject.Destroy(dataRoot);
+				this.SetAsNotAvaliable();
+			}
+			else
+			{
+				Destroy(dataRoot);
 				InitializePrefab();
 				FinishedLoading.Invoke();
 			}
@@ -215,6 +227,13 @@ namespace CollabXR.Objects
 		public CollabObjectData GetData()
 		{
 			return Data;
+		}
+
+		public void SetAsNotAvaliable()
+		{
+			Destroy(dataRoot);
+			dataRoot = Instantiate(MainLibraryRef.Instance.placeholderPrefab, transform);
+			dataRoot.GetComponent<CollabObjectPreview>().EnableLoadingAnimation(true, false);
 		}
 
 		public void TryReleaseData()

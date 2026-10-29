@@ -1,17 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using CollabXR.ModPackager;
 using CollabXR.Objects;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace CollabXR.ModLoader
 {
 	public class SimpleModLoader : SingletonBehavior<SimpleModLoader>
 	{
+		public bool ModsLoaded { get; private set; }
+		public UnityEvent OnFinishLoading;
+
 		private const string DEBUG_LOG_HEADER = "<color=#aaffaa>[Simple Mod Loader]</color>";
 
 		private void Start()
@@ -22,6 +24,7 @@ namespace CollabXR.ModLoader
 		public void RefreshSimpleMods()
 		{
 			Debug.Log($"{DEBUG_LOG_HEADER} Refreshing simple mod loader!");
+			ModsLoaded = false;
 			MainLibraryRef.Instance.ClearData();
 			LoadArbitraryMods();
 		}
@@ -48,6 +51,9 @@ namespace CollabXR.ModLoader
 					Debug.LogWarning($"{DEBUG_LOG_HEADER} Error loading arbitrary mod: {e}");
 				}
 			}
+
+			ModsLoaded = true;
+			OnFinishLoading?.Invoke();
 		}
 	}
 }
