@@ -11,6 +11,7 @@ namespace CollabXR.ModLoader
 {
 	public class SimpleModLoader : SingletonBehavior<SimpleModLoader>
 	{
+		public bool ModsLoaded { get; private set; }
 		public UnityEvent OnFinishLoading;
 
 		private const string DEBUG_LOG_HEADER = "<color=#aaffaa>[Simple Mod Loader]</color>";
@@ -23,6 +24,7 @@ namespace CollabXR.ModLoader
 		public void RefreshSimpleMods()
 		{
 			Debug.Log($"{DEBUG_LOG_HEADER} Refreshing simple mod loader!");
+			ModsLoaded = false;
 			MainLibraryRef.Instance.ClearData();
 			LoadArbitraryMods();
 		}
@@ -50,6 +52,7 @@ namespace CollabXR.ModLoader
 				}
 			}
 
+			ModsLoaded = true;
 			OnFinishLoading?.Invoke();
 		}
 	}
