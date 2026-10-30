@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneName: CollabDefault
   scenePath: Assets/Environments/Collab Default/CollabDefault.unity
+  sceneGuid: 2960b7de4564aea4a8f144120f156a15
   sceneAsset: {fileID: 102900000, guid: 2960b7de4564aea4a8f144120f156a15, type: 3}
   teleportInfo:
   - name: Default

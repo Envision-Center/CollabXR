@@ -12,12 +12,6 @@ using CollabXR.ModLoader;
 
 namespace CollabXR.Environments
 {
-	public struct EnvironmentSelection : INetworkStruct
-	{
-		public int CategoryIndex;
-		public int EntryIndex;
-	}
-
 	public class EnvironmentManager : SingletonNetworkBehavior<EnvironmentManager>, IStateAuthorityChanged, IDespawned
 	{
 		///
@@ -30,8 +24,7 @@ namespace CollabXR.Environments
 		EnvironmentLibrary environmentLibrary = new EnvironmentLibrary();
 		
 		/// <summary>
-		/// Legacy built-in environment data scriptable objects
-		/// The first entry in this array is considered the default environment
+		/// Built-in environments.
 		/// </summary>
 		[SerializeField] public EnvironmentData[] localEnvironmentData;
 		[SerializeField] public EnvironmentData defaultEnvironmentEntry;
@@ -41,7 +34,7 @@ namespace CollabXR.Environments
 		///
 
 		[Networked, OnChangedRender(nameof(LoadEnvironmentSceneLocal))]
-		public EnvironmentSelection currentEnvironmentSelection { get; set; }
+		public Guid currentEnvironmentGuid { get; set; }
 		private EnvironmentEntry activeEnvironmentEntry;
 		[SerializeField] public EnvironmentScene currentEnvInstance;
 
@@ -56,11 +49,6 @@ namespace CollabXR.Environments
 		private EnvironmentEntry requestedEnvironmentEntry;
 		private int requestedTeleportIndex;
 
-		/// <summary>
-		/// A reference to the environment entry that was selected before the environment library was refreshed
-		/// </summary>
-		private EnvironmentEntry selectedEntryBeforeRefresh;
-		
 		///
 		/// FLAGS
 		/// 
@@ -82,63 +70,16 @@ namespace CollabXR.Environments
 				return environmentLibrary.categories;
 			}
 		}
-		public EnvironmentEntry GetEnvironmentEntry(int categoryIndex, int entryIndex)
-		{
-			return environmentLibrary.GetEntry(categoryIndex, entryIndex);
-		}
-
-		private bool TryGetEntryIndices(EnvironmentEntry entry, out int categoryIndex, out int entryIndex)
-		{
-			for (categoryIndex = 0; categoryIndex < EnvironmentCategories.Count; categoryIndex++)
-			{
-				for (entryIndex = 0; entryIndex < EnvironmentCategories[categoryIndex].entries.Count; entryIndex++)
-				{
-					if (ReferenceEquals(EnvironmentCategories[categoryIndex].entries[entryIndex], entry))
-					{
-						return true;
-					}
-				}
-			}
-
-			categoryIndex = -1;
-			entryIndex = -1;
-			return false;
-		}
-
 		public EnvironmentEntry GetSelectedEnvironmentEntry()
 		{
-			int categoryIndex = currentEnvironmentSelection.CategoryIndex;
-			int entryIndex = currentEnvironmentSelection.EntryIndex;
-			if (categoryIndex < 0 || categoryIndex >= EnvironmentCategories.Count ||
-				entryIndex < 0 || entryIndex >= EnvironmentCategories[categoryIndex].entries.Count)
-			{
-				return null;
-			}
-			return GetEnvironmentEntry(categoryIndex, entryIndex);
+			return environmentLibrary.GetEntry(currentEnvironmentGuid);
 		}
 
 		private static bool IsSameScene(EnvironmentEntry first, EnvironmentEntry second)
 		{
 			return first != null && second != null &&
-				first.modGUID == second.modGUID &&
 				first.assetGUID == second.assetGUID &&
 				first.scenePath == second.scenePath;
-		}
-
-		private EnvironmentEntry FindEntryForScene(EnvironmentEntry previousEntry)
-		{
-			foreach (EnvironmentCategory category in EnvironmentCategories)
-			{
-				foreach (EnvironmentEntry entry in category.entries)
-				{
-					if (IsSameScene(entry, previousEntry))
-					{
-						return entry;
-					}
-				}
-			}
-
-			return null;
 		}
 
 		/// <summary>
@@ -149,6 +90,17 @@ namespace CollabXR.Environments
 		{
 			base.Spawned();
 			ResetEnvironmentLibrary();
+			if (Object.HasStateAuthority && currentEnvironmentGuid == Guid.Empty)
+			{
+				if (environmentLibrary.defaultEnvironmentEntry == null)
+				{
+					Debug.LogError("No default environment entry is configured.");
+				}
+				else
+				{
+					ChangeEnvironmentWithAuthority(environmentLibrary.defaultEnvironmentEntry, 0);
+				}
+			}
 			LoadEnvironmentSceneLocal();
 		}
 
@@ -183,10 +135,16 @@ namespace CollabXR.Environments
 		}
 
 		/// <summary>
-		/// Loads the environment selected by the networked indices.
+		/// Loads the environment selected by the networked identifiers.
 		/// </summary>
 		private async void LoadEnvironmentSceneLocal()
 		{
+			EnvironmentEntry entry = GetSelectedEnvironmentEntry();
+			if (entry == null)
+			{
+				return;
+			}
+
 			// flag to indicate if a scene is currently loading
 			if (loadingScene)
 			{
@@ -195,11 +153,9 @@ namespace CollabXR.Environments
 			loadingScene = true;
 			int loadVersion = ++sceneLoadVersion;
 
-			EnvironmentEntry entry;
 			try
 			{
-				entry = GetSelectedEnvironmentEntry();
-				if (entry == null || !entry.availableOnThisPlatform || string.IsNullOrEmpty(entry.scenePath))
+				if (!entry.availableOnThisPlatform || string.IsNullOrEmpty(entry.scenePath))
 				{
 					throw new InvalidOperationException("Selected environment is unavailable or has no scene path.");
 				}
@@ -244,12 +200,13 @@ namespace CollabXR.Environments
 				return;
 			}
 
+			EnvironmentEntry previousEntry = null;
 			if (activeEnvironmentEntry != null)
 			{
-				SceneManager.UnloadSceneAsync(activeEnvironmentEntry.scenePath);
+				previousEntry = activeEnvironmentEntry;
+				activeEnvironmentEntry = null;
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 				currentEnvInstance = null;
-				activeEnvironmentEntry = null;
 			}
 
 			Debug.Log($"Initializing loading of: {entry.scenePath}");
@@ -265,6 +222,7 @@ namespace CollabXR.Environments
 				Debug.LogError($"Failed to load environment scene at {entry.scenePath}: {exception}");
 				return;
 			}
+
 			if (loadOperation == null)
 			{
 				loadingScene = false;
@@ -272,8 +230,12 @@ namespace CollabXR.Environments
 				Debug.LogError($"Failed to start loading environment scene at {entry.scenePath}.");
 				return;
 			}
-			loadOperation.completed += _ =>
+			loadOperation.completed += (e) =>
 			{
+				if (previousEntry != null)
+				{
+					SceneManager.UnloadSceneAsync(previousEntry.scenePath);
+				}
 				OnSceneLoadComplete(entry, loadVersion);
 			};
 		}
@@ -397,7 +359,7 @@ namespace CollabXR.Environments
 			{
 				return;
 			}
-			if (entry == null || !TryGetEntryIndices(entry, out int categoryIndex, out int entryIndex))
+			if (entry == null || !ReferenceEquals(environmentLibrary.GetEntry(entry.assetGUID), entry))
 			{
 				return;
 			}
@@ -408,7 +370,7 @@ namespace CollabXR.Environments
 
 			if (Object.HasStateAuthority)
 			{
-				ChangeEnvironmentWithAuthority(categoryIndex, entryIndex, teleportIndex);
+				ChangeEnvironmentWithAuthority(entry, teleportIndex);
 			}
 			else
 			{
@@ -419,11 +381,11 @@ namespace CollabXR.Environments
 		}
 
 		/// <summary>
-		/// Updates the environment and teleport indices with authority.
+		/// Updates the selected environment and teleport with authority.
 		/// </summary>
-		private void ChangeEnvironmentWithAuthority(int categoryIndex, int entryIndex, int teleport)
+		private void ChangeEnvironmentWithAuthority(EnvironmentEntry entry, int teleport)
 		{
-			currentEnvironmentSelection = new EnvironmentSelection { CategoryIndex = categoryIndex, EntryIndex = entryIndex };
+			currentEnvironmentGuid = entry.assetGUID;
 			currentTeleportIndex = teleport;
 		}
 
@@ -470,7 +432,6 @@ namespace CollabXR.Environments
 		/// </summary>
 		public void ResetEnvironmentLibrary()
 		{
-			selectedEntryBeforeRefresh = Object != null ? GetSelectedEnvironmentEntry() : null;
 			requestedEnvironmentEntry = null;
 			environmentLibrary.ClearEnvironmentEntries();
 			BuildEntriesFromLocalData();
@@ -484,18 +445,31 @@ namespace CollabXR.Environments
 			environmentLibrary.AddEnvironmentEntry(newEntry);
 		}
 
+		public void NotifyEnvironmentLibraryChanged()
+		{
+			OnEnvironmentLibraryChanged?.Invoke();
+		}
+
 		/// <summary>
 		/// Builds environment entries from the local environment data and adds them to the environment library.
 		/// </summary>
 		void BuildEntriesFromLocalData()
 		{
-			foreach (var entry in localEnvironmentData)
+			foreach (EnvironmentData data in localEnvironmentData)
 			{
+				if ((data == null) ||
+					(!Guid.TryParseExact(data.sceneGuid, "N", out Guid sceneGuid)) ||
+					(sceneGuid == Guid.Empty)
+				) {
+					Debug.LogError($"Built-in environment {data?.name} has no valid scene GUID.");
+					continue;
+				}
+
 				EnvironmentEntry newEntry = new EnvironmentEntry();
-				newEntry.InitializeFromLocalData(entry);
+				newEntry.InitializeFromLocalData(data, sceneGuid);
 				environmentLibrary.AddEnvironmentEntry(newEntry);
 			
-				if (entry == defaultEnvironmentEntry)
+				if (data == defaultEnvironmentEntry)
 				{
 					environmentLibrary.defaultEnvironmentEntry = newEntry;
 				}

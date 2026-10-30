@@ -55,10 +55,10 @@ namespace CollabXR.Environments
             this.availableOnThisPlatform = available && !string.IsNullOrEmpty(this.scenePath);
         }
 
-        public void InitializeFromLocalData(EnvironmentData envData)
+        public void InitializeFromLocalData(EnvironmentData envData, Guid sceneGuid)
         {
             this.modGUID = Guid.Empty;
-            this.assetGUID = Guid.Empty;
+            this.assetGUID = sceneGuid;
             this.category = BUILTIN_CATEGORY;
             this.attribution = null;
             this.formattedSceneName = envData.sceneName;

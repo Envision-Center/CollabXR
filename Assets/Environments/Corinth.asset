@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneName: Corinth
   scenePath: Assets/Environments/Corinth/Corinth.unity
+  sceneGuid: e02ba90b748f9684c9b78037dd86ad88
   sceneAsset: {fileID: 102900000, guid: e02ba90b748f9684c9b78037dd86ad88, type: 3}
   teleportInfo:
   - name: Fountain

@@ -52,6 +52,11 @@ namespace CollabXR.Environments
 
 		public void AddEnvironmentEntry(EnvironmentEntry entry)
 		{
+			if (entry.assetGUID == Guid.Empty || GetEntry(entry.assetGUID) != null)
+			{
+				throw new ArgumentException($"Invalid or duplicate environment ID: {entry.assetGUID}");
+			}
+
 			string name = string.IsNullOrWhiteSpace(entry.category) ? "Other Environments" : entry.category.Trim();
 			EnvironmentCategory category = categories.Find(c =>
 			{
@@ -86,9 +91,20 @@ namespace CollabXR.Environments
 			defaultEnvironmentEntry = null;
 		}
 
-		public EnvironmentEntry GetEntry(int categoryIndex, int entryIndex)
+		public EnvironmentEntry GetEntry(Guid assetGuid)
 		{
-			return categories[categoryIndex].entries[entryIndex];
+			foreach (EnvironmentCategory category in categories)
+			{
+				foreach (EnvironmentEntry entry in category.entries)
+				{
+					if (entry.assetGUID == assetGuid)
+					{
+						return entry;
+					}
+				}
+			}
+
+			return null;
 		}
 	}
 }

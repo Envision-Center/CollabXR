@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneName: GreenScreen
   scenePath: Assets/Environments/GreenScreen/GreenScreen.unity
+  sceneGuid: 80ca669176d2ebe4595aae4298ca4c28
   sceneAsset: {fileID: 102900000, guid: 80ca669176d2ebe4595aae4298ca4c28, type: 3}
   teleportInfo:
   - name: Green Screen
