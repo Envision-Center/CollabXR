@@ -189,6 +189,8 @@ namespace CollabXR
 			SetUpScaling();
 			ApplyBounce();
 			IsReady = true;
+
+			Debug.Log($"[Physics] {name} ready: scale mode {scaleMode}, gravity scale {gravityScale}, mass {body.mass}, bounce override {bounceTuning.OverrideMaterial}");
 			RefreshInterpolation();
 
 			if (UsesScaledGravity())

@@ -18,7 +18,7 @@ namespace CollabXR.Objects
 		[Networked, OnChangedRender(nameof(NetworkScaleChanged))]
 		public Vector3 nonUniformNetworkScale { get; set; } = Vector3.zero; // the sliders start at zero lol
 
-		CollabObjectData data;
+		CollabObject collabObject;
 		NetworkGrabbable grabbable;
 		public event Action OnNonUniformScaleChange;
 
@@ -31,7 +31,7 @@ namespace CollabXR.Objects
 
 		public override void Spawned()
 		{
-			data = GetComponent<CollabObject>().GetData();
+			collabObject = GetComponent<CollabObject>();
 			grabbable = GetComponent<NetworkGrabbable>();
 			if (Object.HasStateAuthority)
 			{
@@ -54,6 +54,12 @@ namespace CollabXR.Objects
 		/// <returns>Constrained scaling value</returns>
 		private float ConstrainUniformScale(float newScale)
 		{
+			CollabObjectData data = collabObject.GetData();
+
+			// The limits aren't known until this client has the object's data, so hold the current scale until then
+			if (data == null)
+				return uniformNetworkScale;
+
 			// TODO: use a single float for min/max uniform scaling. Requires mod packaging/loading updates
 			return Mathf.Clamp(newScale, Mathf.Max(data.minScale.x, data.minScale.y, data.minScale.z), Mathf.Min(data.maxScale.x, data.maxScale.y, data.maxScale.z));
 		}
