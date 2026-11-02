@@ -30,12 +30,14 @@ namespace CollabXR.Tools
 		public void OpenTweakMenuForObject(CollabObject c)
 		{
 			if (c == null)
+			{
 				return;
+			}
 
-			GameMenu menu = FindObjectOfType<GameMenu>(true);
+			GameMenu menu = FindFirstObjectByType<GameMenu>(FindObjectsInactive.Include);
 			menu?.gameObject.SetActive(true);
 
-			CollabContextMenu contextMenu = FindObjectOfType<CollabContextMenu>(true);
+			CollabContextMenu contextMenu = FindFirstObjectByType<CollabContextMenu>(FindObjectsInactive.Include);
 			if (contextMenu != null)
 			{
 				contextMenu.gameObject.SetActive(true);

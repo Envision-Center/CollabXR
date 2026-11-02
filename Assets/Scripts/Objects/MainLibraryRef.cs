@@ -38,7 +38,7 @@ namespace CollabXR.Objects
 				library.categories.Insert(index + 1, targetCategory);
 				onNewCategoryCreation.Invoke();
 			}
-			targetCategory.objectData.Add(data);
+			targetCategory.AddSorted(data);
 			data.category = targetCategory.name;
 			onNewDataLoad.Invoke();
 			Debug.Log($"[Object Library] added {categoryName}/{data.assetName}");

@@ -15,7 +15,6 @@ jobs:
     defaults:
       run:
         shell: bash
-
     strategy:
       fail-fast: false
       matrix:
@@ -64,8 +63,11 @@ jobs:
         with:
           lfs: true
           submodules: true
-          # token: ${{ steps.app-token.outputs.token }}
+          # We need an access token in order to load our build keys
+          # Note that you must go to your PERSONAL DEVELOPER SETTINGS and then change the resource owner to Envision-Center
+          # https://stackoverflow.com/a/77405973
           token: ${{ secrets.ACCESS_TOKEN }}
+          # token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.head_ref }}
           # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
           persist-credentials: false

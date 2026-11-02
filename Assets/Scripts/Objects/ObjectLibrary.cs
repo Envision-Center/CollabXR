@@ -33,6 +33,37 @@ namespace CollabXR.Objects
 
 		public string name;
 		public List<CollabObjectData> objectData;
+		
+		/// <summary>
+		/// Add data to the objectData list in sorted position. Assumes objectData is already sorted.
+		/// </summary>
+		/// <param name="data"></param>
+		public void AddSorted(CollabObjectData newdata)
+		{
+			if (objectData.Count == 0)
+			{
+				objectData.Add(newdata);
+				return;
+			}
+
+			// do binary search based on formattedName
+			int lo = 0;
+			int hi = objectData.Count;
+			while (lo < hi)
+			{
+				int mid = lo + (hi - lo) / 2;
+				int cmp = string.Compare(objectData[mid].formattedName, newdata.formattedName, StringComparison.Ordinal);
+				if (cmp < 0)
+				{
+					lo = mid + 1;
+				}
+				else
+				{
+					hi = mid;
+				}
+			}
+			objectData.Insert(lo, newdata);
+		}
 	}
 
 #if UNITY_EDITOR
@@ -83,7 +114,7 @@ namespace CollabXR.Objects
 				foreach (string dataFilePath in dataFileNames)
 				{
 					CollabObjectData objectData = BuildData(dataFilePath);
-					objectCategory.objectData.Add(objectData);
+					objectCategory.AddSorted(objectData);
 					EditorUtility.SetDirty(objectData);
 				}
 
