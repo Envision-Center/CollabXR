@@ -46,9 +46,9 @@ namespace CollabXR
 		private PhysicsMaterial bounceMaterial;
 		private bool authoredIsKinematic;
 		private bool authoredUseGravity;
+		private float authoredMass;
 		private int holdCount;
 		private bool handHeld;
-		private float lastVolume;
 
 		protected override void Awake()
 		{
@@ -79,7 +79,7 @@ namespace CollabXR
 			}
 
 			if (scalable != null)
-				scalable.OnScaleChanged -= OnScaleChanged;
+				scalable.OnScaleChanged -= ApplyScaledMass;
 
 			PhysicsBodyUpdater.RemoveHeld(this);
 			PhysicsBodyUpdater.RemoveScaledGravity(this);
@@ -185,16 +185,30 @@ namespace CollabXR
 				return;
 			}
 
+			body.maxAngularVelocity = throwTuning.MaxSpin;
 			RefreshGravity();
 			SetUpScaling();
 			ApplyBounce();
 			IsReady = true;
 
-			Debug.Log($"[Physics] {name} ready: scale mode {scaleMode}, gravity scale {gravityScale}, mass {body.mass}, bounce override {bounceTuning.OverrideMaterial}");
+			Debug.Log(
+				$"[Physics] {name} ready: scale mode {scaleMode}, gravity scale {gravityScale}, mass {body.mass}, max spin {body.maxAngularVelocity}, bounce override {bounceTuning.OverrideMaterial}"
+			);
 			RefreshInterpolation();
 
 			if (UsesScaledGravity())
 				PhysicsBodyUpdater.AddScaledGravity(this);
+
+			WarnAboutChildRigidbodies();
+		}
+
+		private void WarnAboutChildRigidbodies()
+		{
+			foreach (Rigidbody child in GetComponentsInChildren<Rigidbody>(true))
+			{
+				if (child != body)
+					Debug.LogWarning($"[Physics] {name}: the Rigidbody on {child.name} is not networked.");
+			}
 		}
 
 		/// <summary>
@@ -244,8 +258,8 @@ namespace CollabXR
 
 			scaleMode = settings.ScaleMode;
 			gravityScale = settings.GravityScale;
-			bounceTuning = settings.Bounce;
 			throwTuning = settings.Throwing;
+			bounceTuning = settings.Bounce;
 		}
 
 		/// <summary>
@@ -255,6 +269,7 @@ namespace CollabXR
 		{
 			authoredIsKinematic = ownConfig.IsKinematic;
 			authoredUseGravity = ownConfig.UseGravity;
+			authoredMass = ownConfig.Mass;
 
 			if (HasAuthority && HeldLocally)
 				body.isKinematic = true;
@@ -277,6 +292,7 @@ namespace CollabXR
 
 			authoredIsKinematic = basic.IsKinematic;
 			authoredUseGravity = basic.UseGravity;
+			authoredMass = basic.Mass;
 
 			// NetworkRigidbody3D keeps every copy without authority kinematic
 			if (!HasAuthority || HeldLocally)
@@ -318,25 +334,22 @@ namespace CollabXR
 				return;
 
 			scalable.ScalingLocked = scaleMode == PhysicsScaleMode.BlockScaling;
-			lastVolume = GetVolume();
-			scalable.OnScaleChanged += OnScaleChanged;
+			scalable.OnScaleChanged += ApplyScaledMass;
+			ApplyScaledMass();
 		}
 
-		private void OnScaleChanged()
+		/// <summary>
+		/// Derives mass from the networked scale on every client.
+		/// </summary>
+		private void ApplyScaledMass()
 		{
-			float volume = GetVolume();
+			if (scaleMode != PhysicsScaleMode.ScaleMassWithVolume)
+				return;
 
-			// Every client tracks volume so a new authority starts from the right baseline
-			if (scaleMode == PhysicsScaleMode.ScaleMassWithVolume && HasAuthority && lastVolume > Mathf.Epsilon)
-				body.mass *= volume / lastVolume;
+			float mass = authoredMass * scalable.VolumeScale;
 
-			lastVolume = volume;
-		}
-
-		private float GetVolume()
-		{
-			Vector3 scale = transform.localScale;
-			return Mathf.Abs(scale.x * scale.y * scale.z);
+			if (mass > 0f && mass != body.mass)
+				body.mass = mass;
 		}
 
 		/// <summary>

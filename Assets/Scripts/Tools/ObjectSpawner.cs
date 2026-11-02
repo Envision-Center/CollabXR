@@ -283,8 +283,20 @@ namespace CollabXR.Tools
 
 		private GameObject GetContainerFor(GameObject prefab)
 		{
-			if (prefab == null || prefab.GetComponent<Rigidbody>() == null)
+			if (prefab == null)
 			{
+				return simpleModelContainer;
+			}
+
+			if (prefab.GetComponent<Rigidbody>() == null)
+			{
+				Rigidbody misplaced = prefab.GetComponentInChildren<Rigidbody>(true);
+
+				if (misplaced != null)
+				{
+					Debug.LogWarning($"[Physics] {prefab.name}: the Rigidbody on {misplaced.name} isn't networked, move it to the root.");
+				}
+
 				return simpleModelContainer;
 			}
 
