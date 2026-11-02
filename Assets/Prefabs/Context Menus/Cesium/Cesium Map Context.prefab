@@ -1626,6 +1626,12 @@ MonoBehaviour:
   - locationName: Niagara Falls
     latitude: 43.0854
     longitude: -79.0722
+  - locationName: Roman Forum
+    latitude: 41.8919
+    longitude: 12.4865
+  - locationName: Colosseum
+    latitude: 41.8902
+    longitude: 12.4923
   locationsDropdown: {fileID: 4182045804050306358}
   zoomText: {fileID: 5088250160449524850}
   exaggerationText: {fileID: 3595069832536730131}
