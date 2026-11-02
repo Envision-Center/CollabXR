@@ -11,7 +11,13 @@ namespace CollabXR.ModLoader
 {
 	public class SimpleModLoader : SingletonBehavior<SimpleModLoader>
 	{
-		public bool ModsLoaded { get; private set; }
+		/// <summary>
+		/// Tracks the creation and mapping of CollabObjectData for all indexed mods.
+		/// </summary>
+		public bool ModsMapped { get; private set; }
+		/// <summary>
+		/// Invoked on completion of adding CollabObjectData to MainLibraryRef
+		/// </summary>
 		public UnityEvent OnFinishLoading;
 
 		private const string DEBUG_LOG_HEADER = "<color=#aaffaa>[Simple Mod Loader]</color>";
@@ -24,7 +30,7 @@ namespace CollabXR.ModLoader
 		public void RefreshSimpleMods()
 		{
 			Debug.Log($"{DEBUG_LOG_HEADER} Refreshing simple mod loader!");
-			ModsLoaded = false;
+			ModsMapped = false;
 			MainLibraryRef.Instance.ClearData();
 			LoadArbitraryMods();
 		}
@@ -52,7 +58,7 @@ namespace CollabXR.ModLoader
 				}
 			}
 
-			ModsLoaded = true;
+			ModsMapped = true;
 			OnFinishLoading?.Invoke();
 		}
 	}

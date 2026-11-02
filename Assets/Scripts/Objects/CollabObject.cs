@@ -123,7 +123,7 @@ namespace CollabXR.Objects
 				// Only spawn placeholder box if this Object has Data (aka isn't a drawing)
 				if (!Category.ToString().IsNullOrEmpty() && !DataName.Value.ToString().IsNullOrEmpty())
 				{
-					if (SimpleModLoader.Instance.ModsLoaded)
+					if (SimpleModLoader.Instance != null && SimpleModLoader.Instance.ModsMapped)
 					{
 						// likely not a mod from the avaliable repository, show it as not avaliable
 						this.SetAsNotAvaliable();
@@ -229,6 +229,10 @@ namespace CollabXR.Objects
 			return Data;
 		}
 
+		/// <summary>
+		/// Process the object as an Not-Avaliable placeholder. Useful to indicate an error.
+		/// Placeholder will not have a collider to interact with.
+		/// </summary>
 		public void SetAsNotAvaliable()
 		{
 			Destroy(dataRoot);
