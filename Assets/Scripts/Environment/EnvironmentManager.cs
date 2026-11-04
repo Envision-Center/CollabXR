@@ -54,7 +54,6 @@ namespace CollabXR.Environments
 		/// 
 
 		private bool loadingScene;
-		private bool retryEnvironmentLoad;
 		private int sceneLoadVersion; // generation index
 
 		///
@@ -90,6 +89,8 @@ namespace CollabXR.Environments
 		{
 			base.Spawned();
 			ResetEnvironmentLibrary();
+			
+			// if we're the first to join a new room, spawn the default environments
 			if (Object.HasStateAuthority && currentEnvironmentGuid == Guid.Empty)
 			{
 				if (environmentLibrary.defaultEnvironmentEntry == null)
@@ -171,7 +172,6 @@ namespace CollabXR.Environments
 					return;
 				}
 				loadingScene = false;
-				retryEnvironmentLoad = true;
 				Debug.LogError($"Failed to prepare environment scene: {exception}");
 				return;
 			}
@@ -180,17 +180,12 @@ namespace CollabXR.Environments
 				return;
 			}
 
-			retryEnvironmentLoad = false;
 			if (!IsSameScene(entry, GetSelectedEnvironmentEntry()))
 			{
 				loadingScene = false;
 				if (GetSelectedEnvironmentEntry() != null)
 				{
 					LoadEnvironmentSceneLocal();
-				}
-				else
-				{
-					retryEnvironmentLoad = true;
 				}
 				return;
 			}
@@ -218,7 +213,6 @@ namespace CollabXR.Environments
 			catch (Exception exception)
 			{
 				loadingScene = false;
-				retryEnvironmentLoad = true;
 				Debug.LogError($"Failed to load environment scene at {entry.scenePath}: {exception}");
 				return;
 			}
@@ -226,7 +220,6 @@ namespace CollabXR.Environments
 			if (loadOperation == null)
 			{
 				loadingScene = false;
-				retryEnvironmentLoad = true;
 				Debug.LogError($"Failed to start loading environment scene at {entry.scenePath}.");
 				return;
 			}
@@ -244,7 +237,6 @@ namespace CollabXR.Environments
 		{
 			sceneLoadVersion++;
 			loadingScene = false;
-			retryEnvironmentLoad = false;
 			if (activeEnvironmentEntry != null)
 			{
 				SceneManager.UnloadSceneAsync(activeEnvironmentEntry.scenePath);
@@ -276,17 +268,12 @@ namespace CollabXR.Environments
 				{
 					LoadEnvironmentSceneLocal();
 				}
-				else
-				{
-					retryEnvironmentLoad = true;
-				}
 				return;
 			}
 
 			// hotswap scenes
 			if (!loadedScene.IsValid())
 			{
-				retryEnvironmentLoad = true;
 				Debug.LogError($"Failed to find loaded environment scene at {entry.scenePath}.");
 				return;
 			}
@@ -316,7 +303,6 @@ namespace CollabXR.Environments
 			{
 				Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
 				SceneManager.UnloadSceneAsync(loadedScene);
-				retryEnvironmentLoad = true;
 				return;
 			}
 			SceneManager.SetActiveScene(loadedScene);
@@ -445,8 +431,33 @@ namespace CollabXR.Environments
 			environmentLibrary.AddEnvironmentEntry(newEntry);
 		}
 
-		public void NotifyEnvironmentLibraryChanged()
+		/// <summary>
+		/// Runs when simple mod loader finishes refreshing/loading arbitrary mods
+		/// If there is no environment currently active (meaning the startup spawn failed),
+		/// try to load the scene again, assuming the current env GUID has been added to the library. 
+		/// </summary>
+		public void OnSimpleModLoaderRefresh()
 		{
+			if (Object == null || currentEnvironmentGuid == Guid.Empty)
+			{
+				return;
+			}
+
+			EnvironmentEntry entry = GetSelectedEnvironmentEntry();
+			if (entry == null)
+			{
+				// Catastrophic failure, GUID is not found in the environment library.
+				// Could be caused by a client not having the same repositories as the host.
+				// Since environments are global, we can't just load the default environment.
+				// TODO: Look into the possibility of falling back to a default environment ONLY FOR THIS CLIENT.
+				Debug.LogError($"Environment {currentEnvironmentGuid} was not found after the library refresh.");
+				return;
+			}
+
+			if (currentEnvInstance == null || !IsSameScene(activeEnvironmentEntry, entry))
+			{
+				LoadEnvironmentSceneLocal();
+			}
 			OnEnvironmentLibraryChanged?.Invoke();
 		}
 

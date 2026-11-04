@@ -26,7 +26,7 @@ namespace CollabXR.ModLoader
 			MainLibraryRef.Instance.ClearData();
 			EnvironmentManager.Instance?.ResetEnvironmentLibrary();
 			LoadArbitraryMods();
-			EnvironmentManager.Instance?.NotifyEnvironmentLibraryChanged();
+			EnvironmentManager.Instance?.OnSimpleModLoaderRefresh();
 		}
 
 		private void LoadArbitraryMods()
