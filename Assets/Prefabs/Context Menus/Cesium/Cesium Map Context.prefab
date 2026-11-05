@@ -1573,8 +1573,8 @@ MonoBehaviour:
     latitude: 51.13457
     longitude: 1.357145
   - locationName: Paris
-    latitude: 48.85608
-    longitude: 2.2979
+    latitude: 48.85826
+    longitude: 2.294491
   - locationName: NYC
     latitude: 40.757967
     longitude: -73.98555
@@ -1632,6 +1632,12 @@ MonoBehaviour:
   - locationName: Colosseum
     latitude: 41.8902
     longitude: 12.4923
+  - locationName: Cathedral of Reims
+    latitude: 49.253858
+    longitude: 4.034017
+  - locationName: Notre Dame Cathedral
+    latitude: 48.852994
+    longitude: 2.349943
   locationsDropdown: {fileID: 4182045804050306358}
   zoomText: {fileID: 5088250160449524850}
   exaggerationText: {fileID: 3595069832536730131}
