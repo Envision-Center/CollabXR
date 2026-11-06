@@ -29,6 +29,19 @@ namespace CollabXR.Objects
 
 		public bool ScalingLocked { get; set; }
 
+		/// <summary>
+		/// How many times larger this object's volume is than its unscaled size.
+		/// </summary>
+		public float VolumeScale
+		{
+			get
+			{
+				Vector3 nonUniform = nonUniformNetworkScale;
+				float uniform = uniformNetworkScale;
+				return uniform * uniform * uniform * Mathf.Pow(10.0f, nonUniform.x + nonUniform.y + nonUniform.z);
+			}
+		}
+
 		public override void Spawned()
 		{
 			collabObject = GetComponent<CollabObject>();
