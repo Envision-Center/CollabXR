@@ -25,6 +25,13 @@ namespace CollabXR.UI
 		public Button selectorButtonPrefab;
 		public Transform selectorButtonContainer;
 
+		[Header("Deleted Context")]
+		[SerializeField, Tooltip("SingleChildActivator that owns this menu.")]
+		private SingleChildActivator singleChildActivator = null;
+
+		[SerializeField, Tooltip("Child index to swap to if the current object context no longer exists.")]
+		private int swapToChildOnError = 0;
+
 		private Dictionary<string, CollabContext> contextTabs = new();
 		private Transform tabContainer;
 		private CollabContext activeTab;
@@ -56,14 +63,18 @@ namespace CollabXR.UI
 			foreach (var context in contextTabs.Values)
 			{
 				if (context != null)
+				{
 					context.gameObject.SetActive(false);
+				}
 				Destroy(context.gameObject);
 			}
 			contextTabs.Clear();
 			activeTab = null;
 
 			if (obj == null)
+			{
 				return;
+			}
 
 			nameField.text = obj.Data.formattedName;
 
@@ -254,6 +265,16 @@ namespace CollabXR.UI
 			{
 				if (context != null)
 					context.OnStateAuthorityChanged();
+			}
+		}
+
+		public void OnEnable()
+		{
+			// If current context object does not exist when player opens the menu,
+			// then swap to the default menu so users do not try to modify a missing object.
+			if (currentObject == null && singleChildActivator != null)
+			{
+				singleChildActivator.SetActiveChild(swapToChildOnError);
 			}
 		}
 	}
