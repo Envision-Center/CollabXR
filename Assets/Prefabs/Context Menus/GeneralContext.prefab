@@ -57,6 +57,7 @@ MonoBehaviour:
   x: {fileID: 3598681704647220978}
   y: {fileID: 5812235578120588517}
   z: {fileID: 2988812213859508899}
+  scaleSection: {fileID: 707015339803610177}
 --- !u!1 &3620303179550311482
 GameObject:
   m_ObjectHideFlags: 0
