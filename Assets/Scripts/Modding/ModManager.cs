@@ -93,6 +93,9 @@ namespace CollabXR.ModLoader
 		/// </summary>
 		private Dictionary<Guid, IAssetReference> assetReferences = new();
 
+		/// <summary>Scene acquisitions retaining their bundles, keyed by reference GUID.</summary>
+		private Dictionary<Guid, SceneReference> sceneReferences = new();
+
 		/// <summary>
 		/// Maintains a list of all UnityWebRequests that are currently loading asset bundles from remote repositories.
 		/// </summary>
@@ -307,6 +310,8 @@ namespace CollabXR.ModLoader
 						await request.SendWebRequest();
 
 						Instance.loadedMods[modUuid].AssetBundle = DownloadHandlerAssetBundle.GetContent(request);
+						// A scene continuation may immediately release its reference and unload the bundle.
+						Instance.loadedMods[modUuid].status = TaskLoadStatus.Completed;
 
 						Debug.Log($"{DEBUG_LOG_HEADER} Loaded Mod {modUuid} in to memory.");
 
@@ -318,7 +323,6 @@ namespace CollabXR.ModLoader
 							loadTask.NotifyModReady();
 						}
 
-						Instance.loadedMods[modUuid].status = TaskLoadStatus.Completed;
 					}
 					catch (Exception ex)
 					{
@@ -361,6 +365,10 @@ namespace CollabXR.ModLoader
 		/// </remarks>
 		internal async UniTask ReloadMod(Guid modUuid)
 		{
+			if (sceneReferences.Values.Any(reference => reference.ModGuid == modUuid))
+			{
+				throw new InvalidOperationException($"Cannot reload mod {modUuid} while a scene is using it.");
+			}
 			if (!Instance.loadedMods.ContainsKey(modUuid))
 			{
 				return;
@@ -398,6 +406,10 @@ namespace CollabXR.ModLoader
 
 		internal bool TryUnloadMod(Guid modUuid)
 		{
+			if (sceneReferences.Values.Any(reference => reference.ModGuid == modUuid))
+			{
+				return false;
+			}
 			if (!Instance.loadedMods.ContainsKey(modUuid))
 			{
 				return true;
@@ -671,6 +683,47 @@ namespace CollabXR.ModLoader
 		}
 
 		/// <summary>
+		/// Acquires a scene path and retains its bundle. The caller loads the scene through
+		/// SceneManager and calls ReleaseScene after the scene finishes unloading.
+		/// </summary>
+		/// <param name="modUuid">The mod containing the scene.</param>
+		/// <param name="assetUuid">The scene's asset GUID within the mod.</param>
+		public static async UniTask<SceneReference> LoadSceneAsset(Guid modUuid, Guid assetUuid)
+		{
+			await RepositoryManager.Instance;
+			ModMetadata metadata = Instance.indexedMods[modUuid].Item1;
+			if (!metadata.SceneMap.ContainsKey(assetUuid))
+			{
+				throw new ArgumentException($"Scene {assetUuid} was not found in mod {modUuid}.");
+			}
+			SceneReference reference = new SceneReference(modUuid, assetUuid, metadata.AssetMap[assetUuid]);
+			Instance.sceneReferences.Add(reference.ReferenceGuid, reference);
+			try
+			{
+				await new ModLoadTask(modUuid);
+				return reference;
+			}
+			catch
+			{
+				Instance.sceneReferences.Remove(reference.ReferenceGuid);
+				throw;
+			}
+		}
+
+		/// <summary>
+		/// Releases one scene acquisition and checks whether its bundle can be unloaded.
+		/// Null (built-in) and already released references have no effect.
+		/// </summary>
+		/// <param name="reference">The handle whose scene has finished unloading.</param>
+		public static void ReleaseScene(SceneReference reference)
+		{
+			if (reference != null && Instance.sceneReferences.Remove(reference.ReferenceGuid))
+			{
+				Instance.TryUnloadMod(reference.ModGuid);
+			}
+		}
+
+		/// <summary>
 		/// This method releases an <c>AssetReference</c> given by the mod loader and unloads everything necessary to minimize memory footprint.
 		/// </summary>
 		public static void ReleaseAsset<T>(AssetReference<T> assetReference)
@@ -703,6 +756,10 @@ namespace CollabXR.ModLoader
 
 			if (clearLoadedMods)
 			{
+				if (Instance.sceneReferences.Values.Any(reference => reference.ModGuid == modUuid))
+				{
+					throw new InvalidOperationException($"Cannot remove mod {modUuid} while a scene is using it.");
+				}
 				Instance.loadedMods.Remove(modUuid);
 			}
 

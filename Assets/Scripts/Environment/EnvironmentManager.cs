@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 using CollabXR.ModPackager;
 using CollabXR.ModPackager.EnvironmentExtras;
 using CollabXR.ModLoader;
+using Cysharp.Threading.Tasks;
 
 namespace CollabXR.Environments
 {
@@ -41,6 +42,7 @@ namespace CollabXR.Environments
 		{
 			public EnvironmentEntry activeEnvironmentEntry;
 			public EnvironmentScene currentEnvInstance;
+			public SceneReference sceneReference;
 			public Matrix4x4 previousTeleportMatrix = Matrix4x4.identity;
 		}
 		private CurrentEnvironmentState currState = new CurrentEnvironmentState();
@@ -190,8 +192,8 @@ namespace CollabXR.Environments
 		}
 
 		/// <summary>
-		/// Prepares and loads the supplied environment entry, ensuring its mod bundle is loaded.
-		/// Rechecks the live room selection and load version after awaiting mod loading.
+		/// Acquires a remote scene's bundle reference and loads its path. The reference
+		/// is passed to scene completion, or released if loading never starts.
 		/// </summary>
 		/// <param name="entry">The entry to load, or null while its metadata is unavailable.</param>
 		private async void LoadEnvironmentSceneLocal(EnvironmentEntry entry)
@@ -206,8 +208,14 @@ namespace CollabXR.Environments
 			{
 				return;
 			}
+			if (currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
+			{
+				return;
+			}
 			loadingScene = true;
 			int loadVersion = ++sceneLoadVersion;
+			SceneReference reference = null;
+			string path = entry.scenePath;
 
 			// Load the mod associated with the supplied environment entry, if applicable.
 			try
@@ -218,7 +226,8 @@ namespace CollabXR.Environments
 				}
 				if (entry.modGUID != Guid.Empty)
 				{
-					await new ModLoadTask(entry.modGUID);
+					reference = await ModManager.LoadSceneAsset(entry.modGUID, entry.assetGUID);
+					path = reference.Path;
 				}
 			}
 			catch (Exception exception)
@@ -235,6 +244,7 @@ namespace CollabXR.Environments
 			// Check if this load operation is outdated.
 			if (loadVersion != sceneLoadVersion)
 			{
+				ModManager.ReleaseScene(reference);
 				return;
 			}
 
@@ -243,145 +253,152 @@ namespace CollabXR.Environments
 			{
 				loadingScene = false;
 				LoadEnvironmentSceneLocal(selectedEntry);
+				ModManager.ReleaseScene(reference);
 				return;
 			}
 
-			if (currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
-			{
-				loadingScene = false;
-				return;
-			}
-
-			EnvironmentEntry previousEntry = null;
-			if (currState.activeEnvironmentEntry != null)
-			{
-				previousEntry = currState.activeEnvironmentEntry;
-				currState.activeEnvironmentEntry = null;
-				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
-				currState.currentEnvInstance = null;
-			}
-
-			Debug.Log($"Initializing loading of: {entry.scenePath}");
+			Debug.Log($"Initializing loading of: {path}");
 			AsyncOperation loadOperation;
 			try
 			{
-				loadOperation = SceneManager.LoadSceneAsync(entry.scenePath, LoadSceneMode.Additive);
+				loadOperation = SceneManager.LoadSceneAsync(path, LoadSceneMode.Additive);
 			}
 			catch (Exception exception)
 			{
 				loadingScene = false;
-				Debug.LogError($"Failed to load environment scene at {entry.scenePath}: {exception}");
+				ModManager.ReleaseScene(reference);
+				Debug.LogError($"Failed to load environment scene at {path}: {exception}");
 				return;
 			}
 
 			if (loadOperation == null)
 			{
 				loadingScene = false;
-				Debug.LogError($"Failed to start loading environment scene at {entry.scenePath}.");
+				ModManager.ReleaseScene(reference);
+				Debug.LogError($"Failed to start loading environment scene at {path}.");
 				return;
 			}
 			loadOperation.completed += (e) =>
 			{
-				if (previousEntry != null)
-				{
-					SceneManager.UnloadSceneAsync(previousEntry.scenePath);
-				}
-				OnSceneLoadComplete(entry, loadVersion);
+				OnSceneLoadComplete(entry, loadVersion, SceneManager.GetSceneByPath(path), reference);
 			};
 		}
 
+		/// <summary>
+		/// Detaches the current environment and releases its mod reference after unloading.
+		/// Pending loads are invalidated and release their own references when they complete.
+		/// </summary>
 		public void DisconnectFromEnvironment()
 		{
 			sceneLoadVersion++;
 			loadingScene = false;
+			Scene scene = currState.currentEnvInstance != null ? currState.currentEnvInstance.gameObject.scene : default;
+			SceneReference reference = currState.sceneReference;
 			if (currState.activeEnvironmentEntry != null)
 			{
-				SceneManager.UnloadSceneAsync(currState.activeEnvironmentEntry.scenePath);
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 			}
 			currState.activeEnvironmentEntry = null;
 			currState.currentEnvInstance = null;
+			currState.sceneReference = null;
+			UnloadSceneAndRelease(scene, reference).Forget();
 		}
 
 		/// <summary>
-		/// Validates a completed load against the live room selection and load version,
-		/// initializes the loaded scene, and teleports using that scene explicitly.
+		/// Installs a successfully initialized scene and retains its mod reference.
+		/// Unloads and releases the incoming scene on failure, or the old scene after a swap.
 		/// </summary>
 		/// <param name="entry">The entry associated with the completed scene load.</param>
 		/// <param name="loadVersion">The generation captured when the load started.</param>
-		private void OnSceneLoadComplete(EnvironmentEntry entry, int loadVersion)
+		/// <param name="loadedScene">The scene loaded from the resolved path.</param>
+		/// <param name="reference">Its mod ownership handle, or null for a built-in scene.</param>
+		private void OnSceneLoadComplete(EnvironmentEntry entry, int loadVersion, Scene loadedScene, SceneReference reference)
 		{
-			Scene loadedScene = SceneManager.GetSceneByPath(entry.scenePath);
-			if (loadVersion != sceneLoadVersion)
+			bool activated = false;
+			try
 			{
-				if (loadedScene.IsValid() && loadedScene.isLoaded)
+				if (loadVersion != sceneLoadVersion)
 				{
-					SceneManager.UnloadSceneAsync(loadedScene);
+					return;
 				}
-				return;
-			}
-			loadingScene = false;
-			EnvironmentEntry selectedEntry = environmentLibrary.GetEntry(networkedState.currentEnvironmentGuid);
-			if (!IsSameScene(entry, selectedEntry))
-			{
-				if (loadedScene.IsValid() && loadedScene.isLoaded)
+				loadingScene = false;
+				EnvironmentEntry selectedEntry = environmentLibrary.GetEntry(networkedState.currentEnvironmentGuid);
+				if (!IsSameScene(entry, selectedEntry))
 				{
-					SceneManager.UnloadSceneAsync(loadedScene);
+					LoadEnvironmentSceneLocal(selectedEntry);
+					return;
 				}
-				LoadEnvironmentSceneLocal(selectedEntry);
-				return;
-			}
 
-			// hotswap scenes
-			if (!loadedScene.IsValid())
-			{
-				Debug.LogError($"Failed to find loaded environment scene at {entry.scenePath}.");
-				return;
-			}
-			// initialize depth masks for all root gameobjects
-			GameObject[] rootObjects = loadedScene.GetRootGameObjects();
-			foreach (GameObject obj in rootObjects) // initialize anything that needs it
-			{
-				DepthMask[] masks = obj.GetComponentsInChildren<DepthMask>();
-				foreach (DepthMask mask in masks)
+				if (!loadedScene.IsValid())
 				{
-					PassthroughManager.Instance.AddDepthMask(mask);
+					Debug.LogError($"Failed to find loaded environment scene at {entry.scenePath}.");
+					return;
+				}
+				// initialize depth masks for all root gameobjects
+				GameObject[] rootObjects = loadedScene.GetRootGameObjects();
+				foreach (GameObject obj in rootObjects)
+				{
+					foreach (DepthMask mask in obj.GetComponentsInChildren<DepthMask>())
+					{
+						PassthroughManager.Instance.AddDepthMask(mask);
+					}
+				}
+
+				EnvironmentScene sceneScript = null;
+				foreach (GameObject root in rootObjects)
+				{
+					sceneScript = root.GetComponentInChildren<EnvironmentScene>();
+					if (sceneScript != null)
+					{
+						break;
+					}
+				}
+				if (sceneScript == null)
+				{
+					Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
+					return;
+				}
+				SceneManager.SetActiveScene(loadedScene);
+				if (sceneScript.environmentData != null && sceneScript.environmentData.networkObjects.objects != null &&
+					sceneScript.environmentData.networkObjects.objects.Count > 0)
+				{
+					Debug.Log("EnvironmentManager: Spawning networked objects");
+					SpawnNetworkedObjects(sceneScript.environmentData.networkObjects.objects);
+				}
+
+				Scene previousScene = currState.currentEnvInstance != null ? currState.currentEnvInstance.gameObject.scene : default;
+				SceneReference previousReference = currState.sceneReference;
+				SetEnvironmentInstance(sceneScript);
+				currState.activeEnvironmentEntry = entry;
+				currState.sceneReference = reference;
+				activated = true;
+				UnloadSceneAndRelease(previousScene, previousReference).Forget();
+
+				Debug.Log($"EnvironmentManager: Setting skybox in passthrough to {sceneScript.skyboxOnInPassthrough}");
+				PassthroughManager.Instance.SetSkyboxOnInPassthrough(sceneScript.skyboxOnInPassthrough);
+				PassthroughManager.Instance.TriggerScenePassthroughEvents();
+				Teleport(sceneScript, networkedState.currentTeleportIndex, HardwareRig.Instance.root);
+				OnEnvironmentLoadComplete.Invoke();
+			}
+			finally
+			{
+				if (!activated)
+				{
+					UnloadSceneAndRelease(loadedScene, reference).Forget();
 				}
 			}
-		
-			// set currentScene reference and initialize networked objects
-			// NOTE: currently no environment uses networked objects, but I'm keeping it just for consistency
-			EnvironmentScene sceneScript = null;
-			foreach (GameObject root in rootObjects)
+		}
+
+		/// <summary>Releases scene ownership only after Unity finishes unloading that scene.</summary>
+		/// <param name="scene">The scene to unload.</param>
+		/// <param name="reference">Its mod handle, or null for a built-in scene.</param>
+		private static async UniTask UnloadSceneAndRelease(Scene scene, SceneReference reference)
+		{
+			if (scene.IsValid() && scene.isLoaded)
 			{
-				sceneScript = root.GetComponentInChildren<EnvironmentScene>();
-				if (sceneScript != null)
-				{
-					break;
-				}
+				await SceneManager.UnloadSceneAsync(scene);
 			}
-			if (sceneScript == null)
-			{
-				Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
-				SceneManager.UnloadSceneAsync(loadedScene);
-				return;
-			}
-			SceneManager.SetActiveScene(loadedScene);
-			if (sceneScript.environmentData != null && sceneScript.environmentData.networkObjects.objects != null &&
-				sceneScript.environmentData.networkObjects.objects.Count > 0)
-			{
-				Debug.Log("EnvironmentManager: Spawning networked objects");
-				SpawnNetworkedObjects(sceneScript.environmentData.networkObjects.objects);
-			}
-			SetEnvironmentInstance(sceneScript);
-			currState.activeEnvironmentEntry = entry;
-			
-			Debug.Log($"EnvironmentManager: Setting skybox in passthrough to {sceneScript.skyboxOnInPassthrough}");
-			PassthroughManager.Instance.SetSkyboxOnInPassthrough(sceneScript.skyboxOnInPassthrough);
-			PassthroughManager.Instance.TriggerScenePassthroughEvents();
-			
-			Teleport(sceneScript, networkedState.currentTeleportIndex, HardwareRig.Instance.root);
-			OnEnvironmentLoadComplete.Invoke();			
+			ModManager.ReleaseScene(reference);
 		}
 
 		void SetEnvironmentInstance(EnvironmentScene instance)
