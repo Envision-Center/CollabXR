@@ -2,7 +2,7 @@ using Fusion;
 using TMPro;
 using UnityEngine;
 
-namespace CollabXR.Objects.Linker.Network
+namespace CollabXR.Objects.Components.Utility
 {
 	public class NetworkEventCounter : NetworkBehaviour
 	{

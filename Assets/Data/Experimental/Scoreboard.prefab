@@ -894,7 +894,6 @@ GameObject:
   - component: {fileID: 8482909994542486049}
   - component: {fileID: 3635532517391835734}
   - component: {fileID: 2766116056418852823}
-  - component: {fileID: 706193014130970982}
   m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
@@ -970,27 +969,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &706193014130970982
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5663960058485474586}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 0.01}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5734597458811633170
 GameObject:
   m_ObjectHideFlags: 0
@@ -1494,6 +1472,7 @@ GameObject:
   - component: {fileID: 2370913469200716833}
   - component: {fileID: 8641330207936753529}
   - component: {fileID: -5729155457161632938}
+  - component: {fileID: 7978704768419667018}
   m_Layer: 0
   m_Name: Scoreboard
   m_TagString: Untagged
@@ -1719,3 +1698,24 @@ MonoBehaviour:
     beforeChange:
       m_PersistentCalls:
         m_Calls: []
+--- !u!65 &7978704768419667018
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7825334759644448384}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.5, z: 0.01}
+  m_Center: {x: 0, y: 0, z: 0}
