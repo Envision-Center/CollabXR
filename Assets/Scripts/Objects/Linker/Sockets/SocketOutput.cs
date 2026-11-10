@@ -106,6 +106,7 @@ namespace CollabXR.Objects.Linker.Sockets
 		public UnityEvent<float> pushFloat = new UnityEvent<float>();
 		public UnityEvent<Texture> pushTexture = new UnityEvent<Texture>();
 		public UnityEvent<Texture3D, Transform> pushVolumetric = new UnityEvent<Texture3D, Transform>();
+		public UnityEvent pushEvent = new UnityEvent();
 
 		protected override void OnDestroy()
 		{
@@ -116,6 +117,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			pushFloat.RemoveAllListeners();
 			pushTexture.RemoveAllListeners();
 			pushVolumetric.RemoveAllListeners();
+			pushEvent.RemoveAllListeners();
 		}
 
 		/// <typeparam name="T"></typeparam>
