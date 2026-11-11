@@ -657,7 +657,6 @@ MonoBehaviour:
   orbitalPeriod: 224.701
   rotationalPeriod: 5832.6
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 6615976840284209665}
   mesh: {fileID: 1714297969439326453}
@@ -723,7 +722,6 @@ MonoBehaviour:
   orbitalPeriod: 87.969
   rotationalPeriod: 1407.6
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 6944536397193352406}
   mesh: {fileID: 5922498270077174041}
@@ -1218,7 +1216,6 @@ MonoBehaviour:
   orbitalPeriod: 365.256
   rotationalPeriod: 23.9345
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 1298512535223007000}
   mesh: {fileID: 8305119278891756591}
@@ -2765,7 +2762,6 @@ MonoBehaviour:
   orbitalPeriod: 30685.4
   rotationalPeriod: -17.24
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 8542069003411786916}
   mesh: {fileID: 7573201121712465626}
@@ -2970,6 +2966,7 @@ GameObject:
   - component: {fileID: 501895804476376876}
   - component: {fileID: 561360113656551816}
   - component: {fileID: 6767610848609615417}
+  - component: {fileID: -5187892878709030816}
   - component: {fileID: 2979721457505854108}
   - component: {fileID: 803701771848516867}
   - component: {fileID: 2379760938439391049}
@@ -3036,6 +3033,7 @@ MonoBehaviour:
   - {fileID: 725894216832254082}
   - {fileID: 667527916722299942}
   - {fileID: 501895804476376876}
+  - {fileID: -5187892878709030816}
   - {fileID: 2979721457505854108}
   - {fileID: 2379760938439391049}
   ForceRemoteRenderTimeframe: 0
@@ -3119,7 +3117,7 @@ MonoBehaviour:
   localOffset:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
-  offsetOnSetTarget: 0
+  offsetOnSetTarget: 1
 --- !u!114 &6767610848609615417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3141,6 +3139,21 @@ MonoBehaviour:
     beforeChange:
       m_PersistentCalls:
         m_Calls: []
+--- !u!114 &-5187892878709030816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3076373365412551826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d8ffcfdb6529d4989ec63162922682, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _baseNetworkScale: {x: 1, y: 1, z: 1}
+  _uniformNetworkScale: 1
+  _nonUniformNetworkScale: {x: 0, y: 0, z: 0}
 --- !u!114 &2979721457505854108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3505,7 +3518,6 @@ MonoBehaviour:
   orbitalPeriod: 10755.699
   rotationalPeriod: 10.656
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 9195841991951147671}
   mesh: {fileID: 6053410045669230833}
@@ -3572,7 +3584,6 @@ MonoBehaviour:
   orbitalPeriod: 27.321667
   rotationalPeriod: 0
   tidallyLocked: 1
-  rotatesRetrograde: 0
   orbitVisScale: 125
   actor: {fileID: 1301366656946684585}
   mesh: {fileID: 5077510684521184097}
@@ -4518,7 +4529,6 @@ MonoBehaviour:
   orbitalPeriod: 60189.02
   rotationalPeriod: 16.11
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 8866366782584582552}
   mesh: {fileID: 3307812312112853593}
@@ -5075,7 +5085,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4975033782304152278}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.00000014392043, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: 0.00000014392043, z: -0, w: 1}
   m_LocalPosition: {x: -0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7430,7 +7440,6 @@ MonoBehaviour:
   orbitalPeriod: 90560
   rotationalPeriod: -153.2928
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 7015546644663477843}
   mesh: {fileID: 2310127529912598128}
@@ -7496,7 +7505,6 @@ MonoBehaviour:
   orbitalPeriod: 686.98
   rotationalPeriod: 24.6229
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 521892302288313188}
   mesh: {fileID: 161107487045988629}
@@ -11512,7 +11520,6 @@ MonoBehaviour:
   orbitalPeriod: 4332.589
   rotationalPeriod: 9.925
   tidallyLocked: 0
-  rotatesRetrograde: 0
   orbitVisScale: 1
   actor: {fileID: 391538034948821466}
   mesh: {fileID: 1726923187919801590}
