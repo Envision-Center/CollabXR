@@ -56,8 +56,8 @@ namespace CollabXR
 
 		public void SetVisuals(bool axesEnabled, bool nameEnabled)
 		{
-			axisVisualization.SetActive(enabled);
-			nameVisualization.SetActive(enabled);
+			axisVisualization.SetActive(axesEnabled);
+			nameVisualization.SetActive(nameEnabled);
 		}
 
 		private void Update()
