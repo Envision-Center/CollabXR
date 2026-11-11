@@ -11,7 +11,8 @@ namespace CollabXR
     {
 		public NetworkPlaybackDirector director;
 		public List<CelestialBody> bodies;
-		public TextMeshProUGUI timeDisplay;
+		public TextMeshProUGUI dateDisplay, timeDisplay;
+		public GameObject axes, names;
 
 		private DateTime J2000 = new DateTime(2000, 1, 1, 12, 0, 0);
 		private const float daysInAnimation = 90560; // arbitrary cap to the orbital animation representing one orbit of Pluto
@@ -24,9 +25,11 @@ namespace CollabXR
 			{
 
 				b.SetNormalizedTime(daysSinceJ2000);
+				b.SetVisuals(axes.activeSelf, names.activeSelf);
 			}
 			DateTime currentTime = J2000.AddDays(daysSinceJ2000);
-			timeDisplay.text = currentTime.ToString("f");
-        }
+			dateDisplay.text = currentTime.ToString("D");
+			timeDisplay.text = currentTime.ToString("t");
+		}
     }
 }
