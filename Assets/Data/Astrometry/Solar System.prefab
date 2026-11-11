@@ -58,6 +58,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 4266042114138076713}
   orbit: {fileID: 2721129427445561417}
+  daysSinceJ2000: 0
 --- !u!1 &339974626069342180
 GameObject:
   m_ObjectHideFlags: 0
@@ -116,6 +117,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 6084731679055519119}
   orbit: {fileID: 7961774534613833228}
+  daysSinceJ2000: 0
 --- !u!1 &1080515865750827112
 GameObject:
   m_ObjectHideFlags: 0
@@ -174,6 +176,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 2878125866146251282}
   orbit: {fileID: 2405074418267043149}
+  daysSinceJ2000: 0
 --- !u!1 &1839648868262296435
 GameObject:
   m_ObjectHideFlags: 0
@@ -184,9 +187,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5574999323949835628}
   - component: {fileID: 6000560407703789150}
-  - component: {fileID: 3048855262189116319}
-  - component: {fileID: 3386704182791639042}
-  - component: {fileID: 7572231568902145760}
+  - component: {fileID: 2277374959997475170}
+  - component: {fileID: 5211998600828057165}
+  - component: {fileID: 4431653955292783825}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -204,7 +207,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 7, y: 1, z: 7}
+  m_LocalScale: {x: 7, y: 7, z: 7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1349380195217609387}
@@ -329,7 +332,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &3048855262189116319
+--- !u!33 &2277374959997475170
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -337,7 +340,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1839648868262296435}
   m_Mesh: {fileID: 0}
---- !u!23 &3386704182791639042
+--- !u!23 &5211998600828057165
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -382,7 +385,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7572231568902145760
+--- !u!114 &4431653955292783825
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -400,17 +403,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.0014285714
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856228
+    rid: 6663423225906856239
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856228
+    - rid: 6663423225906856239
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -472,6 +475,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 6332160335501529765}
   orbit: {fileID: 6000560407703789150}
+  daysSinceJ2000: 0
 --- !u!1 &3076373365412551826
 GameObject:
   m_ObjectHideFlags: 0
@@ -904,6 +908,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 589761053360712281}
   orbit: {fileID: 3093623725163782260}
+  daysSinceJ2000: 0
 --- !u!1 &4033434148416299946
 GameObject:
   m_ObjectHideFlags: 0
@@ -934,8 +939,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -4, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 4558784775605280961}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -1094,6 +1099,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 8128960781811668809}
   orbit: {fileID: 512814069804780555}
+  daysSinceJ2000: 0
 --- !u!1 &4746101582236985508
 GameObject:
   m_ObjectHideFlags: 0
@@ -1124,8 +1130,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -0.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6642738790821970957}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -1345,9 +1351,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4699539556589413406}
   - component: {fileID: 7961774534613833228}
-  - component: {fileID: 3595163023265308008}
-  - component: {fileID: 7652431211346661081}
-  - component: {fileID: 7003691951794421674}
+  - component: {fileID: 1505722414937048449}
+  - component: {fileID: 8785920733407206262}
+  - component: {fileID: 5518909040057194518}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -1490,7 +1496,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &3595163023265308008
+--- !u!33 &1505722414937048449
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1498,7 +1504,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5336277813893698064}
   m_Mesh: {fileID: 0}
---- !u!23 &7652431211346661081
+--- !u!23 &8785920733407206262
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1543,7 +1549,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7003691951794421674
+--- !u!114 &5518909040057194518
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1561,17 +1567,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.005
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856229
+    rid: 6663423225906856240
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856229
+    - rid: 6663423225906856240
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -1693,9 +1699,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5485280106216748567}
   - component: {fileID: 6025468812662382690}
-  - component: {fileID: 3802491058172067836}
-  - component: {fileID: 2069254182384292223}
-  - component: {fileID: 3932402848030827711}
+  - component: {fileID: 5925565768350865888}
+  - component: {fileID: 7060177846653358630}
+  - component: {fileID: 6077916765863379434}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -1713,7 +1719,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4, y: 1, z: 4}
+  m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3879124054834992683}
@@ -1838,7 +1844,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &3802491058172067836
+--- !u!33 &5925565768350865888
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1846,7 +1852,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5375944184596491464}
   m_Mesh: {fileID: 0}
---- !u!23 &2069254182384292223
+--- !u!23 &7060177846653358630
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1891,7 +1897,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3932402848030827711
+--- !u!114 &6077916765863379434
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1909,17 +1915,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.0025
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856230
+    rid: 6663423225906856241
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856230
+    - rid: 6663423225906856241
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -1933,9 +1939,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3939852564950458613}
   - component: {fileID: 8028855653556321527}
-  - component: {fileID: 4223886502005760244}
-  - component: {fileID: 4114586383750797662}
-  - component: {fileID: 5865364006368196324}
+  - component: {fileID: 2363325097423030771}
+  - component: {fileID: 8704450293368844195}
+  - component: {fileID: 3817679891899628831}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -1953,7 +1959,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 9, y: 1, z: 9}
+  m_LocalScale: {x: 9, y: 9, z: 9}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7836154909565741407}
@@ -2078,7 +2084,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &4223886502005760244
+--- !u!33 &2363325097423030771
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2086,7 +2092,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5392938135548535023}
   m_Mesh: {fileID: 0}
---- !u!23 &4114586383750797662
+--- !u!23 &8704450293368844195
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2131,7 +2137,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5865364006368196324
+--- !u!114 &3817679891899628831
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2149,17 +2155,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.00055555557
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856231
+    rid: 6663423225906856242
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856231
+    - rid: 6663423225906856242
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -2191,10 +2197,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5534369995334909893}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000011513633}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -2.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.88, y: 0.88, z: 0.88}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6687696698889743295}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -2305,9 +2311,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8665996646075578002}
   - component: {fileID: 3824174710975862618}
-  - component: {fileID: 1274913505993999988}
-  - component: {fileID: 1707723777373764271}
-  - component: {fileID: 6830479485656493100}
+  - component: {fileID: 2031746636479745359}
+  - component: {fileID: 68968040578966836}
+  - component: {fileID: 5339500411413141868}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -2325,7 +2331,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 1, z: 5}
+  m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6687696698889743295}
@@ -2450,7 +2456,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &1274913505993999988
+--- !u!33 &2031746636479745359
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2458,7 +2464,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6186924299443924230}
   m_Mesh: {fileID: 0}
---- !u!23 &1707723777373764271
+--- !u!23 &68968040578966836
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2503,7 +2509,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6830479485656493100
+--- !u!114 &5339500411413141868
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2521,17 +2527,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
   m_Radius: 0.002
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856232
+    rid: 6663423225906856243
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856232
+    - rid: 6663423225906856243
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -2593,6 +2599,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 3596642793636867967}
   orbit: {fileID: 8028855653556321527}
+  daysSinceJ2000: 0
 --- !u!1 &6237589238948172681
 GameObject:
   m_ObjectHideFlags: 0
@@ -2651,6 +2658,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 7634539914459647336}
   orbit: {fileID: 6025468812662382690}
+  daysSinceJ2000: 0
 --- !u!1 &6442765372459692663
 GameObject:
   m_ObjectHideFlags: 0
@@ -2681,8 +2689,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -1, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1601707429863834710}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -2813,8 +2821,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -2, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.11, y: 0.11, z: 0.11}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 3879124054834992683}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -2945,8 +2953,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000009594695}
   m_LocalPosition: {x: -3, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.66, y: 0.66, z: 0.66}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 121046097033557799}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -3057,9 +3065,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3491232575854845897}
   - component: {fileID: 2405074418267043149}
-  - component: {fileID: 3814777842139944826}
-  - component: {fileID: 1082950904194615107}
-  - component: {fileID: 2555234758466921706}
+  - component: {fileID: 6194483707162421373}
+  - component: {fileID: 9001087006640167855}
+  - component: {fileID: 4278468627893105693}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -3077,7 +3085,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 1, z: 3}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2429143452419072977}
@@ -3202,7 +3210,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &3814777842139944826
+--- !u!33 &6194483707162421373
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3210,7 +3218,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7273784155046746771}
   m_Mesh: {fileID: 0}
---- !u!23 &1082950904194615107
+--- !u!23 &9001087006640167855
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3255,7 +3263,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &2555234758466921706
+--- !u!114 &4278468627893105693
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3273,17 +3281,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.0033333334
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856233
+    rid: 6663423225906856244
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856233
+    - rid: 6663423225906856244
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -3297,9 +3305,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6301205088242575388}
   - component: {fileID: 512814069804780555}
-  - component: {fileID: 4912224477975515813}
-  - component: {fileID: 4333962050920537255}
-  - component: {fileID: 8847057910198539532}
+  - component: {fileID: 3602771972406772841}
+  - component: {fileID: 8690424834502294649}
+  - component: {fileID: 1909349482831558999}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -3317,7 +3325,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 8, y: 1, z: 8}
+  m_LocalScale: {x: 8, y: 8, z: 8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4558784775605280961}
@@ -3442,7 +3450,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &4912224477975515813
+--- !u!33 &3602771972406772841
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3450,7 +3458,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7391405584941417609}
   m_Mesh: {fileID: 0}
---- !u!23 &4333962050920537255
+--- !u!23 &8690424834502294649
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3495,7 +3503,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8847057910198539532
+--- !u!114 &1909349482831558999
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3513,17 +3521,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.00125
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856234
+    rid: 6663423225906856245
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856234
+    - rid: 6663423225906856245
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -3537,9 +3545,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2934526256273624085}
   - component: {fileID: 2721129427445561417}
-  - component: {fileID: 7752145306607285368}
-  - component: {fileID: 2211261800145243188}
-  - component: {fileID: 8458719217224083631}
+  - component: {fileID: 528347500986947767}
+  - component: {fileID: 5691940989439638093}
+  - component: {fileID: 1835272774887394853}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -3557,7 +3565,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 1, z: 2}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1601707429863834710}
@@ -3682,7 +3690,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &7752145306607285368
+--- !u!33 &528347500986947767
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3690,7 +3698,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7411309100562321740}
   m_Mesh: {fileID: 0}
---- !u!23 &2211261800145243188
+--- !u!23 &5691940989439638093
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3735,7 +3743,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8458719217224083631
+--- !u!114 &1835272774887394853
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3753,17 +3761,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.005
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856235
+    rid: 6663423225906856246
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856235
+    - rid: 6663423225906856246
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8
@@ -3795,10 +3803,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7491118503437275794}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000009594695}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -1.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.22, y: 0.22, z: 0.22}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 2429143452419072977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -3927,10 +3935,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8685871135809461687}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000008224024}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -3.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.44, y: 0.44, z: 0.44}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1349380195217609387}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -4089,6 +4097,7 @@ MonoBehaviour:
   rotationalPeriod: 0
   actor: {fileID: 7538474298604568898}
   orbit: {fileID: 3824174710975862618}
+  daysSinceJ2000: 0
 --- !u!1 &9116540004691742348
 GameObject:
   m_ObjectHideFlags: 0
@@ -4117,10 +4126,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9116540004691742348}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000012792927}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000014392043}
   m_LocalPosition: {x: -4.5, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 7836154909565741407}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 120}
@@ -4231,9 +4240,9 @@ GameObject:
   m_Component:
   - component: {fileID: 7933996089137805008}
   - component: {fileID: 3093623725163782260}
-  - component: {fileID: 1438034557398114460}
-  - component: {fileID: 1429289185929465899}
-  - component: {fileID: 1478326800939546600}
+  - component: {fileID: 4375317928451844895}
+  - component: {fileID: 9214813772332621988}
+  - component: {fileID: 4433313612522197569}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -4251,7 +4260,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6, y: 1, z: 6}
+  m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 121046097033557799}
@@ -4376,7 +4385,7 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
---- !u!33 &1438034557398114460
+--- !u!33 &4375317928451844895
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4384,7 +4393,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9205205912657209157}
   m_Mesh: {fileID: 0}
---- !u!23 &1429289185929465899
+--- !u!23 &9214813772332621988
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4429,7 +4438,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1478326800939546600
+--- !u!114 &4433313612522197569
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4447,17 +4456,17 @@ MonoBehaviour:
   m_RebuildFrequency: 30
   m_UpdateColliders: 1
   m_Sides: 8
-  m_SegmentsPerUnit: 50
+  m_SegmentsPerUnit: 20
   m_Capped: 0
-  m_Radius: 0.002
+  m_Radius: 0.0016666667
   m_Range: {x: 0, y: 1}
   m_FlipNormals: 0
   m_Shape:
-    rid: 6663423225906856236
+    rid: 6663423225906856247
   references:
     version: 2
     RefIds:
-    - rid: 6663423225906856236
+    - rid: 6663423225906856247
       type: {class: Circle, ns: UnityEngine.Splines.ExtrusionShapes, asm: Unity.Splines}
       data:
         m_Sides: 8

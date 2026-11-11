@@ -16,6 +16,8 @@ namespace CollabXR
 		public SplineAnimate actor;
 		public SplineContainer orbit;
 
+		public float daysSinceJ2000 = 0;
+
 		private float startingDegreesPastPeriapsis = 0;
 
 		private const float scaleAU = 0.5f; // AU to in-game units (meters) for visualization
@@ -36,8 +38,8 @@ namespace CollabXR
 
 		public void SetNormalizedTime(float time)
 		{
-			float daysPassedSinceJ2000 = time * daysInAnimation;
-			float rotationsSinceJ2000 = daysPassedSinceJ2000 / orbitalPeriod;
+			daysSinceJ2000 = time * daysInAnimation;
+			float rotationsSinceJ2000 = daysSinceJ2000 / orbitalPeriod;
 			float currentDegrees = TrueModulo(rotationsSinceJ2000, 1)*360;
 			actor.NormalizedTime = (currentDegrees + startingDegreesPastPeriapsis) / 360;
 
@@ -46,11 +48,10 @@ namespace CollabXR
 		private void Update()
 		{
 			Debug.DrawLine(transform.parent.position, actor.transform.position, Color.magenta);
+			//periapsis debug stuff
 			//SplineUtility.GetNearestPoint(orbit.Spline, orbit.transform.InverseTransformPoint(transform.parent.position), out float3 nearest, out float t, resolution: 10, iterations: 5);
 			//nearest = orbit.transform.TransformPoint(nearest);
 			//Debug.DrawLine(transform.parent.position, new Vector3(nearest.x, nearest.y, nearest.z), Color.yellow);
-			//Debug.Log(gameObject.name + " perihelion is at " + nearest);
-
 		}
 
 		static float TrueModulo(float a, float n)
