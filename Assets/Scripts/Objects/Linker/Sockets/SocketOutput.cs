@@ -78,10 +78,10 @@ namespace CollabXR.Objects.Linker.Sockets
 					pushScriptableObject.Invoke(annotation.scriptableObject, annotation.pointOfReference);
 					break;
 				case SocketBehavior.Texture:
-					pushTexture.Invoke(annotation.texture);
+					pushTexture.Invoke(annotation.textureValue);
 					break;
 				case SocketBehavior.Volumetric:
-					pushVolumetric.Invoke(annotation.texture as Texture3D, annotation.pointOfReference);
+					pushVolumetric.Invoke(annotation.textureValue as Texture3D, annotation.pointOfReference);
 					break;
 			}
 			eventConnected.Invoke();

@@ -49,6 +49,10 @@ namespace CollabXR.Objects.Components.Utility
 
 		private void OnDestroy()
 		{
+			if (annotation != null)
+			{
+				annotation.textureValue = null;
+			}
 			texture.Release(); // Native objects must be freed
 			texture = null;
 		}
@@ -62,7 +66,8 @@ namespace CollabXR.Objects.Components.Utility
 			if (watchers > 0)
 			{
 				cameraObject.targetTexture = texture; // Allow camera to start rendering to texture
-				annotation.texture = texture; // Pass render texture to any attached sockets
+				annotation.textureValue = texture; // Pass render texture to any attached sockets
+				annotation.PushTexture(texture);
 				cameraObject.enabled = true;
 			}
 		}
@@ -73,7 +78,7 @@ namespace CollabXR.Objects.Components.Utility
 			if (watchers == 0)
 			{
 				cameraObject.targetTexture = null; // Clear render texture so camera has no overhead
-				annotation.texture = null; // Don't pass the render texture anymore!
+				annotation.textureValue = null; // Don't pass the render texture anymore!
 				cameraObject.enabled = false;
 			}
 			else if (watchers < 0)

@@ -206,7 +206,7 @@ MonoBehaviour:
       - m_Target: {fileID: 56667354324333926}
         m_TargetAssemblyTypeName: CollabXR.ModExtras.Annotation.SocketAnnotation,
           CollabXRAssembly
-        m_MethodName: FirePlainEvent
+        m_MethodName: PushPlainEvent
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -322,14 +322,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   behavior: 4
+  pointOfReference: {fileID: 4520846001133346087}
   scriptableObject: {fileID: 0}
-  floatStreamValue: 0
   textureValue: {fileID: 0}
+  stringValue: 
+  floatValue: 0
+  c_plainEvent:
+    m_PersistentCalls:
+      m_Calls: []
   c_texture:
     m_PersistentCalls:
       m_Calls: []
-  pointOfReference: {fileID: 4520846001133346087}
-  c_plainEvent:
+  c_string:
+    m_PersistentCalls:
+      m_Calls: []
+  c_float:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &3988111223779640828
