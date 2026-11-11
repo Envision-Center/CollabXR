@@ -15,7 +15,6 @@ namespace CollabXR
 		public float orbitalPeriod; // time in days
 		public float rotationalPeriod; // time in hours
 		public bool tidallyLocked; // if true, ignores rotational period
-		public bool rotatesRetrograde; // default false as most objects rotate prograde (CCW)
 		public float orbitVisScale = 1; // amount to multiply orbit scale by for visualization purposes
 		public SplineAnimate actor;
 		public Transform mesh;
