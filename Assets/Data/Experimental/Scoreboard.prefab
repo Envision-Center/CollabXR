@@ -164,7 +164,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 926020559917946486}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.014}
   m_LocalScale: {x: 0.0016666667, y: 0.001666667, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -174,7 +174,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 70}
+  m_SizeDelta: {x: 100, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &3012742976353007407
 Canvas:
@@ -248,7 +248,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 972166920867786605}
-  - component: {fileID: 6104308312492158944}
   - component: {fileID: 1600015249266404872}
   - component: {fileID: 3859416355693641668}
   m_Layer: 9
@@ -266,35 +265,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 961146607004336406}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.002, y: -0.301, z: 0}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.000030905005}
+  m_LocalPosition: {x: 0, y: -0.2, z: 0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5650357724693856767}
   m_Father: {fileID: 8916752143205439348}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &6104308312492158944
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 961146607004336406}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.15
-  m_Center: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 179.996, z: 0}
 --- !u!114 &1600015249266404872
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -360,6 +338,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a624d53a822dc64fb6529f90109df80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _Count: 0
   label: {fileID: 7841471402548693183}
 --- !u!1 &1753392453940579641
 GameObject:
@@ -389,7 +368,7 @@ Transform:
   m_GameObject: {fileID: 1753392453940579641}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.25, y: 0, z: -0.015}
+  m_LocalPosition: {x: 0.25, y: 0.072, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -468,6 +447,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a624d53a822dc64fb6529f90109df80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _Count: 0
   label: {fileID: 4589436768405754433}
 --- !u!1 &2579102319871555748
 GameObject:
@@ -708,7 +688,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: (Reset)
+  m_text: 'Reset
+
+    Socket'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 50cc55a9b40b11b4cb9a85d3d17a0f5c, type: 2}
@@ -735,8 +717,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1237,7 +1219,7 @@ Transform:
   m_GameObject: {fileID: 5782601849903560190}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.25, y: 0, z: -0.015}
+  m_LocalPosition: {x: -0.25, y: 0.072, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1316,6 +1298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a624d53a822dc64fb6529f90109df80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _Count: 0
   label: {fileID: 7841471402548693183}
 --- !u!1 &6096960517449341948
 GameObject:

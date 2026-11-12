@@ -21,8 +21,8 @@ MonoBehaviour:
   contextPrefab: {fileID: 0}
   isSimpleModel: 0
   formattedName: Monitor
-  category: Utility
+  category: Experimental
   assetName: Monitor.asset
-  thumbnail: {fileID: 21300000, guid: 68245c7c4b23d6a4982d0ef819222e4b, type: 3}
+  thumbnail: {fileID: 21300000, guid: 612cfdb5530c94f418a0e8ede1f87335, type: 3}
   availableOnThisPlatform: 1
   creators: []

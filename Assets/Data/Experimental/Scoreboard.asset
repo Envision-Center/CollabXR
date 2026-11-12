@@ -21,8 +21,8 @@ MonoBehaviour:
   contextPrefab: {fileID: 0}
   isSimpleModel: 0
   formattedName: Scoreboard
-  category: Utility
+  category: Experimental
   assetName: Scoreboard.asset
-  thumbnail: {fileID: 21300000, guid: 2f4df831f7a80f941a8f472a9c1ba9fa, type: 3}
+  thumbnail: {fileID: 21300000, guid: e47fcff1f69ad5d4caebc755097444b6, type: 3}
   availableOnThisPlatform: 1
   creators: []

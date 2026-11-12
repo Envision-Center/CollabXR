@@ -15,10 +15,9 @@ GameObject:
   - component: {fileID: 1267785283352291389}
   - component: {fileID: 3582423302513137472}
   - component: {fileID: 880014991781207747}
-  - component: {fileID: 9045308667666376232}
-  - component: {fileID: 1948409235737011012}
-  - component: {fileID: 3734140161150288261}
   - component: {fileID: 8424985171804624470}
+  - component: {fileID: 3455032427323424047}
+  - component: {fileID: 565265086427645125}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -64,7 +63,6 @@ MonoBehaviour:
   - {fileID: 2925548548249614262}
   - {fileID: 6124204454267001100}
   - {fileID: 1267785283352291389}
-  - {fileID: 9045308667666376232}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &2925548548249614262
 MonoBehaviour:
@@ -174,7 +172,28 @@ MonoBehaviour:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0.70710677, w: 0.70710677}
   offsetOnSetTarget: 1
---- !u!114 &9045308667666376232
+--- !u!135 &8424985171804624470
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1875169986482119420}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.07
+  m_Center: {x: 0, y: 0.02, z: 0}
+--- !u!114 &3455032427323424047
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -183,12 +202,43 @@ MonoBehaviour:
   m_GameObject: {fileID: 1875169986482119420}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de54da8676418e44f8c0918297680b55, type: 3}
+  m_Script: {fileID: 11500000, guid: b1c7827ab6c5a9341b4b2b01cf1658f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  laser: {fileID: 0}
-  _laserOn: 0
---- !u!114 &1948409235737011012
+  initialHandSide: 0
+  Hand:
+    variableValue: {fileID: 0}
+    onChange:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 565265086427645125}
+          m_TargetAssemblyTypeName: CollabXR.Input.HandInput, Assembly-CSharp
+          m_MethodName: SubscribeToHand
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    beforeChange:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 565265086427645125}
+          m_TargetAssemblyTypeName: CollabXR.Input.HandInput, Assembly-CSharp
+          m_MethodName: UnsubscribeFromHand
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &565265086427645125
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -234,48 +284,6 @@ MonoBehaviour:
   OnPrimaryAxis:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &3734140161150288261
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1875169986482119420}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1c7827ab6c5a9341b4b2b01cf1658f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  initialHandSide: 0
-  Hand:
-    variableValue: {fileID: 0}
-    onChange:
-      m_PersistentCalls:
-        m_Calls: []
-    beforeChange:
-      m_PersistentCalls:
-        m_Calls: []
---- !u!135 &8424985171804624470
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1875169986482119420}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.07
-  m_Center: {x: 0, y: 0.02, z: 0}
 --- !u!1 &2826691745464630881
 GameObject:
   m_ObjectHideFlags: 0
@@ -364,10 +372,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoInitialize: 1
+  requestAuthorityOnEvent: 1
   pushScriptableObject:
-    m_PersistentCalls:
-      m_Calls: []
-  pushFloat:
     m_PersistentCalls:
       m_Calls: []
   pushTexture:
@@ -377,6 +383,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   pushEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  pushFloat:
+    m_PersistentCalls:
+      m_Calls: []
+  pushString:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &6153741095150205467

@@ -126,7 +126,6 @@ namespace CollabXR.Tools
 			{
 				DisplayError("No Authority");
 			}
-			connectionOwner.ReleaseStateAuthority();
 		}
 
 		public void EndConnection()
