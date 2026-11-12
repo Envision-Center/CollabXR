@@ -25,7 +25,7 @@ namespace CollabXR.Environments
 		EnvironmentLibrary environmentLibrary = new EnvironmentLibrary();
 		
 		/// <summary>
-		/// Built-in environments.
+		/// Built-in environment data.
 		/// </summary>
 		[SerializeField] public EnvironmentData[] localEnvironmentData;
 		[SerializeField] public EnvironmentData defaultEnvironmentEntry;
@@ -51,8 +51,9 @@ namespace CollabXR.Environments
 			return currState.currentEnvInstance;
 		}
 
+
 		/// <summary>
-		/// Holds the requested environment state, including the requested environment entry and teleport index.
+		/// Holds the requested environment state.
 		/// </summary>
 		class RequestedEnvironmentState
 		{
@@ -65,6 +66,7 @@ namespace CollabXR.Environments
 			}
 		}
 		private RequestedEnvironmentState request = new RequestedEnvironmentState();
+
 
 		/// <summary>
 		/// Holds the networked state of the environment.
@@ -85,7 +87,7 @@ namespace CollabXR.Environments
 		/// 
 
 		private bool loadingScene;
-		private int sceneLoadVersion; // generation index
+		private bool disconnected;
 
 		///
 		/// EVENTS
@@ -117,7 +119,8 @@ namespace CollabXR.Environments
 			ResetEnvironmentLibrary();
 			
 			// if we're the first to join a new room, spawn the default environments
-			if (Object.HasStateAuthority && networkedState.currentEnvironmentGuid == Guid.Empty)
+			bool newRoom = networkedState.currentEnvironmentGuid == Guid.Empty;
+			if (Object.HasStateAuthority && newRoom)
 			{
 				if (environmentLibrary.defaultEnvironmentEntry == null)
 				{
@@ -192,76 +195,68 @@ namespace CollabXR.Environments
 		}
 
 		/// <summary>
-		/// Acquires a remote scene's bundle reference and loads its path. The reference
-		/// is passed to scene completion, or released if loading never starts.
+		/// Given an Environment Entry from the bundle, tries to load the environment scene into the current room.
 		/// </summary>
-		/// <param name="entry">The entry to load, or null while its metadata is unavailable.</param>
+		/// <param name="entry"></param>
 		private async void LoadEnvironmentSceneLocal(EnvironmentEntry entry)
 		{
-			if (entry == null)
-			{
-				return;
-			}
 
-			// flag to indicate if a scene is currently loading
-			if (loadingScene)
-			{
-				return;
-			}
-			if (currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
+			/// REQUIRED CHECKS
+			/// ----------------------------------------------
+
+			if (disconnected ||
+				loadingScene ||
+				entry == null ||
+				currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
 			{
 				return;
 			}
 			loadingScene = true;
-			int loadVersion = ++sceneLoadVersion;
+			
+			/// LOAD RELEVANT MOD FOR TARGET ENVIRONMENT
+			/// -----------------------------------------------
+
 			SceneReference reference = null;
 			string path = entry.scenePath;
-
-			// Load the mod associated with the supplied environment entry, if applicable.
-			try
+			if (!entry.isBuiltIn)
 			{
-				if (!entry.availableOnThisPlatform || string.IsNullOrEmpty(entry.scenePath))
+				try
 				{
-					throw new InvalidOperationException("Selected environment is unavailable or has no scene path.");
+					if (!entry.availableOnThisPlatform || string.IsNullOrEmpty(entry.scenePath))
+					{
+						throw new InvalidOperationException("Selected environment is unavailable or has no scene path.");
+					}
+					if (entry.modGUID != Guid.Empty)
+					{
+						// prefer ModManager's scene reference over the EnvironmentEntry 
+						reference = await ModManager.LoadSceneAsset(entry.modGUID, entry.assetGUID);
+						path = reference.Path;
+					}
 				}
-				if (entry.modGUID != Guid.Empty)
+				catch (Exception exception)
 				{
-					reference = await ModManager.LoadSceneAsset(entry.modGUID, entry.assetGUID);
-					path = reference.Path;
-				}
-			}
-			catch (Exception exception)
-			{
-				if (loadVersion != sceneLoadVersion)
-				{
+					loadingScene = false;
+					Debug.LogError($"Failed to prepare environment scene: {exception}");
 					return;
 				}
-				loadingScene = false;
-				Debug.LogError($"Failed to prepare environment scene: {exception}");
-				return;
 			}
-
-			// Check if this load operation is outdated.
-			if (loadVersion != sceneLoadVersion)
+			if (disconnected)
 			{
 				ModManager.ReleaseScene(reference);
 				return;
 			}
 
-			EnvironmentEntry selectedEntry = environmentLibrary.GetEntry(networkedState.currentEnvironmentGuid);
-			if (!IsSameScene(entry, selectedEntry))
-			{
-				loadingScene = false;
-				LoadEnvironmentSceneLocal(selectedEntry);
-				ModManager.ReleaseScene(reference);
-				return;
-			}
+			/// LOAD THE SELECTED SCENE
+			/// ---------------------------
 
 			Debug.Log($"Initializing loading of: {path}");
-			AsyncOperation loadOperation;
 			try
 			{
-				loadOperation = SceneManager.LoadSceneAsync(path, LoadSceneMode.Additive);
+				AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(path, LoadSceneMode.Additive);	
+				sceneLoadOperation.completed += (e) =>
+				{
+					OnSceneLoadComplete(entry, SceneManager.GetSceneByPath(path), reference);
+				};
 			}
 			catch (Exception exception)
 			{
@@ -270,32 +265,21 @@ namespace CollabXR.Environments
 				Debug.LogError($"Failed to load environment scene at {path}: {exception}");
 				return;
 			}
-
-			if (loadOperation == null)
-			{
-				loadingScene = false;
-				ModManager.ReleaseScene(reference);
-				Debug.LogError($"Failed to start loading environment scene at {path}.");
-				return;
-			}
-			loadOperation.completed += (e) =>
-			{
-				OnSceneLoadComplete(entry, loadVersion, SceneManager.GetSceneByPath(path), reference);
-			};
 		}
 
 		/// <summary>
 		/// Detaches the current environment and releases its mod reference after unloading.
-		/// Pending loads are invalidated and release their own references when they complete.
+		/// Marks this client disconnected to clean up any LoadEnvironmentSceneLocal tasks that are in-progress.
 		/// </summary>
 		public void DisconnectFromEnvironment()
 		{
-			sceneLoadVersion++;
+			disconnected = true;
 			loadingScene = false;
 			Scene scene = currState.currentEnvInstance != null ? currState.currentEnvInstance.gameObject.scene : default;
 			SceneReference reference = currState.sceneReference;
 			if (currState.activeEnvironmentEntry != null)
 			{
+
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 			}
 			currState.activeEnvironmentEntry = null;
@@ -307,17 +291,17 @@ namespace CollabXR.Environments
 		/// <summary>
 		/// Installs a successfully initialized scene and retains its mod reference.
 		/// Unloads and releases the incoming scene on failure, or the old scene after a swap.
+		/// If this client disconnected during loading, only unloads and releases the scene.
 		/// </summary>
 		/// <param name="entry">The entry associated with the completed scene load.</param>
-		/// <param name="loadVersion">The generation captured when the load started.</param>
 		/// <param name="loadedScene">The scene loaded from the resolved path.</param>
 		/// <param name="reference">Its mod ownership handle, or null for a built-in scene.</param>
-		private void OnSceneLoadComplete(EnvironmentEntry entry, int loadVersion, Scene loadedScene, SceneReference reference)
+		private void OnSceneLoadComplete(EnvironmentEntry entry, Scene loadedScene, SceneReference reference)
 		{
 			bool activated = false;
 			try
 			{
-				if (loadVersion != sceneLoadVersion)
+				if (disconnected)
 				{
 					return;
 				}
@@ -389,9 +373,10 @@ namespace CollabXR.Environments
 			}
 		}
 
-		/// <summary>Releases scene ownership only after Unity finishes unloading that scene.</summary>
-		/// <param name="scene">The scene to unload.</param>
-		/// <param name="reference">Its mod handle, or null for a built-in scene.</param>
+		/// <summary>
+		/// Releases scene ownership only after Unity finishes unloading that scene.
+		/// An async task is required for this in order to maintain 
+		/// </summary>
 		private static async UniTask UnloadSceneAndRelease(Scene scene, SceneReference reference)
 		{
 			if (scene.IsValid() && scene.isLoaded)
@@ -518,7 +503,7 @@ namespace CollabXR.Environments
 		public void AddEnvironmentEntry(Guid modGUID, Guid assetGUID, ModScene modScene, ModMetadata modMetadata, bool bundleExists)
 		{
 			EnvironmentEntry newEntry = new EnvironmentEntry();
-			newEntry.Initialize(modGUID, assetGUID, modScene, modMetadata, bundleExists);
+			newEntry.InitializeFromRemoteMod(modGUID, assetGUID, modScene, modMetadata, bundleExists);
 			Debug.Log($"Adding environment entry for mod {newEntry.modGUID} with asset {newEntry.assetGUID}");
 			environmentLibrary.AddEnvironmentEntry(newEntry);
 		}

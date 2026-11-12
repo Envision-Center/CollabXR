@@ -93,7 +93,11 @@ namespace CollabXR.ModLoader
 		/// </summary>
 		private Dictionary<Guid, IAssetReference> assetReferences = new();
 
-		/// <summary>Scene acquisitions retaining their bundles, keyed by reference GUID.</summary>
+		/// <summary>
+		/// Maintains a list of all Scenes currently active in the scene.
+		/// Needs to be a list because current scene change policy is additive, so
+		/// there are at most 2 environment present at a given time.
+		/// </summary>
 		private Dictionary<Guid, SceneReference> sceneReferences = new();
 
 		/// <summary>

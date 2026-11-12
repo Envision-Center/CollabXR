@@ -22,6 +22,7 @@ namespace CollabXR.Environments
         /// -------------------
         public string scenePath;
         public string bundlePath; // bundle path relative to StreamingAssets
+        public bool isBuiltIn;
 
         /// Other Mod/Asset Information
         /// -------------------------------
@@ -32,13 +33,15 @@ namespace CollabXR.Environments
         public bool availableOnThisPlatform;
         public List<string> creatorNames;
 
-        public void Initialize(
+        public void InitializeFromRemoteMod(
             Guid modGUID,
             Guid assetGUID,
             ModScene modScene,
             ModMetadata modMetadata,
             bool available)
         {
+            this.isBuiltIn = false;
+
             this.modGUID = modGUID;
             this.assetGUID = assetGUID;
             this.category = modScene.Category;
@@ -57,6 +60,8 @@ namespace CollabXR.Environments
 
         public void InitializeFromLocalData(EnvironmentData envData, Guid sceneGuid)
         {
+            this.isBuiltIn = true;
+
             this.modGUID = Guid.Empty;
             this.assetGUID = sceneGuid;
             this.category = BUILTIN_CATEGORY;
