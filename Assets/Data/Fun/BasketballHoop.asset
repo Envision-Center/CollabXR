@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a48a1a8c220ed3b4b8e3c3477aad36c4, type: 3}
+  m_Name: BasketballHoop
+  m_EditorClassIdentifier: 
+  startingScale: {x: 1, y: 1, z: 1}
+  minScale: {x: 0.25, y: 0.25, z: 0.25}
+  maxScale: {x: 3, y: 3, z: 3}
+  startingOffset: {x: 0, y: 1, z: 0}
+  prefab: {fileID: 7825334759644448384, guid: 4aeee05d9303bc2469ec53182d880402, type: 3}
+  attribution: 
+  contextPrefab: {fileID: 0}
+  isSimpleModel: 0
+  formattedName: Basketball Hoop
+  category: Fun
+  assetName: BasketballHoop.asset
+  thumbnail: {fileID: 21300000, guid: 68245c7c4b23d6a4982d0ef819222e4b, type: 3}
+  availableOnThisPlatform: 1
+  creators: []
