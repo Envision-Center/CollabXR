@@ -1,5 +1,6 @@
 using Fusion;
 using TMPro;
+using UnityEditor.Recorder.Input;
 using UnityEngine;
 
 namespace CollabXR.Objects.Components.Utility
@@ -11,6 +12,11 @@ namespace CollabXR.Objects.Components.Utility
 
 		[SerializeField, Tooltip("Canvas UI label to write the counter to (if provided).")]
 		private TextMeshProUGUI label;
+
+		public override void Spawned()
+		{
+			UpdateLabel();
+		}
 
 		/// <summary>
 		/// Increments the counter by 1.

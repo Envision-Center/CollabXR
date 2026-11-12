@@ -174,11 +174,13 @@ namespace CollabXR.Objects.Linker.Sockets
 		{
 			if (!requestAuthorityOnEvent)
 			{
+				Debug.Log("SocketOutput: Fired immediately with no need for authority");
 				callback(); // No authority needed
 				return;
 			}
 
 			// See if we need authority from any objects before firing our event
+			Debug.Log($"SocketOutput: checking {connections.Count} connections...");
 			List<NetworkObject> awaitingAuthority = new List<NetworkObject>();
 			foreach (SocketBase connection in connections)
 			{
@@ -194,11 +196,13 @@ namespace CollabXR.Objects.Linker.Sockets
 
 			if (awaitingAuthority.Count > 0)
 			{
+				Debug.Log("SocketOutput: Deferring to request authority");
 				// We need to wait for authority before firing callback
 				FireWithAuthorityDeferred(awaitingAuthority, callback);
 				return;
 			}
 
+			Debug.Log("SocketOutput: Fired immediately with authority");
 			callback(); // We already own all the connections
 		}
 
@@ -233,6 +237,7 @@ namespace CollabXR.Objects.Linker.Sockets
 			}
 
 			// Perform action regardless of authority at this point (we tried)
+			Debug.Log("SocketOutput: Fired after requesting authority");
 			callback();
 		}
 	}
