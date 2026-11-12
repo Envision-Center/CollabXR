@@ -16,7 +16,7 @@ MonoBehaviour:
   minScale: {x: 0.25, y: 0.25, z: 0.25}
   maxScale: {x: 3, y: 3, z: 3}
   startingOffset: {x: 0, y: 1, z: 0}
-  prefab: {fileID: 685483166519275638, guid: 817742b190c6e5c4ca8f942e72f68307, type: 3}
+  prefab: {fileID: 7825334759644448384, guid: 4aeee05d9303bc2469ec53182d880402, type: 3}
   attribution: 
   contextPrefab: {fileID: 0}
   isSimpleModel: 0
