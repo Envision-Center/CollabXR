@@ -63,6 +63,20 @@ namespace CollabXR.Objects
 		private GameObject dataRoot;
 		private AssetReference<GameObject> prefabReference;
 
+		/// <summary>
+		/// The instantiated mod under this object once loading has finished.
+		/// </summary>
+		public GameObject DataRoot => dataRoot;
+
+		/// <summary>
+		/// Passes an asset reference the spawner already loaded to skip reloading
+		/// Used to determine whether this mod is a physics mod or a regular mod
+		/// </summary>
+		public void UsePreloadedPrefab(AssetReference<GameObject> reference)
+		{
+			prefabReference = reference;
+		}
+
 		public void SetNetworkedData(string folder, string asset)
 		{
 			Category = folder;
@@ -157,8 +171,9 @@ namespace CollabXR.Objects
 			// If this is a mod and not a built-in CollabXR object...
 			if (Data.modGUID != null)
 			{
-				// Waits for mod data to finish loading
-				prefabReference = await ModManager.LoadAsset<GameObject>(Data.modGUID, Data.assetGUID);
+				// Waits for mod data to finish loading unless the spawner already loaded it
+				if (prefabReference == null)
+					prefabReference = await ModManager.LoadAsset<GameObject>(Data.modGUID, Data.assetGUID);
 
 				// End the loading animation
 				dataRoot.GetComponent<CollabObjectPreview>()?.EnableLoadingAnimation(false, Data.availableOnThisPlatform);
