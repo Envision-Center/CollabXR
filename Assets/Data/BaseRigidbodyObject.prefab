@@ -151,8 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contactAuthoritySpeed: 0.1
-  _NetworkedUseGravity:
-    _value: 0
+  contextPrefab: {fileID: 2483592490812912254, guid: 8b9c356819fbf192df95963ae80542bd, type: 3}
   _NetworkedIsHeld:
     _value: 0
 --- !u!114 &5718074607561668666
