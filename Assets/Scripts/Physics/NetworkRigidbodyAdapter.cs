@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
 using CollabXR.Networking;
 using CollabXR.Objects;
 using CollabXR.Objects.Components;
 using CollabXR.Tools;
+using CollabXR.UI;
 using Fusion;
 using Fusion.Addons.Physics;
 using UnityEngine;
@@ -10,23 +13,43 @@ namespace CollabXR
 {
 	/// <summary>
 	/// Makes a CollabObject's Rigidbody work over the network. For mods it takes over the Rigidbody on the mod's root,
-	/// for built-in objects it uses the one here. It also handles holding, throwing, scaling and gravity scale.
+	/// for built-in objects it uses the one here.
 	/// </summary>
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(NetworkRigidbody3D))]
-	public class NetworkRigidbodyAdapter : ModNetworkBehaviour, IStateAuthorityChanged
+	public class NetworkRigidbodyAdapter : ModNetworkBehaviour, IStateAuthorityChanged, IContextProvider
 	{
 		[SerializeField]
 		[Tooltip("Minimum impact speed for this body to take authority over an unheld body it hits.")]
 		private float contactAuthoritySpeed = 0.1f;
 
+		[SerializeField]
+		[Tooltip("Prefab with a PhysicsBodyContext, shown as the Physics tab of this object's context menu.")]
+		private GameObject contextPrefab;
+
 		[Networked, OnChangedRender(nameof(OnHeldChanged))]
 		public NetworkBool NetworkedIsHeld { get; set; }
+
+		[Networked, OnChangedRender(nameof(OnPropertiesChangedRender))]
+		public PhysicsBodyProperties NetworkedProperties { get; set; }
+
+		[Networked]
+		public NetworkBool PropertiesInitialized { get; set; }
+
+		public event Action OnPropertiesChanged = delegate { };
 
 		/// <summary>
 		/// True once the mod's Rigidbody has been taken over and its settings applied
 		/// </summary>
 		public bool IsReady { get; private set; }
+
+		public PhysicsBodyProperties CurrentProperties => IsReady && PropertiesInitialized ? NetworkedProperties : authoredProperties;
+
+		public PhysicsBodyProperties AuthoredProperties => authoredProperties;
+
+		public string TabName => "Physics"; // Icontextprovider
+
+		public GameObject SelfObject => gameObject;
 
 		private bool HasAuthority => Object != null && Object.IsValid && Object.HasStateAuthority;
 		private bool IsHeld => IsReady && Object != null && Object.IsValid && NetworkedIsHeld;
@@ -38,17 +61,20 @@ namespace CollabXR
 		private ThrowVelocityEstimator throwEstimator;
 		private ThrowTuning throwTuning;
 		private PhysicsScaleMode scaleMode;
-		private float gravityScale = 1f;
 		private RigidbodyBasicConfig ownConfig;
 		private NetworkRigidbody3D networkBody;
 		private bool authoredRenderSleep;
 		private BounceTuning bounceTuning;
 		private PhysicsMaterial bounceMaterial;
-		private bool authoredIsKinematic;
-		private bool authoredUseGravity;
+		private PhysicsBodyProperties authoredProperties;
 		private float authoredMass;
 		private int holdCount;
 		private bool handHeld;
+
+		/// <summary>
+		/// Each collider's original material from when it was authored (this gets replaced by a new one if the properties are changed at runtime)
+		/// </summary>
+		private readonly Dictionary<Collider, PhysicsMaterial> originalMaterials = new();
 
 		protected override void Awake()
 		{
@@ -128,7 +154,7 @@ namespace CollabXR
 			if (!HasAuthority || body.isKinematic || body.IsSleeping())
 				return;
 
-			body.AddForce(Physics.gravity * gravityScale, ForceMode.Acceleration);
+			body.AddForce(Physics.gravity * CurrentProperties.GravityScale, ForceMode.Acceleration);
 		}
 
 		private void OnCollisionEnter(Collision collision)
@@ -142,10 +168,17 @@ namespace CollabXR
 			if (!IsReady)
 				return;
 
-			if (HasAuthority && !HeldLocally)
+			if (HasAuthority)
 			{
-				NetworkedIsHeld = false;
-				body.isKinematic = authoredIsKinematic;
+				// the previous state authority may have left before setting the shared values
+				InitializeProperties();
+
+				// inherited properties
+				if (!HeldLocally)
+				{
+					NetworkedIsHeld = false;
+					body.isKinematic = CurrentProperties.Frozen;
+				}
 			}
 
 			RefreshInterpolation();
@@ -171,13 +204,17 @@ namespace CollabXR
 
 			if (modRoot != null && modRoot.TryGetComponent(out Rigidbody source))
 			{
-				ReadSettings(modRoot.GetComponent<PhysicsBodySettings>());
+				PhysicsBodySettings settings = modRoot.GetComponent<PhysicsBodySettings>();
+				ReadSettings(settings);
 				TakeOver(source);
+				CaptureAuthoredProperties(settings);
 			}
 			else if (IsBuiltIn())
 			{
-				ReadSettings(GetComponent<PhysicsBodySettings>());
+				PhysicsBodySettings settings = GetComponent<PhysicsBodySettings>();
+				ReadSettings(settings);
 				AdoptOwnBody();
+				CaptureAuthoredProperties(settings);
 			}
 			else
 			{
@@ -186,18 +223,14 @@ namespace CollabXR
 			}
 
 			body.maxAngularVelocity = throwTuning.MaxSpin;
-			RefreshGravity();
 			SetUpScaling();
-			ApplyBounce();
 			IsReady = true;
+			InitializeProperties();
+			ApplyProperties();
 
 			Debug.Log(
-				$"[Physics] {name} ready: scale mode {scaleMode}, gravity scale {gravityScale}, mass {body.mass}, max spin {body.maxAngularVelocity}, bounce override {bounceTuning.OverrideMaterial}"
+				$"[Physics] {name} ready: scale mode {scaleMode}, gravity scale {CurrentProperties.GravityScale}, mass {body.mass}, max spin {body.maxAngularVelocity}, bounce override {CurrentProperties.OverrideMaterial}"
 			);
-			RefreshInterpolation();
-
-			if (UsesScaledGravity())
-				PhysicsBodyUpdater.AddScaledGravity(this);
 
 			WarnAboutChildRigidbodies();
 		}
@@ -208,31 +241,6 @@ namespace CollabXR
 			{
 				if (child != body)
 					Debug.LogWarning($"[Physics] {name}: the Rigidbody on {child.name} is not networked.");
-			}
-		}
-
-		/// <summary>
-		/// Builds one physics material from the bounce settings and puts it on every collider of this body.
-		/// </summary>
-		private void ApplyBounce()
-		{
-			if (!bounceTuning.OverrideMaterial)
-				return;
-
-			bounceMaterial = new PhysicsMaterial($"{name} Bounce")
-			{
-				bounciness = bounceTuning.Bounciness,
-				dynamicFriction = bounceTuning.Friction,
-				staticFriction = bounceTuning.Friction,
-				bounceCombine = bounceTuning.IgnoreSurfaceBounce ? PhysicsMaterialCombine.Maximum : PhysicsMaterialCombine.Average,
-				frictionCombine = PhysicsMaterialCombine.Average,
-			};
-
-			// Include inactive colliders
-			foreach (Collider collider in GetComponentsInChildren<Collider>(true))
-			{
-				if (!collider.isTrigger)
-					collider.sharedMaterial = bounceMaterial;
 			}
 		}
 
@@ -250,14 +258,12 @@ namespace CollabXR
 			if (settings == null)
 			{
 				scaleMode = PhysicsScaleMode.ScaleMassWithVolume;
-				gravityScale = 1f;
 				throwTuning = new ThrowTuning();
 				bounceTuning = new BounceTuning();
 				return;
 			}
 
 			scaleMode = settings.ScaleMode;
-			gravityScale = settings.GravityScale;
 			throwTuning = settings.Throwing;
 			bounceTuning = settings.Bounce;
 		}
@@ -267,9 +273,11 @@ namespace CollabXR
 		/// </summary>
 		private void AdoptOwnBody()
 		{
-			authoredIsKinematic = ownConfig.IsKinematic;
-			authoredUseGravity = ownConfig.UseGravity;
 			authoredMass = ownConfig.Mass;
+
+			// copies without authority stay kinematic, so restore the authored state from initialization
+			authoredProperties.UseGravity = ownConfig.UseGravity;
+			authoredProperties.Frozen = ownConfig.IsKinematic;
 
 			if (HasAuthority && HeldLocally)
 				body.isKinematic = true;
@@ -290,9 +298,9 @@ namespace CollabXR
 				DestroyImmediate(settings);
 			DestroyImmediate(source);
 
-			authoredIsKinematic = basic.IsKinematic;
-			authoredUseGravity = basic.UseGravity;
 			authoredMass = basic.Mass;
+			authoredProperties.UseGravity = basic.UseGravity;
+			authoredProperties.Frozen = basic.IsKinematic;
 
 			// NetworkRigidbody3D keeps every copy without authority kinematic
 			if (!HasAuthority || HeldLocally)
@@ -301,6 +309,53 @@ namespace CollabXR
 			basic.Apply(body);
 			collision.Apply(body);
 			advanced.Apply(body);
+		}
+
+		/// <summary>
+		/// Records the authored starting point of every runtime property.
+		/// </summary>
+		private void CaptureAuthoredProperties(PhysicsBodySettings settings)
+		{
+			authoredProperties.GravityScale = settings != null ? settings.GravityScale : 1f;
+			authoredProperties.LinearDrag = body.linearDamping;
+			authoredProperties.AngularDrag = body.angularDamping;
+			authoredProperties.ThrowStrength = throwTuning.Strength;
+			authoredProperties.OverrideMaterial = bounceTuning.OverrideMaterial;
+
+			RecordOriginalMaterials();
+
+			if (bounceTuning.OverrideMaterial)
+			{
+				authoredProperties.Bounciness = bounceTuning.Bounciness;
+				authoredProperties.Friction = bounceTuning.Friction;
+				return;
+			}
+
+			// without an override, editing starts from what the colliders already use
+			PhysicsMaterial current = GetFirstMaterial();
+			authoredProperties.Bounciness = current != null ? current.bounciness : 0f;
+			authoredProperties.Friction = current != null ? current.dynamicFriction : 0.6f;
+		}
+
+		private void RecordOriginalMaterials()
+		{
+			// Include inactive colliders, since mods can toggle parts on later
+			foreach (Collider collider in GetComponentsInChildren<Collider>(true))
+			{
+				if (!collider.isTrigger)
+					originalMaterials[collider] = collider.sharedMaterial;
+			}
+		}
+
+		private PhysicsMaterial GetFirstMaterial()
+		{
+			foreach (PhysicsMaterial material in originalMaterials.Values)
+			{
+				if (material != null)
+					return material;
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -315,17 +370,98 @@ namespace CollabXR
 				advanced.InertiaTensorRotation = Quaternion.Inverse(transform.rotation) * source.rotation * advanced.InertiaTensorRotation;
 		}
 
-		private bool UsesScaledGravity()
+		private void InitializeProperties()
 		{
-			return IsReady && authoredUseGravity && !Mathf.Approximately(gravityScale, 1f);
+			if (!IsReady || !HasAuthority || PropertiesInitialized)
+				return;
+
+			NetworkedProperties = authoredProperties;
+			PropertiesInitialized = true;
+		}
+
+		private void OnPropertiesChangedRender()
+		{
+			if (IsReady)
+				ApplyProperties();
+		}
+
+		private void ApplyProperties()
+		{
+			PhysicsBodyProperties properties = CurrentProperties;
+
+			RefreshGravity(properties);
+			body.linearDamping = properties.LinearDrag;
+			body.angularDamping = properties.AngularDrag;
+			ApplyBounce(properties);
+
+			// Copies without authority are kept kinematic by NetworkRigidbody3D and held bodies stay kinematic until released
+			if (HasAuthority && !HeldLocally && body.isKinematic != properties.Frozen)
+			{
+				body.isKinematic = properties.Frozen;
+
+				if (!properties.Frozen)
+					body.WakeUp();
+			}
+
+			RefreshInterpolation();
+			OnPropertiesChanged();
 		}
 
 		/// <summary>
 		/// Unity's gravity is used at scale 1 and any other scale is applied as a force by <see cref="PhysicsBodyUpdater"/>.
 		/// </summary>
-		private void RefreshGravity()
+		private void RefreshGravity(PhysicsBodyProperties properties)
 		{
-			body.useGravity = authoredUseGravity && Mathf.Approximately(gravityScale, 1f);
+			bool scaled = !Mathf.Approximately(properties.GravityScale, 1f);
+			body.useGravity = properties.UseGravity && !scaled;
+
+			if (properties.UseGravity && scaled)
+				PhysicsBodyUpdater.AddScaledGravity(this);
+			else
+				PhysicsBodyUpdater.RemoveScaledGravity(this);
+		}
+
+		private void ApplyBounce(PhysicsBodyProperties properties)
+		{
+			if (!properties.OverrideMaterial)
+			{
+				if (bounceMaterial == null)
+					return;
+
+				foreach (KeyValuePair<Collider, PhysicsMaterial> original in originalMaterials)
+				{
+					if (original.Key != null)
+						original.Key.sharedMaterial = original.Value;
+				}
+
+				Destroy(bounceMaterial);
+				bounceMaterial = null;
+				return;
+			}
+
+			bool created = bounceMaterial == null;
+
+			if (created)
+			{
+				bounceMaterial = new PhysicsMaterial($"{name} Bounce")
+				{
+					bounceCombine = bounceTuning.OverrideMaterial && bounceTuning.IgnoreSurfaceBounce ? PhysicsMaterialCombine.Maximum : PhysicsMaterialCombine.Average,
+					frictionCombine = PhysicsMaterialCombine.Average,
+				};
+			}
+
+			bounceMaterial.bounciness = properties.Bounciness;
+			bounceMaterial.dynamicFriction = properties.Friction;
+			bounceMaterial.staticFriction = properties.Friction;
+
+			if (!created)
+				return;
+
+			foreach (Collider collider in originalMaterials.Keys)
+			{
+				if (collider != null)
+					collider.sharedMaterial = bounceMaterial;
+			}
 		}
 
 		private void SetUpScaling()
@@ -351,6 +487,126 @@ namespace CollabXR
 			if (mass > 0f && mass != body.mass)
 				body.mass = mass;
 		}
+
+		#region Property Setters
+
+		public void SetUseGravity(bool value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.UseGravity = value;
+			NetworkedProperties = properties;
+		}
+
+		public void SetGravityScale(float value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.GravityScale = value;
+			NetworkedProperties = properties;
+		}
+
+		public void SetDrag(float value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.LinearDrag = value;
+			properties.AngularDrag = value;
+			NetworkedProperties = properties;
+		}
+
+		public void SetBounciness(float value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.Bounciness = value;
+			properties.OverrideMaterial = NeedsOverrideMaterial(properties);
+			NetworkedProperties = properties;
+		}
+
+		public void SetFriction(float value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.Friction = value;
+			properties.OverrideMaterial = NeedsOverrideMaterial(properties);
+			NetworkedProperties = properties;
+		}
+
+		private bool NeedsOverrideMaterial(PhysicsBodyProperties properties)
+		{
+			return authoredProperties.OverrideMaterial
+				|| !Mathf.Approximately(properties.Bounciness, authoredProperties.Bounciness)
+				|| !Mathf.Approximately(properties.Friction, authoredProperties.Friction);
+		}
+
+		public void SetFrozen(bool value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.Frozen = value;
+			NetworkedProperties = properties;
+		}
+
+		public void SetThrowStrength(float value)
+		{
+			if (!CanEditProperties())
+				return;
+
+			PhysicsBodyProperties properties = NetworkedProperties;
+			properties.ThrowStrength = value;
+			NetworkedProperties = properties;
+		}
+
+		public void ResetProperties()
+		{
+			if (!CanEditProperties())
+				return;
+
+			NetworkedProperties = authoredProperties;
+		}
+
+		private bool CanEditProperties()
+		{
+			return IsReady && HasAuthority && PropertiesInitialized;
+		}
+
+		#endregion
+
+		public CollabContext AddTab(GameObject obj, CollabContextMenu menu)
+		{
+			if (contextPrefab == null)
+				return null;
+
+			GameObject prefabInstance = Instantiate(contextPrefab, obj.transform);
+			prefabInstance.transform.localPosition = Vector3.zero;
+			prefabInstance.transform.localRotation = Quaternion.identity;
+			prefabInstance.transform.localScale = Vector3.one;
+
+			PhysicsBodyContext context = prefabInstance.GetComponent<PhysicsBodyContext>();
+
+			if (context == null)
+			{
+				Debug.LogError($"[Physics] {name}: the physics context prefab has no PhysicsBodyContext.");
+				Destroy(prefabInstance);
+			}
+
+			return context;
+		}
+
+		public GameObject GetContextPrefab() => contextPrefab;
 
 		/// <summary>
 		/// Holds the body kinematic for a tool that moves its transform directly, such as the Mover.
@@ -430,7 +686,7 @@ namespace CollabXR
 
 			// The estimate is for the transform's origin so the body moves about its center of mass
 			linear += Vector3.Cross(angular, body.worldCenterOfMass - transform.position);
-			linear = Vector3.ClampMagnitude(linear * throwTuning.Strength, throwTuning.MaxSpeed);
+			linear = Vector3.ClampMagnitude(linear * CurrentProperties.ThrowStrength, throwTuning.MaxSpeed);
 			angular *= throwTuning.Spin;
 		}
 
@@ -440,11 +696,13 @@ namespace CollabXR
 			if (HeldLocally)
 				return;
 
+			bool frozen = CurrentProperties.Frozen;
+
 			NetworkedIsHeld = false;
-			body.isKinematic = authoredIsKinematic;
+			body.isKinematic = frozen;
 			RefreshInterpolation();
 
-			if (authoredIsKinematic)
+			if (frozen)
 				return;
 
 			body.linearVelocity = linear;
@@ -457,7 +715,7 @@ namespace CollabXR
 		/// </summary>
 		private void RefreshInterpolation()
 		{
-			bool simulatedHere = IsReady && HasAuthority && !HeldLocally && !authoredIsKinematic;
+			bool simulatedHere = IsReady && HasAuthority && !HeldLocally && !CurrentProperties.Frozen;
 			body.interpolation = simulatedHere ? RigidbodyInterpolation.Interpolate : RigidbodyInterpolation.None;
 		}
 
