@@ -13,6 +13,9 @@ using Cysharp.Threading.Tasks;
 
 namespace CollabXR.Environments
 {
+	/// <summary>
+	/// 
+	/// </summary>
 	public class EnvironmentManager : SingletonNetworkBehavior<EnvironmentManager>, IStateAuthorityChanged, IDespawned
 	{
 		///
@@ -88,6 +91,12 @@ namespace CollabXR.Environments
 
 		private bool loadingScene;
 		private bool disconnected;
+		
+		/// <summary>
+		/// Blocks selection changes until the current authority finishes loading.
+		/// </summary>
+		[Networked]
+		private NetworkBool environmentChangeInProgress { get; set; }
 
 		///
 		/// EVENTS
@@ -122,14 +131,7 @@ namespace CollabXR.Environments
 			bool newRoom = networkedState.currentEnvironmentGuid == Guid.Empty;
 			if (Object.HasStateAuthority && newRoom)
 			{
-				if (environmentLibrary.defaultEnvironmentEntry == null)
-				{
-					Debug.LogError("No default environment entry is configured.");
-				}
-				else
-				{
-					ChangeEnvironmentWithAuthority(environmentLibrary.defaultEnvironmentEntry, 0);
-				}
+				ChangeEnvironmentWithAuthority(environmentLibrary.defaultEnvironmentEntry, 0);
 			}
 			LoadEnvironmentSceneLocal(environmentLibrary.GetEntry(networkedState.currentEnvironmentGuid));
 		}
@@ -196,6 +198,7 @@ namespace CollabXR.Environments
 
 		/// <summary>
 		/// Given an Environment Entry from the bundle, tries to load the environment scene into the current room.
+		/// Releases the room's change lock if the authority's selected environment fails to load.
 		/// </summary>
 		/// <param name="entry"></param>
 		private async void LoadEnvironmentSceneLocal(EnvironmentEntry entry)
@@ -206,9 +209,13 @@ namespace CollabXR.Environments
 
 			if (disconnected ||
 				loadingScene ||
-				entry == null ||
-				currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
+				entry == null)
 			{
+				return;
+			}
+			if (currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
+			{
+				TryUnlockEnvironmentChange(entry.assetGUID);
 				return;
 			}
 			loadingScene = true;
@@ -236,6 +243,7 @@ namespace CollabXR.Environments
 				catch (Exception exception)
 				{
 					loadingScene = false;
+					TryUnlockEnvironmentChange(entry.assetGUID);
 					Debug.LogError($"Failed to prepare environment scene: {exception}");
 					return;
 				}
@@ -261,6 +269,7 @@ namespace CollabXR.Environments
 			catch (Exception exception)
 			{
 				loadingScene = false;
+				TryUnlockEnvironmentChange(entry.assetGUID);
 				ModManager.ReleaseScene(reference);
 				Debug.LogError($"Failed to load environment scene at {path}: {exception}");
 				return;
@@ -292,6 +301,7 @@ namespace CollabXR.Environments
 		/// Installs a successfully initialized scene and retains its mod reference.
 		/// Unloads and releases the incoming scene on failure, or the old scene after a swap.
 		/// If this client disconnected during loading, only unloads and releases the scene.
+		/// The authority unlocks selection changes after the selected scene succeeds or fails.
 		/// </summary>
 		/// <param name="entry">The entry associated with the completed scene load.</param>
 		/// <param name="loadedScene">The scene loaded from the resolved path.</param>
@@ -366,11 +376,33 @@ namespace CollabXR.Environments
 			}
 			finally
 			{
+				TryUnlockEnvironmentChange(entry.assetGUID);
 				if (!activated)
 				{
 					UnloadSceneAndRelease(loadedScene, reference).Forget();
 				}
 			}
+		}
+
+		/// <summary>
+		/// Unlocks changes only for the authority's current selection while connected.
+		/// </summary>
+		/// <param name="environmentGuid">The environment whose load has finished or failed.</param>
+		private void TryUnlockEnvironmentChange(Guid environmentGuid)
+		{
+			if (!disconnected && Object.HasStateAuthority && networkedState.currentEnvironmentGuid == environmentGuid)
+			{
+				environmentChangeInProgress = false;
+			}
+		}
+		private bool TryLockEnvironmentChange(Guid environmentGuid)
+		{
+			if (!environmentChangeInProgress)
+			{
+				environmentChangeInProgress = true;
+				return true;
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -392,33 +424,49 @@ namespace CollabXR.Environments
 			currState.currentEnvInstance = instance;
 		}
 
-#region AUTHORITY TRANSFER
+#region ENV MENU REQUEST LOGIC
 
 		///
-		/// AUTHORITY TRANSFER LOGIC
+		/// ENV MENU REQUEST LOGIC
 		///
+		/// 1. Environment menu calls RequestRoomEnvironmentChange
+		/// 2. 
+		/// 
+		/// 
 
 		/// <summary>
 		/// Validates a requested environment and teleport, then publishes the supplied
 		/// selection or stores it while waiting for state authority.
+		/// Rejects requests while this client is loading or the room's change lock is set.
 		/// </summary>
 		/// <param name="entry">The current library entry to select, including the active scene.</param>
 		/// <param name="teleportIndex">The teleport to apply in the selected environment.</param>
 		public void RequestRoomEnvironmentChange(EnvironmentEntry entry, int teleportIndex)
 		{
-			if (loadingScene)
+			if (loadingScene || environmentChangeInProgress)
 			{
+				// there's already something loading
 				return;
 			}
-			if (entry == null || !ReferenceEquals(environmentLibrary.GetEntry(entry.assetGUID), entry))
+			if (entry == null || !Equals(environmentLibrary.GetEntry(entry.assetGUID), entry))
 			{
+				// the entry input is not a valid reference to an entry in environmentLibrary
 				return;
 			}
-			if (!entry.availableOnThisPlatform || teleportIndex < 0 || teleportIndex >= entry.teleports.Count)
+			if (teleportIndex < 0 || teleportIndex >= entry.teleports.Count)
 			{
+				// invalid teleport index for the requested entry
+				return;
+			}
+			if (!entry.availableOnThisPlatform)
+			{
+				// entry doesn't work for the current platform
 				return;
 			}
 
+			// once all checks pass, we can request authority to load the environment
+			// 		- see StateAuthorityChanged() for next steps
+			// once we have authority, we can 
 			if (Object.HasStateAuthority)
 			{
 				ChangeEnvironmentWithAuthority(entry, teleportIndex);
@@ -438,6 +486,10 @@ namespace CollabXR.Environments
 		/// <param name="teleportIndex">The teleport to publish with the environment GUID.</param>
 		private void ChangeEnvironmentWithAuthority(EnvironmentEntry entry, int teleportIndex)
 		{
+			// only trigger an environment change lock when the actual environment is changing
+			if (networkedState.currentEnvironmentGuid != entry.assetGUID) {
+				TryLockEnvironmentChange(entry.assetGUID);
+			}
 			networkedState = new NetworkedEnvironmentState
 			{
 				currentEnvironmentGuid = entry.assetGUID,
@@ -448,15 +500,20 @@ namespace CollabXR.Environments
 		/// <summary>
 		/// Captures and clears the pending request when authority is granted, then
 		/// passes both request inputs through the normal validation path.
+		/// Resolves an inherited loading lock before rechecking the pending request.
 		/// </summary>
 		public void StateAuthorityChanged()
 		{
-			if (Object.HasStateAuthority && request.requestedEnvironmentEntry != null)
+			if (!Object.HasStateAuthority)
+			{
+				return;
+			}
+			if (request.requestedEnvironmentEntry != null)
 			{
 				EnvironmentEntry entry = request.requestedEnvironmentEntry;
 				int teleportIndex = request.requestedTeleportIndex;
 
-				request = default;
+				request.requestedEnvironmentEntry = null;
 				RequestRoomEnvironmentChange(entry, teleportIndex);
 			}
 		}
@@ -495,7 +552,7 @@ namespace CollabXR.Environments
 		/// </summary>
 		public void ResetEnvironmentLibrary()
 		{
-			request = default;
+			request.requestedEnvironmentEntry = null;
 			environmentLibrary.ClearEnvironmentEntries();
 			BuildEntriesFromLocalData(localEnvironmentData, defaultEnvironmentEntry);
 		}
@@ -511,6 +568,7 @@ namespace CollabXR.Environments
 		/// <summary>
 		/// Notifies menu listeners after a library rebuild, even if the room entry is missing.
 		/// Resolves the room GUID once and loads it even when no scene has loaded yet.
+		/// Unlocks selection changes if the authority's entry is still missing after refresh.
 		/// </summary>
 		public void OnSimpleModLoaderRefresh()
 		{
@@ -527,6 +585,7 @@ namespace CollabXR.Environments
 				// Could be caused by a client not having the same repositories as the host.
 				// Since environments are global, we can't just load the default environment.
 				// TODO: Look into the possibility of falling back to a default environment ONLY FOR THIS CLIENT.
+				TryUnlockEnvironmentChange(networkedState.currentEnvironmentGuid);
 				Debug.LogError($"Environment {networkedState.currentEnvironmentGuid} was not found after the library refresh.");
 				return;
 			}
