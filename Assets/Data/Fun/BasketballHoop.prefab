@@ -134,7 +134,7 @@ Transform:
   m_GameObject: {fileID: 4641228972341486455}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.175, z: -1.113}
+  m_LocalPosition: {x: 0, y: 3.057, z: -1.113}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -159,7 +159,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.13
+  m_Radius: 0.1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3464772016672623632
 MonoBehaviour:
@@ -351,7 +351,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   triggerFirst: {fileID: 3464772016672623632}
   triggerSecond: {fileID: 3519687410296340922}
-  scoreTimeframe: 0.3
+  scoreTimeframe: 0.9
   particles: {fileID: 8339905199181178085}
   onScore:
     m_PersistentCalls:
@@ -395,7 +395,7 @@ Transform:
   m_GameObject: {fileID: 6440599965873684604}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.892, z: -1.113}
+  m_LocalPosition: {x: 0, y: 2.869, z: -1.113}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
