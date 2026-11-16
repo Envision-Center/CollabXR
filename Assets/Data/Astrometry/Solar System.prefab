@@ -2966,6 +2966,7 @@ GameObject:
   - component: {fileID: 501895804476376876}
   - component: {fileID: 561360113656551816}
   - component: {fileID: 6767610848609615417}
+  - component: {fileID: 5425879861423515476}
   - component: {fileID: -5187892878709030816}
   - component: {fileID: 2979721457505854108}
   - component: {fileID: 803701771848516867}
@@ -3139,6 +3140,51 @@ MonoBehaviour:
     beforeChange:
       m_PersistentCalls:
         m_Calls: []
+--- !u!114 &5425879861423515476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3076373365412551826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2929e598b57b1ac41b0c4884f4098901, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnTriggerPress:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTriggerRelease:
+    m_PersistentCalls:
+      m_Calls: []
+  OnTriggerChange:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStickPress:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStickRelease:
+    m_PersistentCalls:
+      m_Calls: []
+  OnStickButtonChange:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPrimaryAxis:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: -5187892878709030816}
+        m_TargetAssemblyTypeName: CollabXR.Objects.NetworkScalable, Assembly-CSharp
+        m_MethodName: AddUniformScaleJoystick
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &-5187892878709030816
 MonoBehaviour:
   m_ObjectHideFlags: 0
