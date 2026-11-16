@@ -8,30 +8,31 @@ namespace CollabXR.Objects.Components.Fun
 	/// </summary>
 	public class PhysicsTrigger : MonoBehaviour
 	{
-		[Tooltip("Emitted when a CollabObject enters the trigger.")]
-		public UnityEvent<CollabObject> objectEntered;
+		[Tooltip("Emitted when a CollabObject enters the trigger. Also returns the attached Rigidbody, if found.")]
+		public UnityEvent<CollabObject, Rigidbody> objectEntered;
 
 		private void Awake()
 		{
 			if (objectEntered == null)
 			{
-				objectEntered = new UnityEvent<CollabObject>();
+				objectEntered = new UnityEvent<CollabObject, Rigidbody>();
 			}
 		}
 
 		private void OnTriggerEnter(Collider other)
 		{
-			CollabObject obj = SearchForCollabObject(other.transform);
+			CollabObject obj = SearchForComponent<CollabObject>(other.transform);
+
 			if (obj != null)
 			{
-				objectEntered.Invoke(obj);
+				objectEntered.Invoke(obj, SearchForComponent<Rigidbody>(other.transform));
 			}
 		}
 
-		private CollabObject SearchForCollabObject(Transform item)
+		private T SearchForComponent<T>(Transform item) where T : Component
 		{
 			// See if we have a CollabObject here
-			CollabObject obj;
+			T obj;
 			if (item.TryGetComponent(out obj))
 			{
 				return obj;
@@ -44,7 +45,7 @@ namespace CollabXR.Objects.Components.Fun
 			}
 
 			// Otherwise, keep searching
-			return SearchForCollabObject(item.parent);
+			return SearchForComponent<T>(item.parent);
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace CollabXR.Objects.Components.Fun
 
 		[Header("Scoring")]
 		[SerializeField, Tooltip("Max duration it takes an object to move through the hoop before score is ignored.")]
-		private float scoreTimeframe = 0.3f;
+		private float scoreTimeframe = 1.0f;
 
 		[Header("Effects")]
 		[SerializeField]
@@ -49,18 +49,25 @@ namespace CollabXR.Objects.Components.Fun
 			}
 		}
 
-		void PassFirst(CollabObject obj)
+		void PassFirst(CollabObject obj, Rigidbody body)
 		{
 			currentObject = obj;
 			lastTriggerTime = Time.fixedTime;
 		}
 
-		void PassSecond(CollabObject obj)
+		void PassSecond(CollabObject obj, Rigidbody body)
 		{
 			if (obj == currentObject && (Time.fixedTime - lastTriggerTime) <= scoreTimeframe)
 			{
-				Score();
 				currentObject = null;
+
+				// If there is a Rigidbody, and it is not moving downward, reject the event
+				if (body != null && Vector3.Dot(body.linearVelocity.normalized, transform.up) > 0.0f) {
+					Debug.Log("Hoop Trigger: Rigidbody was not falling through hoop, ignore");
+					return;
+				}
+
+				Score();
 			}
 		}
 

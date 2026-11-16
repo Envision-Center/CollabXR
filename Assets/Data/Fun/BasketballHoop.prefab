@@ -221,7 +221,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 6ab9274aca91c1b4594efba47a9910ef, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.5
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -351,7 +351,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   triggerFirst: {fileID: 3464772016672623632}
   triggerSecond: {fileID: 3519687410296340922}
-  scoreTimeframe: 0.9
+  scoreTimeframe: 1
   particles: {fileID: 8339905199181178085}
   onScore:
     m_PersistentCalls:
