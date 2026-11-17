@@ -14,6 +14,7 @@ namespace CollabXR.Tools
 		public bool IsMoving { get; private set; } = false;
 		public CollabObject CollabObjectToMove { get; private set; }
 		private NetworkScalable scalable;
+		private NetworkRigidbodyAdapter movedBody;
 
 		private Vector3 movingObjectLocalPos;
 		private Vector3 movingObjectEuler;
@@ -69,6 +70,11 @@ namespace CollabXR.Tools
 				return;
 
 			CollabObjectToMove.Object.RequestStateAuthority();
+
+			// Physics objects go kinematic while moved so gravity doesn't build up while they're held
+			movedBody = CollabObjectToMove.GetComponent<NetworkRigidbodyAdapter>();
+			if (movedBody != null)
+				movedBody.BeginHold();
 
 			movingObjectLocalPos = transform.InverseTransformPoint(CollabObjectToMove.transform.position);
 			movingObjectEuler = CollabObjectToMove.transform.eulerAngles;
@@ -132,6 +138,11 @@ namespace CollabXR.Tools
 				return;
 
 			IsMoving = false;
+
+			if (movedBody != null)
+				movedBody.EndHold(false);
+			movedBody = null;
+
 			OnNotMovingObject.Invoke(true);
 			OnStopMove.Invoke();
 		}

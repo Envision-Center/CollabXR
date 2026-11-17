@@ -11,6 +11,9 @@ namespace CollabXR.UI
 		[SerializeField]
 		private CategoryButtonList categoryButtonList;
 
+		[SerializeField, Tooltip("Whether to automatically hide the sidebar if there is only one category.")]
+		private bool hideSidebarWhenSingle;
+
 		private void Awake()
 		{
 			if (selector != null)
@@ -39,6 +42,11 @@ namespace CollabXR.UI
 			}
 
 			categoryButtonList.Select(0);
+
+			if (hideSidebarWhenSingle)
+			{
+				categoryButtonList.gameObject.SetActive(selector.transform.childCount > 1);
+			}
 		}
 
 		public void RefreshButtons()

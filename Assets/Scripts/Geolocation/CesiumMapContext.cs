@@ -131,7 +131,14 @@ namespace CollabXR.Geolocation
 
 		public void Zoom()
 		{
-			mapController.zoom = zoom.value / 100;
+			mapController.zoom = zoom.value;
+			AdjustText();
+		}
+
+		public void IncrementZoom(float inc)
+		{
+			mapController.zoom = Math.Clamp(mapController.zoom + inc, 0, 1);
+			zoom.value = (float) mapController.zoom;
 			AdjustText();
 		}
 
@@ -159,11 +166,11 @@ namespace CollabXR.Geolocation
 			AdjustText();
 		}
 
-		private void AdjustText()
+		public void AdjustText()
 		{
-			zoomText.text = $"{Math.Round(mapController.zoom * 100).ToString():F4}%";
-			exaggerationText.text = $"{mapController.exaggeration:F2}x";
-			rangeText.text = $"{mapController.range:F2}m";
+			zoomText.text = $"{Math.Round(zoom.value * 100).ToString():F4}%";
+			exaggerationText.text = $"{exaggeration.value:F2}x";
+			rangeText.text = $"{range.value:F2}m";
 			currentCoordsText.text = $"latitude: {mapController.latitude:F4} longitude: {mapController.longitude:F4}";
 			latitudeInput.text = $"{mapController.latitude:F4}";
 			longitudeInput.text = $"{mapController.longitude:F4}";
