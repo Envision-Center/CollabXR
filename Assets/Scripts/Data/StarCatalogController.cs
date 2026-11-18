@@ -30,6 +30,9 @@ namespace CollabXR.Data
 		[Networked, OnChangedRender(nameof(UpdateCatalog))]
 		public bool showConstellations { get; set; } = true;
 
+		[Networked, OnChangedRender(nameof(UpdateCatalog))]
+		public bool showLabels { get; set; } = true;
+
 		private float siderealSpeed = (360.0f) / (1436 * 60);
 
 		private void FindCatalogInstance()
@@ -60,7 +63,7 @@ namespace CollabXR.Data
 			if (catalog != null)
 			{
 				catalog.SetMagnitude(dimmestMagnitude);
-				catalog.SetDisplay(showSimulation, showConstellations);
+				catalog.SetDisplay(showSimulation, showConstellations, showLabels);
 				catalog.SetSiderealValues(latitude, longitude, timeOffset);
 			}
 		}
