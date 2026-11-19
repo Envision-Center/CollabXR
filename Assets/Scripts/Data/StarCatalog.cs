@@ -9,6 +9,7 @@ namespace CollabXR.Data
 		public VisualEffect vfxGraph;
 		public MeshRenderer cubemap;
 		public Material cubemat;
+		public GameObject labels;
 		public float cubemapLatitudeOffset,
 			cubemapLongitudeOffset;
 		float dimmestMagnitude = 25.0f,
@@ -16,7 +17,8 @@ namespace CollabXR.Data
 			latitude = 40.0f,
 			timeOffset = 0.0f;
 		bool showConstellations = true,
-			showSimulation = true;
+			showSimulation = true,
+			showLabels = true;
 
 		[SerializeField]
 		bool debug = false;
@@ -34,10 +36,11 @@ namespace CollabXR.Data
 			AdjustVisuals();
 		}
 
-		public void SetDisplay(bool simulation, bool constellations)
+		public void SetDisplay(bool simulation, bool constellations, bool labels)
 		{
 			showSimulation = simulation;
 			showConstellations = constellations;
+			showLabels = labels;
 			AdjustVisuals();
 		}
 
@@ -60,6 +63,7 @@ namespace CollabXR.Data
 			cubemat.SetFloat("_Latitude", CubemapLatitude());
 			cubemat.SetFloat("_Longitude", CubemapLongitude());
 			cubemap.material = cubemat;
+			labels.SetActive(showLabels && showSimulation);
 		}
 
 		public float EffectiveLatitude() => latitude;

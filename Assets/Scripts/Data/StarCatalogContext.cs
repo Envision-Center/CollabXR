@@ -13,7 +13,7 @@ namespace CollabXR.Data
 			latitudeSlider,
 			longitudeSlider,
 			speedSlider;
-		public Toggle constellationToggle;
+		public Toggle constellationToggle, labelToggle;
 		public TextMeshProUGUI magnitudeText,
 			latitudeText,
 			longitudeText,
@@ -47,6 +47,11 @@ namespace CollabXR.Data
 		public void ShowConstellations(bool enabled)
 		{
 			controller.showConstellations = enabled;
+		}
+
+		public void ShowLabels(bool enabled)
+		{
+			controller.showLabels = enabled;
 		}
 
 		public void ShowSimulation(bool enabled)
@@ -97,6 +102,7 @@ namespace CollabXR.Data
 			longitudeSlider.value = controller.longitude;
 			speedSlider.value = controller.siderealSpeedMultiplier;
 			constellationToggle.isOn = controller.showConstellations;
+			labelToggle.isOn = controller.showLabels;
 		}
 	}
 }
