@@ -148,7 +148,10 @@ namespace CollabXR.Objects.Linker.Sockets
 
 		protected virtual void OnDestroy()
 		{
-			LinkerConfig.Instance.socketViewers.RemoveListener(SocketViewersChanged);
+			if (LinkerConfig.Instance != null)
+			{
+				LinkerConfig.Instance.socketViewers.RemoveListener(SocketViewersChanged);
+			}
 			eventDestroyed.Invoke(this); // Notify other sockets that we've been destroyed
 			DisconnectAll();
 		}

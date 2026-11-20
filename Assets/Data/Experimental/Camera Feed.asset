@@ -21,8 +21,8 @@ MonoBehaviour:
   contextPrefab: {fileID: 4510854445153630308, guid: 403407e823d46f14f88bce2c116b7478, type: 3}
   isSimpleModel: 0
   formattedName: Camera Feed
-  category: Utility
+  category: Experimental
   assetName: Camera Feed.asset
-  thumbnail: {fileID: 21300000, guid: 2e805dcf29d601549a22f7807e515f41, type: 3}
+  thumbnail: {fileID: 21300000, guid: 7e28cb36d96c2074ebaa040c4fcbf1f6, type: 3}
   availableOnThisPlatform: 1
   creators: []
