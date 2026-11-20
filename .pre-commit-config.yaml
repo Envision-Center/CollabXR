@@ -15,17 +15,17 @@ repos:
       # Clean up whitespace issues
       - id: trailing-whitespace
         types: [file, text]
-        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
+        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef|mat|vfx)$'
       - id: end-of-file-fixer
         types: [file, text]
-        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
+        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef|mat|vfx)$'
       # Force consistent line endings, we don't care which type
       - id: mixed-line-ending
         name: "Enforce Line Consistency"
         args: ["--fix=auto"]
         types: [file, text]
         exclude_types: [bash, batch]
-        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef)$'
+        exclude: '.*\.(meta|asset|prefab|preset|shadergraph|unity|asmdef|mat|vfx)$'
       # Shell scripts MUST have Unix-style line endings to work
       - id: mixed-line-ending
         name: Enforce Shell Line-Endings
