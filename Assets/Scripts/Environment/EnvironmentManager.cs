@@ -14,7 +14,14 @@ using Cysharp.Threading.Tasks;
 namespace CollabXR.Environments
 {
 	/// <summary>
-	/// 
+	/// Primary workflow:
+	/// 1. LOCAL: A user requests to change env via env menu, populates RequestedEnvironmentState.
+	/// 2. LOCAL: The user's EnvironmentManager attempts to claim authority.
+	/// 3. NETWORKED: ChangeEnvironmentWithAuthority sets a networked flag (to prevent env changes while one is in progress).
+	/// 4. NETWORKED: It also sets NetworkedEnvironmentState with the request, which triggers OnSelectionChanged for every client.
+	/// 5. LOCAL: If the environment was changed, LoadEnvironmentSceneLocal, otherwise just Teleport
+	/// 6. LOCAL ASYNC: LoadEnvironmentSceneLocal checks inputs, loads mod (if applicable), and loads scene additively.
+	/// 7. LOCAL: OnSceneLoadComplete called after additive load, 
 	/// </summary>
 	public class EnvironmentManager : SingletonNetworkBehavior<EnvironmentManager>, IStateAuthorityChanged, IDespawned
 	{
@@ -47,6 +54,12 @@ namespace CollabXR.Environments
 			public EnvironmentScene currentEnvInstance;
 			public SceneReference sceneReference;
 			public Matrix4x4 previousTeleportMatrix = Matrix4x4.identity;
+			public void SetState(EnvironmentEntry entry, EnvironmentScene sceneScript, SceneReference scene)
+			{
+				activeEnvironmentEntry = entry;
+				currentEnvInstance = sceneScript;
+				sceneReference = scene;
+			}
 		}
 		private CurrentEnvironmentState currState = new CurrentEnvironmentState();
 		public EnvironmentScene GetCurrentEnvInstance()
@@ -80,6 +93,7 @@ namespace CollabXR.Environments
 		{
 			public Guid currentEnvironmentGuid;
 			public int currentTeleportIndex;
+			public bool isNewEnvironment;
 		}
 		[Networked, OnChangedRender(nameof(OnSelectionChanged))]
 		NetworkedEnvironmentState networkedState { get; set; }
@@ -152,10 +166,9 @@ namespace CollabXR.Environments
 		/// Moves the supplied rig to a scene teleport while preserving its offset
 		/// from the previous teleport. Updates the manager's teleport history.
 		/// </summary>
-		/// <param name="scene">The loaded environment containing the teleport.</param>
-		/// <param name="teleportIndex">The teleport to use within the supplied scene.</param>
-		/// <param name="rigRoot">The player rig transform to move.</param>
-		private void Teleport(EnvironmentScene scene, int teleportIndex, Transform rigRoot)
+		/// <param name="scene"></param>
+		/// <param name="teleportIndex"></param>
+		private void Teleport(EnvironmentScene scene, int teleportIndex)
 		{
 			if (scene == null || teleportIndex < 0 || teleportIndex >= scene.teleports.Length)
 			{
@@ -164,41 +177,74 @@ namespace CollabXR.Environments
 			Debug.Log($"Teleporting to {teleportIndex} in {scene.name}");
 
 			Transform t = scene.teleports[teleportIndex].transform;
+			Transform playerT = HardwareRig.Instance.root;
 
-			Matrix4x4 localToPrevious = currState.previousTeleportMatrix.inverse * rigRoot.localToWorldMatrix;
+			Matrix4x4 localToPrevious = currState.previousTeleportMatrix.inverse * playerT.localToWorldMatrix;
 			Matrix4x4 newMat = t.localToWorldMatrix * localToPrevious;
 
-			rigRoot.SetPositionAndRotation(newMat.GetPosition(), newMat.rotation);
+			playerT.SetPositionAndRotation(newMat.GetPosition(), newMat.rotation);
 
 			currState.previousTeleportMatrix = t.localToWorldMatrix;
 		}
 
 		/// <summary>
 		/// Loads a changed environment on each client, or applies a changed teleport index.
-		/// When both change, scene completion applies the teleport after loading.
 		/// </summary>
-		/// <param name="previous">The network buffer containing the previous selection.</param>
-		private void OnSelectionChanged(NetworkBehaviourBuffer previous)
+		private void OnSelectionChanged()
 		{
-			NetworkedEnvironmentState before = GetPropertyReader<NetworkedEnvironmentState>(
-				nameof(networkedState)
-			).Read(previous);
-			NetworkedEnvironmentState after = networkedState;
-
-			if (before.currentEnvironmentGuid != after.currentEnvironmentGuid)
+			if (networkedState.isNewEnvironment)
 			{
-				LoadEnvironmentSceneLocal(environmentLibrary.GetEntry(after.currentEnvironmentGuid));
+				LoadEnvironmentSceneLocal(environmentLibrary.GetEntry(networkedState.currentEnvironmentGuid));
+				// OnSceneLoadComplete eventually calls Teleport as well, once the environment is loaded
+				return;
 			}
-			else if (before.currentTeleportIndex != after.currentTeleportIndex &&
-				!loadingScene && currState.currentEnvInstance != null)
+			Teleport(currState.currentEnvInstance, networkedState.currentTeleportIndex);
+		}
+
+		/// <summary>
+		/// Validates an environment and requests for ModManager to load the appropriate Mod Asset Bundle
+		/// from a remote repository.
+		/// Returns the appropriate SceneReference on success, or null if something went wrong.
+		/// </summary>
+		/// <param name="entry"></param>
+		/// <returns></returns>
+		private async UniTask<SceneReference> LoadModForEnvironment(EnvironmentEntry entry)
+		{
+			try
 			{
-				Teleport(currState.currentEnvInstance, after.currentTeleportIndex, HardwareRig.Instance.root);
+				if (entry.modGUID == Guid.Empty)
+				{
+					throw new Exception("Selected environment has no GUID.");
+				}
+				if (!entry.availableOnThisPlatform)
+				{
+					throw new InvalidOperationException("Selected environment is unavailable on this platform.");
+				}
+				return await ModManager.LoadSceneAsset(entry.modGUID, entry.assetGUID);
+			}
+			catch (Exception exception)
+			{
+				Debug.LogError($"Failed to prepare environment scene: {exception}");
+				return null;
 			}
 		}
 
 		/// <summary>
 		/// Given an Environment Entry from the bundle, tries to load the environment scene into the current room.
 		/// Releases the room's change lock if the authority's selected environment fails to load.
+		/// 
+		/// Calls OnSceneLoadComplete on additive scene load completion.
+		/// 
+		/// There are 4 fail cases:
+		/// 1. One of the required input checks fail.
+		/// 2. A remote environment load is unsuccessful.
+		/// 3. The client disconnects during the remote environment load.
+		/// 4. Loading the scene additively via SceneManager goes wrong for some reason.
+		/// 
+		/// Note that these fail cases are "local," not for the whole room.
+		/// This task is ran on every client currently in the room, so success/failure
+		/// at this point is entirely based on local conditions, like disconnecting from a room
+		/// or losing internet connection.
 		/// </summary>
 		/// <param name="entry"></param>
 		private async void LoadEnvironmentSceneLocal(EnvironmentEntry entry)
@@ -207,17 +253,20 @@ namespace CollabXR.Environments
 			/// REQUIRED CHECKS
 			/// ----------------------------------------------
 
-			if (disconnected ||
-				loadingScene ||
-				entry == null)
-			{
-				return;
-			}
-			if (currState.currentEnvInstance != null && IsSameScene(currState.activeEnvironmentEntry, entry))
+			if (disconnected || loadingScene || entry == null)
 			{
 				TryUnlockEnvironmentChange(entry.assetGUID);
 				return;
 			}
+
+			if (currState.currentEnvInstance != null && 
+				currState.activeEnvironmentEntry.assetGUID == entry.assetGUID)
+			{
+				// "FAIL" CASE: really just a no-op, early return when we're trying to load the same scene
+				TryUnlockEnvironmentChange(entry.assetGUID);
+				return;
+			}
+
 			loadingScene = true;
 			
 			/// LOAD RELEVANT MOD FOR TARGET ENVIRONMENT
@@ -227,30 +276,23 @@ namespace CollabXR.Environments
 			string path = entry.scenePath;
 			if (!entry.isBuiltIn)
 			{
-				try
+				reference = await LoadModForEnvironment(entry);
+				if (reference == null)
 				{
-					if (!entry.availableOnThisPlatform || string.IsNullOrEmpty(entry.scenePath))
-					{
-						throw new InvalidOperationException("Selected environment is unavailable or has no scene path.");
-					}
-					if (entry.modGUID != Guid.Empty)
-					{
-						// prefer ModManager's scene reference over the EnvironmentEntry 
-						reference = await ModManager.LoadSceneAsset(entry.modGUID, entry.assetGUID);
-						path = reference.Path;
-					}
-				}
-				catch (Exception exception)
-				{
+					// FAIL CASE: reference for remote environment not found after loading
 					loadingScene = false;
 					TryUnlockEnvironmentChange(entry.assetGUID);
-					Debug.LogError($"Failed to prepare environment scene: {exception}");
+
 					return;
 				}
 			}
 			if (disconnected)
 			{
+				// FAIL CASE: client has disconnected from the room while a LoadModForEnvironment task was in progress
+				loadingScene = false;
 				ModManager.ReleaseScene(reference);
+				TryUnlockEnvironmentChange(entry.assetGUID);
+
 				return;
 			}
 
@@ -268,9 +310,13 @@ namespace CollabXR.Environments
 			}
 			catch (Exception exception)
 			{
+				// FAIL CASE: just in case the scene load fails so we can clean up all the flags and references we've created
+				// but won't end up using due to the load failing
+
 				loadingScene = false;
-				TryUnlockEnvironmentChange(entry.assetGUID);
 				ModManager.ReleaseScene(reference);
+				TryUnlockEnvironmentChange(entry.assetGUID);
+				
 				Debug.LogError($"Failed to load environment scene at {path}: {exception}");
 				return;
 			}
@@ -284,104 +330,99 @@ namespace CollabXR.Environments
 		{
 			disconnected = true;
 			loadingScene = false;
-			Scene scene = currState.currentEnvInstance != null ? currState.currentEnvInstance.gameObject.scene : default;
-			SceneReference reference = currState.sceneReference;
+			
+			Scene scene = currState.currentEnvInstance != null
+				? currState.currentEnvInstance.gameObject.scene
+				: default;			
+			
 			if (currState.activeEnvironmentEntry != null)
 			{
-
 				PassthroughManager.Instance.SetSkyboxOnInPassthrough(false);
 			}
+			UnloadSceneAndRelease(scene, currState.sceneReference).Forget();
+
 			currState.activeEnvironmentEntry = null;
 			currState.currentEnvInstance = null;
 			currState.sceneReference = null;
-			UnloadSceneAndRelease(scene, reference).Forget();
 		}
 
 		/// <summary>
-		/// Installs a successfully initialized scene and retains its mod reference.
-		/// Unloads and releases the incoming scene on failure, or the old scene after a swap.
-		/// If this client disconnected during loading, only unloads and releases the scene.
-		/// The authority unlocks selection changes after the selected scene succeeds or fails.
+		/// 
 		/// </summary>
-		/// <param name="entry">The entry associated with the completed scene load.</param>
-		/// <param name="loadedScene">The scene loaded from the resolved path.</param>
-		/// <param name="reference">Its mod ownership handle, or null for a built-in scene.</param>
+		/// <param name="entry"></param>
+		/// <param name="loadedScene"></param>
+		/// <param name="reference"></param>
 		private void OnSceneLoadComplete(EnvironmentEntry entry, Scene loadedScene, SceneReference reference)
 		{
-			bool activated = false;
-			try
+			bool activated = false; // local flag to let 
+			loadingScene = false;
+
+			if (disconnected)
 			{
-				if (disconnected)
-				{
-					return;
-				}
-				loadingScene = false;
-				EnvironmentEntry selectedEntry = environmentLibrary.GetEntry(networkedState.currentEnvironmentGuid);
-				if (!IsSameScene(entry, selectedEntry))
-				{
-					LoadEnvironmentSceneLocal(selectedEntry);
-					return;
-				}
-
-				if (!loadedScene.IsValid())
-				{
-					Debug.LogError($"Failed to find loaded environment scene at {entry.scenePath}.");
-					return;
-				}
-				// initialize depth masks for all root gameobjects
-				GameObject[] rootObjects = loadedScene.GetRootGameObjects();
-				foreach (GameObject obj in rootObjects)
-				{
-					foreach (DepthMask mask in obj.GetComponentsInChildren<DepthMask>())
-					{
-						PassthroughManager.Instance.AddDepthMask(mask);
-					}
-				}
-
-				EnvironmentScene sceneScript = null;
-				foreach (GameObject root in rootObjects)
-				{
-					sceneScript = root.GetComponentInChildren<EnvironmentScene>();
-					if (sceneScript != null)
-					{
-						break;
-					}
-				}
-				if (sceneScript == null)
-				{
-					Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
-					return;
-				}
-				SceneManager.SetActiveScene(loadedScene);
-				if (sceneScript.environmentData != null && sceneScript.environmentData.networkObjects.objects != null &&
-					sceneScript.environmentData.networkObjects.objects.Count > 0)
-				{
-					Debug.Log("EnvironmentManager: Spawning networked objects");
-					SpawnNetworkedObjects(sceneScript.environmentData.networkObjects.objects);
-				}
-
-				Scene previousScene = currState.currentEnvInstance != null ? currState.currentEnvInstance.gameObject.scene : default;
-				SceneReference previousReference = currState.sceneReference;
-				SetEnvironmentInstance(sceneScript);
-				currState.activeEnvironmentEntry = entry;
-				currState.sceneReference = reference;
-				activated = true;
-				UnloadSceneAndRelease(previousScene, previousReference).Forget();
-
-				Debug.Log($"EnvironmentManager: Setting skybox in passthrough to {sceneScript.skyboxOnInPassthrough}");
-				PassthroughManager.Instance.SetSkyboxOnInPassthrough(sceneScript.skyboxOnInPassthrough);
-				PassthroughManager.Instance.TriggerScenePassthroughEvents();
-				Teleport(sceneScript, networkedState.currentTeleportIndex, HardwareRig.Instance.root);
-				OnEnvironmentLoadComplete.Invoke();
-			}
-			finally
-			{
+				ModManager.ReleaseScene(reference);
 				TryUnlockEnvironmentChange(entry.assetGUID);
-				if (!activated)
+			}
+			if (!loadedScene.IsValid())
+			{
+				Debug.LogError($"Failed to find loaded environment scene at {entry.scenePath}.");
+				return;
+			}
+
+			// initialize depth masks for all root gameobjects
+			
+			GameObject[] newSceneRootObjects = loadedScene.GetRootGameObjects();
+			foreach (GameObject obj in newSceneRootObjects)
+			{
+				foreach (DepthMask mask in obj.GetComponentsInChildren<DepthMask>())
 				{
-					UnloadSceneAndRelease(loadedScene, reference).Forget();
+					PassthroughManager.Instance.AddDepthMask(mask);
 				}
 			}
+
+			// ensure the EnvironmentScene script exists in the newly loaded scene
+
+			EnvironmentScene sceneScript = null;
+			foreach (GameObject root in newSceneRootObjects)
+			{
+				sceneScript = root.GetComponentInChildren<EnvironmentScene>();
+				if (sceneScript != null)
+				{
+					break;
+				}
+			}
+			if (sceneScript == null)
+			{
+				Debug.LogError("Failed to find EnvironmentScene in loaded scene.");
+				return;
+			}
+
+			Scene previousScene = currState.currentEnvInstance != null ? currState.currentEnvInstance.gameObject.scene : default;
+			SceneReference previousReference = currState.sceneReference;
+
+			// switch scenes
+
+			SceneManager.SetActiveScene(loadedScene);
+			currState.SetState(entry, sceneScript, reference);
+			if (sceneScript.environmentData != null && sceneScript.environmentData.networkObjects.objects != null &&
+				sceneScript.environmentData.networkObjects.objects.Count > 0)
+			{
+				Debug.Log("EnvironmentManager: Spawning networked objects");
+				SpawnNetworkedObjects(sceneScript.environmentData.networkObjects.objects);
+			}
+			UnloadSceneAndRelease(previousScene, previousReference).Forget();
+
+			// configure passthrough manager with scene settings
+
+			Debug.Log($"EnvironmentManager: Setting skybox in passthrough to {sceneScript.skyboxOnInPassthrough}");
+			PassthroughManager.Instance.SetSkyboxOnInPassthrough(sceneScript.skyboxOnInPassthrough);
+			PassthroughManager.Instance.TriggerScenePassthroughEvents();
+			
+			// teleport user to proper location
+
+			Teleport(sceneScript, networkedState.currentTeleportIndex);
+			OnEnvironmentLoadComplete.Invoke();
+
+			TryUnlockEnvironmentChange(entry.assetGUID);
 		}
 
 		/// <summary>
@@ -407,7 +448,8 @@ namespace CollabXR.Environments
 
 		/// <summary>
 		/// Releases scene ownership only after Unity finishes unloading that scene.
-		/// An async task is required for this in order to maintain 
+		/// An async task is required for this since, once we finish unloading the scene from the game,
+		/// we need to cleanup the ModManager scene reference.
 		/// </summary>
 		private static async UniTask UnloadSceneAndRelease(Scene scene, SceneReference reference)
 		{
@@ -418,23 +460,15 @@ namespace CollabXR.Environments
 			ModManager.ReleaseScene(reference);
 		}
 
-		void SetEnvironmentInstance(EnvironmentScene instance)
-		{
-			Debug.Log("Setting environment instance to " + instance.name);
-			currState.currentEnvInstance = instance;
-		}
-
 #region ENV MENU REQUEST LOGIC
 
 		///
 		/// ENV MENU REQUEST LOGIC
 		///
-		/// 1. Environment menu calls RequestRoomEnvironmentChange
-		/// 2. 
-		/// 
-		/// 
 
 		/// <summary>
+		/// Primary starting point for teleporting to a new environment.
+		/// 
 		/// Validates a requested environment and teleport, then publishes the supplied
 		/// selection or stores it while waiting for state authority.
 		/// Rejects requests while this client is loading or the room's change lock is set.
@@ -490,10 +524,12 @@ namespace CollabXR.Environments
 			if (networkedState.currentEnvironmentGuid != entry.assetGUID) {
 				TryLockEnvironmentChange(entry.assetGUID);
 			}
+			bool isNewEnvironment = currState.activeEnvironmentEntry == null || entry.assetGUID != currState.activeEnvironmentEntry.assetGUID;
 			networkedState = new NetworkedEnvironmentState
 			{
 				currentEnvironmentGuid = entry.assetGUID,
-				currentTeleportIndex = teleportIndex
+				currentTeleportIndex = teleportIndex,
+				isNewEnvironment = isNewEnvironment
 			};
 		}
 
